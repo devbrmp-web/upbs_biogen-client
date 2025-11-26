@@ -329,12 +329,7 @@
       return;
     }
 
-    // ---------- FIXED OPEN CART ----------
-    if (e.target.closest('#cartIcon')) {  // FIXED
-      renderCart();
-      cartModal.classList.toggle('hidden');
-      return;
-    }
+    
   });
 
   // ---------- Qty input events ----------

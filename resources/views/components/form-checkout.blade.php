@@ -42,6 +42,11 @@
             </div>
 
             <div>
+              <label class="block text-sm font-medium mb-1">Alamat Lengkap</label>
+              <textarea id="customer_address" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200" required></textarea>
+            </div>
+
+            <div>
               <label class="block text-sm font-medium mb-1">Email (Opsional)</label>
               <input id="customer_email" type="email" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200">
             </div>
@@ -78,13 +83,17 @@
               </p>
 
               <div>
-                <label class="block text-sm font-medium mb-1">Alamat Pengiriman</label>
-                <textarea id="customer_address" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200"></textarea>
+                <label class="block text-sm font-medium mb-1">Nama Kurir</label>
+                <select id="courier_name" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200">
+                  <option value="">Pilih Kurir</option>
+                  <option value="Pos Indonesia">Pos Indonesia</option>
+                  <option value="Indah Cargo">Indah Cargo</option>
+                </select>
               </div>
 
-              <div>
-                <label class="block text-sm font-medium mb-1">Nama Kurir</label>
-                <input id="courier_name" type="text" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200">
+              <div class="flex items-center gap-2">
+                <input id="delivery_coordination_acknowledged" type="checkbox" class="rounded">
+                <label for="delivery_coordination_acknowledged" class="text-sm text-gray-700">Saya memahami koordinasi pengiriman via Call Center/WhatsApp</label>
               </div>
 
             </div>
@@ -101,6 +110,10 @@
               class="bg-green-600 text-white px-5 py-2.5 rounded-lg hover:bg-green-700 transition">
               Buat Pesanan
             </button>
+          </div>
+          <div class="mt-4 flex items-center gap-2">
+            <input id="terms_accepted" type="checkbox" class="rounded">
+            <label for="terms_accepted" class="text-sm text-gray-700">Saya menyetujui syarat dan ketentuan</label>
           </div>
         </div>
 
@@ -139,44 +152,41 @@ document.getElementById("submitOrder").onclick = async () => {
     }
 
     const items = cart.map(item => ({
-        variety_id: item.variety_id,
-        quantity: item.quantity,
+        variety_id: item.id,
+        quantity: item.qty,
         seed_lot_id: item.seed_lot_id || null
     }));
 
     const payload = {
         customer_name: document.getElementById("customer_name").value,
+        customer_address: document.getElementById("customer_address").value,
         customer_phone: document.getElementById("customer_phone").value,
         customer_email: document.getElementById("customer_email").value || null,
-        customer_address: document.getElementById("customer_address").value || null,
         shipping_method: document.getElementById("shipping_method").value,
-        courier_name: document.getElementById("courier_name").value || null,
+        courier_name: document.getElementById("shipping_method").value === "delivery" ? document.getElementById("courier_name").value : null,
         payment_method: "bank_transfer",
-        items: items
+        items: items,
+        terms_accepted: document.getElementById("terms_accepted").checked ? true : false,
+        delivery_coordination_acknowledged: document.getElementById("shipping_method").value === "delivery" ? (document.getElementById("delivery_coordination_acknowledged").checked ? true : false) : null
     };
 
     try {
-        const response = await fetch("http://localhost:8000/api/orders", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Accept": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            alert("Gagal membuat pesanan, periksa kembali data!");
-            return;
-        }
+        const res = await window.axios.post('/orders/checkout', payload);
+        const result = res.data;
 
         alert("Pesanan berhasil dibuat!\nKode: " + result.data.order_code);
 
         localStorage.removeItem("cart");
-
-        window.location.href = "/order-success?order=" + result.data.order_code;
+        window.location.href = "/";
 
     } catch (err) {
-        alert("Terjadi kesalahan koneksi.");
+        if (err.response && err.response.data && err.response.data.errors) {
+            const errs = err.response.data.errors;
+            const firstKey = Object.keys(errs)[0];
+            alert(String(errs[firstKey]));
+        } else {
+            alert("Terjadi kesalahan koneksi.");
+        }
     }
 };
 </script>
