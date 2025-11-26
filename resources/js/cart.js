@@ -114,10 +114,12 @@
 
   function updateBadge() {
     if (!cartBadge) return;
+
     const cart = getCart();
-    const totalQty = cart.reduce((s, it) => s + (it.qty || 0), 0);
-    cartBadge.textContent = totalQty;
-    cartBadge.style.display = totalQty > 0 ? 'inline-block' : 'none';
+    const totalItems = cart.length; // jumlah item unik
+
+    cartBadge.textContent = totalItems;
+    cartBadge.style.display = totalItems > 0 ? 'inline-block' : 'none';
   }
 
   // ---------- Escaping helper ----------
@@ -253,19 +255,25 @@
       return;
     }
 
+      // +1 kg
     if (e.target.closest('#qtyPlus')) {
-      qtyInput.value = String(Math.max(1, (parseInt(qtyInput.value || '0') || 0) + 1));
+       console.log('Plus clicked');
+      const current = parseInt(qtyInput.value || '1') || 1;
+      qtyInput.value = String(current + 1);
       updateModalTotal();
       validateModal();
       return;
     }
 
+    // -1 kg (tidak boleh <1)
     if (e.target.closest('#qtyMinus')) {
-      qtyInput.value = String(Math.max(1, (parseInt(qtyInput.value || '0') || 0) - 1));
+      const current = parseInt(qtyInput.value || '1') || 1;
+      qtyInput.value = String(Math.max(1, current - 1));
       updateModalTotal();
       validateModal();
       return;
     }
+
 
     if (e.target.closest('#buyModalAdd')) {
       if (!activeProduct) return;
