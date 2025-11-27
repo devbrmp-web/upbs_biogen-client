@@ -123,4 +123,5 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'url_dev_admin' => env('URL_DEV_ADMIN', 'http://localhost:8002'),
 ];

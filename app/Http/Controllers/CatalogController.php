@@ -4,18 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Log;
 
 class CatalogController extends Controller
 {
     public function catalogindex()
     {
+        $url_dev_admin = config('app.url_dev_admin');
         try {
             // Ambil daftar varietas
-            $varietiesResponse = Http::timeout(5)->get('http://localhost:8000/api/varieties');
+            $varietiesResponse = Http::timeout(5)->get($url_dev_admin . '/api/varieties');
             $varieties = $varietiesResponse->json('data') ?? [];
 
             // Ambil daftar komoditas
-            $commoditiesResponse = Http::timeout(5)->get('http://localhost:8000/api/commodities');
+            $commoditiesResponse = Http::timeout(5)->get($url_dev_admin . '/api/commodities');
             $commodities = $commoditiesResponse->json('data') ?? [];
 
             // Kirim dua variabel ke view
@@ -32,9 +34,10 @@ class CatalogController extends Controller
 
     public function homeindex()
     {
+        $url_dev_admin = config('app.url_dev_admin');
         try {
             // Ambil data commodities dari API
-            $response = Http::timeout(5)->get('http://localhost:8000/api/commodities');
+            $response = Http::timeout(5)->get($url_dev_admin . '/api/commodities');
             $commodities = $response->json('data') ?? [];
 
             return view('home', compact('commodities'));

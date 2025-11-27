@@ -18,3 +18,6 @@ use App\Http\Controllers\CartController;
 
 Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
 
+Route::get('/checkout', function () {
+    return view('/components/form-checkout');
+})->name('checkout.form');
