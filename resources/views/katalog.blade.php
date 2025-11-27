@@ -69,7 +69,7 @@
 
                     <!-- Gambar -->
                     <div class="h-40 bg-gray-100 overflow-hidden">
-                        <img src="{{ $variety['image'] ?? asset('resources/img/sample-product.jpg') }}"
+                        <img src="{{ $variety['image_url'] ?? asset('resources/img/sample-product.jpg') }}"
                             alt="{{ $variety['name'] }}"
                             class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
                     </div>
@@ -109,7 +109,7 @@
                                 data-id="{{ $variety['id'] }}"
                                 data-nama="{{ $variety['name'] }}"
                                 data-harga="{{ $priceClean }}"
-                                data-gambar="{{ $variety['image'] ?? asset('resources/img/sample-product.jpg') }}"
+                                data-gambar="{{ $variety['image_url'] ?? asset('resources/img/sample-product.jpg') }}"
                                 data-minimum="{{ $variety['min_buy'] ?? 1 }}"
                             >
                                 <i class="fa fa-cart-plus"></i>
