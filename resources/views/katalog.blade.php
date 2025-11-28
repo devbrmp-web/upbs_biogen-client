@@ -21,11 +21,21 @@
             <div class="flex flex-nowrap gap-4 overflow-x-auto pb-2 scrollbar-hide">
 
                 <!-- Tombol Tampilkan Semua -->
-                <a href="/katalog"
-                    class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
-                    {{ !$activeCommodity ? 'bg-[#B4DEBD] text-black border-[#B4DEBD]' : 'bg-[#B4DEBD]/40 text-gray-800' }}">
-                    Tampilkan Semua
-                </a>
+                @if (!$activeCommodity)
+                    <!-- Sedang berada di Tampilkan Semua (non-clickable) -->
+                    <span
+                        class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
+                        bg-[#B4DEBD] text-black border-[#B4DEBD] cursor-not-allowed opacity-70">
+                        Tampilkan Semua
+                    </span>
+                @else
+                    <!-- Tombol normal -->
+                    <a href="/katalog"
+                        class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
+                        bg-[#B4DEBD]/40 text-gray-800 hover:bg-[#B4DEBD]/60 transition">
+                        Tampilkan Semua
+                    </a>
+                @endif
 
                 <!-- Loop Komoditas -->
                 @foreach ($commodities as $commodity)
@@ -49,7 +59,7 @@
                             {{ $commodity['name'] }}
                         </a>
                     @endif
-@endforeach
+                @endforeach
 
             </div>
         </div>
@@ -96,21 +106,15 @@
 
                         <!-- Tombol Aksi -->
                         <div class="mt-3 grid grid-cols-3 gap-2">
-
-                            <!-- Tombol Beli Langsung -->
-                            <a href="#" class="col-span-2 bg-gray-900 text-white text-center text-xs py-2 rounded-md hover:bg-black transition">
-                                Beli Langsung
-                            </a>
-
                             <!-- Tombol Keranjang -->
                             <button 
-                                class="add-to-cart col-span-1 border border-gray-900 text-gray-900 text-xs py-2 rounded-md hover:bg-gray-900 hover:text-white transition"
+                                class="add-to-cart col-span-3 border border-gray-900 text-gray-900 text-xs py-2 rounded-md hover:bg-gray-900 hover:text-white transition"
                                 data-id="{{ $variety['id'] }}"
                                 data-nama="{{ $variety['name'] }}"
                                 data-harga="{{ $priceClean }}"
                                 data-gambar="{{ $variety['image_url'] ?? asset('resources/img/sample-product.jpg') }}"
                                 data-minimum="{{ $variety['min_buy'] ?? 1 }}"
-                            >
+                            > Pesan Sekarang
                                 <i class="fa fa-cart-plus"></i>
                             </button>
 
