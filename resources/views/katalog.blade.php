@@ -11,52 +11,41 @@
             <p class="text-gray-700 text-lg">Temukan berbagai varietas unggul hasil inovasi UPBS BRMP Biogen 🌾</p>
         </div>
 
-       <div class="mb-10 relative">
+        <!-- =======================
+             FILTER KOMODITAS
+        ======================== -->
+        <div class="mb-10">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Pilih Komoditas</h2>
 
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-gray-800">Pilih Komoditas</h2>
-        <button id="filterToggle"
-            class="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 bg-white shadow-sm hover:bg-gray-100 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-600">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M3 4.5h18M6 12h12m-9 7.5h6" />
-            </svg>
-        </button>
+            <!-- Scroll Horizontal -->
+            <div class="flex flex-nowrap gap-4 overflow-x-auto pb-2 scrollbar-hide">
 
-        <!-- 🔽 Dropdown filter -->
-        <div id="filterDropdown"
-            class="hidden absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-            <button class="dropdown-item w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
-                data-filter="BS">BS</button>
-            <button class="dropdown-item w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
-                data-filter="FS">FS</button>
-        </div>
-    </div>
-
-    <!-- 🌿 Scroll Horizontal Container -->
-    <div id="filterKategori" class="flex flex-nowrap gap-4 overflow-x-auto pb-2 scrollbar-hide">
-        
-        <!-- Tombol Tampilkan Semua -->
-        <button
-            class="kategori-btn active bg-[#B4DEBD] text-black border border-[#B4DEBD]/60 rounded-2xl shadow-md px-5 py-3 text-sm font-medium hover:bg-[#B4DEBD]/90 transition whitespace-nowrap"
-            data-kategori="all">
-            Tampilkan Semua
-        </button>
+                <!-- Tombol Tampilkan Semua -->
+                <a href="/katalog"
+                    class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
+                    {{ !$activeCommodity ? 'bg-[#B4DEBD] text-black border-[#B4DEBD]' : 'bg-[#B4DEBD]/40 text-gray-800' }}">
+                    Tampilkan Semua
+                </a>
 
                 <!-- Loop Komoditas -->
                 @foreach ($commodities as $commodity)
-                <button
-                    class="kategori-btn bg-[#B4DEBD]/40 backdrop-blur-md border border-[#B4DEBD]/50 rounded-xl shadow-md px-5 py-3 text-sm font-medium text-gray-800 hover:bg-[#B4DEBD]/60 transition whitespace-nowrap"
-                    data-kategori="{{ strtolower($commodity['slug']) }}">
-                    {{ $commodity['name'] }}
-                </button>
+                    @php 
+                        $slug = strtolower($commodity['slug']);
+                    @endphp
+
+                    <a href="/katalog?commodity={{ $slug }}"
+                        class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
+                        {{ $activeCommodity === $slug ? 'bg-[#B4DEBD] text-black border-[#B4DEBD]' : 'bg-[#B4DEBD]/40 text-gray-800' }}">
+                        {{ $commodity['name'] }}
+                    </a>
                 @endforeach
 
             </div>
         </div>
 
-        <!-- 🔹 Grid Produk -->
+        <!-- =======================
+             GRID PRODUK
+        ======================== -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             @forelse ($varieties as $variety)
 
@@ -97,10 +86,9 @@
                         <!-- Tombol Aksi -->
                         <div class="mt-3 grid grid-cols-3 gap-2">
 
-                            <!-- Tombol Beli Langsung (GET atau route detail) -->
-                            <a href="#" class="col-span-2 bg-gray-900 text-white text-center text-xs py-2 rounded-md hover:bg-black transition"
-                            class="bg-gray-900 text-white text-center text-xs py-2 rounded-md hover:bg-black transition">
-                            Beli Langsung
+                            <!-- Tombol Beli Langsung -->
+                            <a href="#" class="col-span-2 bg-gray-900 text-white text-center text-xs py-2 rounded-md hover:bg-black transition">
+                                Beli Langsung
                             </a>
 
                             <!-- Tombol Keranjang -->
@@ -115,9 +103,7 @@
                                 <i class="fa fa-cart-plus"></i>
                             </button>
 
-
                         </div>
-
 
                     </div>
                 </div>
@@ -127,32 +113,7 @@
             @endforelse
         </div>
 
-
-
     </div>
 </section>
 
-<script>
-    const filterToggle = document.getElementById('filterToggle');
-    const filterDropdown = document.getElementById('filterDropdown');
-
-    filterToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        filterDropdown.classList.toggle('hidden');
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!filterDropdown.contains(e.target) && !filterToggle.contains(e.target)) {
-            filterDropdown.classList.add('hidden');
-        }
-    });
-
-    document.querySelectorAll('.dropdown-item').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const filterValue = e.target.dataset.filter;
-            alert(`Filter dipilih: ${filterValue}`);
-            filterDropdown.classList.add('hidden');
-        });
-    });
-</script>
 @endsection
