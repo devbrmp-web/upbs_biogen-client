@@ -31,14 +31,25 @@
                 @foreach ($commodities as $commodity)
                     @php 
                         $slug = strtolower($commodity['slug']);
+                        $isActive = $activeCommodity === $slug;
                     @endphp
 
-                    <a href="/katalog?commodity={{ $slug }}"
-                        class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
-                        {{ $activeCommodity === $slug ? 'bg-[#B4DEBD] text-black border-[#B4DEBD]' : 'bg-[#B4DEBD]/40 text-gray-800' }}">
-                        {{ $commodity['name'] }}
-                    </a>
-                @endforeach
+                    @if ($isActive)
+                        <!-- Jika aktif → tampil sebagai span (non-clickable) -->
+                        <span
+                            class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
+                            bg-[#B4DEBD] text-black border-[#B4DEBD] cursor-not-allowed opacity-70">
+                            {{ $commodity['name'] }}
+                        </span>
+                    @else
+                        <!-- Jika tidak aktif → tombol normal -->
+                        <a href="/katalog?commodity={{ $slug }}"
+                            class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
+                            bg-[#B4DEBD]/40 text-gray-800 hover:bg-[#B4DEBD]/60 transition">
+                            {{ $commodity['name'] }}
+                        </a>
+                    @endif
+@endforeach
 
             </div>
         </div>
