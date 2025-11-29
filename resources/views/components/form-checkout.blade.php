@@ -71,31 +71,13 @@
               <label class="block text-sm font-medium mb-1">Metode Pengiriman</label>
               <select id="shipping_method" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200">
                 <option value="pickup">Ambil di Tempat</option>
-                <option value="delivery">Pengiriman</option>
+                <option value="delivery">Kirim</option>
               </select>
             </div>
 
-            <!-- DELIVERY SECTION -->
+            <!-- DELIVERY SECTION (Auto Courier Info) -->
             <div id="deliveryInfo" class="hidden space-y-4">
-
-              <p class="text-sm text-gray-700 bg-yellow-50 p-3 border border-yellow-200 rounded-lg">
-                Pemesanan kurir dilakukan secara mandiri. Silakan hubungi kurir yang Anda pilih, lalu konfirmasi ke staff UPBS.
-              </p>
-
-              <div>
-                <label class="block text-sm font-medium mb-1">Nama Kurir</label>
-                <select id="courier_name" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-200">
-                  <option value="">Pilih Kurir</option>
-                  <option value="Pos Indonesia">Pos Indonesia</option>
-                  <option value="Indah Cargo">Indah Cargo</option>
-                </select>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <input id="delivery_coordination_acknowledged" type="checkbox" class="rounded">
-                <label for="delivery_coordination_acknowledged" class="text-sm text-gray-700">Saya memahami koordinasi pengiriman via Call Center/WhatsApp</label>
-              </div>
-
+              <p id="autoCourierInfo" class="text-sm text-gray-700 bg-blue-50 p-3 border border-blue-200 rounded-lg"></p>
             </div>
           </div>
 
@@ -139,7 +121,18 @@ document.getElementById("backToStep1").onclick = () => {
 /* Tampilkan Field Delivery */
 document.getElementById("shipping_method").onchange = (e) => {
     const value = e.target.value;
-    document.getElementById("deliveryInfo").classList.toggle("hidden", value !== "delivery");
+    const info = document.getElementById("deliveryInfo");
+    info.classList.toggle("hidden", value !== "delivery");
+    if (value === "delivery") {
+        try {
+            const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+            const totalWeight = cart.reduce((sum, it) => sum + (parseInt(it.qty || 0) || 0), 0);
+            const courier = totalWeight > 10 ? "Indah Cargo" : "Pos Indonesia";
+            document.getElementById("autoCourierInfo").textContent = `Kurir otomatis: ${courier} (berdasarkan total berat ${totalWeight} kg)`;
+        } catch (_) {
+            document.getElementById("autoCourierInfo").textContent = "Kurir otomatis akan ditentukan saat pemesanan.";
+        }
+    }
 };
 
 /* Submit Order */
@@ -163,11 +156,11 @@ document.getElementById("submitOrder").onclick = async () => {
         customer_phone: document.getElementById("customer_phone").value,
         customer_email: document.getElementById("customer_email").value || null,
         shipping_method: document.getElementById("shipping_method").value,
-        courier_name: document.getElementById("shipping_method").value === "delivery" ? document.getElementById("courier_name").value : null,
+        // courier_name ditentukan otomatis oleh backend
         payment_method: "bank_transfer",
         items: items,
         terms_accepted: document.getElementById("terms_accepted").checked ? true : false,
-        delivery_coordination_acknowledged: document.getElementById("shipping_method").value === "delivery" ? (document.getElementById("delivery_coordination_acknowledged").checked ? true : false) : null
+        // tidak perlu acknowledgement khusus
     };
 
     try {
