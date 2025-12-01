@@ -25,5 +25,9 @@ Route::get('/checkout', function () {
 Route::get('/search-suggest', [CatalogController::class, 'searchSuggest']);
 Route::get('/search', [CatalogController::class, 'search'])->name('search');
 Route::get('/produk/{slug}', [CatalogController::class, 'productDetail'])->name('product.detail');
+Route::get('/cek-pesanan', function () {
+    return view('track-order');
+})->name('cek-pesanan');
+
 
 

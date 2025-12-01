@@ -28,7 +28,7 @@
       </a>
     </li>
     <li>
-      <a href="#"
+      <a href="{{ route('cek-pesanan') }}"
          class="hover:text-indigo-600 transition">
          Cek Pesanan
       </a>

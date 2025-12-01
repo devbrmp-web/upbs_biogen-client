@@ -17,22 +17,18 @@
         <div class="mb-10">
             <h2 class="text-lg font-semibold text-gray-800 mb-4">Pilih Komoditas</h2>
 
-            <!-- Scroll Horizontal -->
             <div class="flex flex-nowrap gap-4 overflow-x-auto pb-2 scrollbar-hide">
 
-                <!-- Tombol Tampilkan Semua -->
+                <!-- Tampilkan Semua -->
                 @if (!$activeCommodity)
-                    <!-- Sedang berada di Tampilkan Semua (non-clickable) -->
-                    <span
-                        class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
+                    <span class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
                         bg-[#B4DEBD] text-black border-[#B4DEBD] cursor-not-allowed opacity-70">
                         Tampilkan Semua
                     </span>
                 @else
-                    <!-- Tombol normal -->
                     <a href="/katalog"
-                        class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
-                        bg-[#B4DEBD]/40 text-gray-800 hover:bg-[#B4DEBD]/60 transition">
+                       class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
+                       bg-[#B4DEBD]/40 text-gray-800 hover:bg-[#B4DEBD]/60 transition">
                         Tampilkan Semua
                     </a>
                 @endif
@@ -45,17 +41,14 @@
                     @endphp
 
                     @if ($isActive)
-                        <!-- Jika aktif → tampil sebagai span (non-clickable) -->
-                        <span
-                            class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
+                        <span class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
                             bg-[#B4DEBD] text-black border-[#B4DEBD] cursor-not-allowed opacity-70">
                             {{ $commodity['name'] }}
                         </span>
                     @else
-                        <!-- Jika tidak aktif → tombol normal -->
                         <a href="/katalog?commodity={{ $slug }}"
-                            class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
-                            bg-[#B4DEBD]/40 text-gray-800 hover:bg-[#B4DEBD]/60 transition">
+                           class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
+                           bg-[#B4DEBD]/40 text-gray-800 hover:bg-[#B4DEBD]/60 transition">
                             {{ $commodity['name'] }}
                         </a>
                     @endif
@@ -75,13 +68,16 @@
                     $priceClean = (float) preg_replace('/[^\d.]/', '', $priceRaw);
                 @endphp
 
-                <div class="backdrop-blur-md bg-white/30 border border-lg border-white/20 shadow-lg overflow-hidden hover:shadow-lg transition-all duration-300 rounded-lg">
+                <!-- CARD BISA DIKLIK -->
+                <a href="{{ route('product.detail', $variety['slug']) }}" 
+                   class="block backdrop-blur-md bg-white/30 border border-white/20 shadow-md 
+                          hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden">
 
                     <!-- Gambar -->
                     <div class="h-40 bg-gray-100 overflow-hidden">
                         <img src="{{ $variety['image_url'] ?? asset('resources/img/sample-product.jpg') }}"
-                            alt="{{ $variety['name'] }}"
-                            class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                             alt="{{ $variety['name'] }}"
+                             class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
                     </div>
 
                     <!-- Konten -->
@@ -106,29 +102,34 @@
 
                         <!-- Tombol Aksi -->
                         <div class="mt-3 grid grid-cols-3 gap-2">
-                            <!-- Tombol Keranjang -->
+
+                            <!-- Tombol Keranjang (TIDAK MENGARAHKAN KE DETAIL) -->
                             <button 
-                                class="add-to-cart col-span-3 border border-gray-900 text-gray-900 text-xs py-2 rounded-md hover:bg-gray-900 hover:text-white transition"
+                                onclick="event.stopPropagation()" 
+                                class="add-to-cart col-span-3 border border-gray-900 text-gray-900 
+                                       text-xs py-2 rounded-md hover:bg-gray-900 hover:text-white transition"
                                 data-id="{{ $variety['id'] }}"
                                 data-nama="{{ $variety['name'] }}"
                                 data-harga="{{ $priceClean }}"
                                 data-gambar="{{ $variety['image_url'] ?? asset('resources/img/sample-product.jpg') }}"
                                 data-minimum="{{ $variety['min_buy'] ?? 1 }}"
-                            > Pesan Sekarang
-                                <i class="fa fa-cart-plus"></i>
+                            > 
+                                Pesan Sekarang <i class="fa fa-cart-plus"></i>
                             </button>
 
                         </div>
 
                     </div>
-                </div>
+
+                </a>
 
             @empty
-                <p class="col-span-4 text-center text-gray-600">Tidak ada data varietas tersedia.</p>
+                <p class="col-span-4 text-center text-gray-600">
+                    Tidak ada data varietas tersedia.
+                </p>
             @endforelse
         </div>
 
     </div>
 </section>
-
 @endsection
