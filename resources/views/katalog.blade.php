@@ -68,60 +68,57 @@
                     $priceClean = (float) preg_replace('/[^\d.]/', '', $priceRaw);
                 @endphp
 
-                <!-- CARD BISA DIKLIK -->
-                <a href="{{ route('product.detail', $variety['slug']) }}" 
-                   class="block backdrop-blur-md bg-white/30 border border-white/20 shadow-md 
-                          hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden">
+               <div class="backdrop-blur-md bg-white/30 border border-white/20 shadow-md 
+                hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden">
 
-                    <!-- Gambar -->
-                    <div class="h-40 bg-gray-100 overflow-hidden">
-                        <img src="{{ $variety['image_url'] ?? asset('resources/img/sample-product.jpg') }}"
-                             alt="{{ $variety['name'] }}"
-                             class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
-                    </div>
+                    <!-- BAGIAN YANG KLIKABLE -->
+                    <a href="{{ route('product.detail', $variety['slug']) }}" class="block">
 
-                    <!-- Konten -->
-                    <div class="p-3">
-
-                        <h3 class="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
-                            {{ $variety['name'] }}
-                        </h3>
-
-                        <p class="text-xs text-gray-500 mt-1">
-                            {{ $variety['commodity']['name'] ?? '-' }}
-                        </p>
-
-                        <!-- Harga -->
-                        <p class="text-sm text-green-700 font-semibold mt-2">
-                            Rp {{ number_format($priceClean, 0, ',', '.') }}
-                        </p>
-
-                        <p class="text-xs text-gray-500 mt-1">
-                            Minimum: {{ $variety['minimum_limit'] ?? 0 }} kg
-                        </p>
-
-                        <!-- Tombol Aksi -->
-                        <div class="mt-3 grid grid-cols-3 gap-2">
-
-                            <!-- Tombol Keranjang (TIDAK MENGARAHKAN KE DETAIL) -->
-                            <button 
-                                onclick="event.stopPropagation()" 
-                                class="add-to-cart col-span-3 border border-gray-900 text-gray-900 
-                                       text-xs py-2 rounded-md hover:bg-gray-900 hover:text-white transition"
-                                data-id="{{ $variety['id'] }}"
-                                data-nama="{{ $variety['name'] }}"
-                                data-harga="{{ $priceClean }}"
-                                data-gambar="{{ $variety['image_url'] ?? asset('resources/img/sample-product.jpg') }}"
-                                data-minimum="{{ $variety['min_buy'] ?? 1 }}"
-                            > 
-                                Pesan Sekarang <i class="fa fa-cart-plus"></i>
-                            </button>
-
+                        <!-- Gambar -->
+                        <div class="h-40 bg-gray-100 overflow-hidden">
+                            <img src="{{ $variety['image_url'] ?? asset('resources/img/sample-product.jpg') }}"
+                                alt="{{ $variety['name'] }}"
+                                class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
                         </div>
 
+                        <!-- Konten produk -->
+                        <div class="p-3">
+                            <h3 class="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
+                                {{ $variety['name'] }}
+                            </h3>
+
+                            <p class="text-xs text-gray-500 mt-1">
+                                {{ $variety['commodity']['name'] ?? '-' }}
+                            </p>
+
+                            <p class="text-sm text-green-700 font-semibold mt-2">
+                                Rp {{ number_format($priceClean, 0, ',', '.') }}
+                            </p>
+
+                            <p class="text-xs text-gray-500 mt-1">
+                                Minimum: {{ $variety['minimum_limit'] ?? 0 }} kg
+                            </p>
+                        </div>
+
+                    </a>
+
+                    <!-- TOMBOL PESAN – DI LUAR <a> -->
+                    <div class="p-3 pt-0">
+                        <button 
+                            class="add-to-cart w-full border border-gray-900 text-gray-900 
+                                text-xs py-2 rounded-md hover:bg-gray-900 hover:text-white transition"
+                            data-id="{{ $variety['id'] }}"
+                            data-nama="{{ $variety['name'] }}"
+                            data-harga="{{ $priceClean }}"
+                            data-gambar="{{ $variety['image_url'] ?? asset('resources/img/sample-product.jpg') }}"
+                            data-minimum="{{ $variety['min_buy'] ?? 1 }}"
+                        >
+                            Pesan Sekarang <i class="fa fa-cart-plus"></i>
+                        </button>
                     </div>
 
-                </a>
+                </div>
+
 
             @empty
                 <p class="col-span-4 text-center text-gray-600">
