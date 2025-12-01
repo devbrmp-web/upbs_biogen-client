@@ -1,48 +1,39 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Order;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 
 class TrackOrderController extends Controller
 {
-   public function track($keyword)
-{
-    $order = Order::where('order_code', $keyword)
-        ->orWhere('customer_phone', $keyword)
-        ->orWhere('tracking_number', $keyword)
-        ->first();
+    public function index(Request $request)
+    {
+        $search = $request->query('search');
+        $order = null;
 
-    if (!$order) {
-        return response()->json([
-            'message' => 'Order not found',
-            'order' => null
-        ], 404);
+        // Jika belum ada pencarian → langsung tampilkan halaman
+        if (!$search) {
+            return view('track-order', compact('order'));
+        }
+
+        $baseUrl = config('app.url_dev_admin'); // http://localhost:8000 (backend)
+
+        try {
+            $response = Http::get("$baseUrl/api/orders/track/$search");
+
+            if ($response->successful()) {
+                // AMBIL HANYA BAGIAN "order", supaya tidak array bersarang
+                $orderData = $response->json()['order'];
+
+                // Convert array ke object supaya Blade bisa pakai ->property
+                $order = (object) $orderData;
+            }
+
+        } catch (\Exception $e) {
+            $order = null;
+        }
+
+        return view('track-order', compact('order', 'search'));
     }
-
-    return response()->json([
-        'message' => 'success',
-        'order' => $order
-    ]);
-}
-public function page(Request $request)
-{
-    $search = $request->query('search'); // ambil keyword
-    $order = null;                       // default
-
-    if (!empty($search)) {
-        $order = Order::where('order_code', $search)
-            ->orWhere('customer_phone', $search)
-            ->orWhere('tracking_number', $search)
-            ->first();
-    }
-
-    return view('views.track-order', [
-        'order' => $order,
-        'search' => $search
-    ]);
-}
-
 }

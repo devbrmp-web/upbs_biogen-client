@@ -18,7 +18,7 @@
 
                     <!-- Breadcrumb -->
                     <div class="text-sm text-gray-600 mb-4">
-                        <a href="/" class="hover:text-gray-800">Katalog</a> /
+                        <a href="/katalog" class="hover:text-gray-800">Katalog</a> /
                         <span class="text-gray-800">{{ $variety['commodity']['name'] }}</span>
                     </div>
 
