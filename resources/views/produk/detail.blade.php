@@ -32,8 +32,8 @@
                             {{ $variety['price_idr'] }}
                         </span>
 
-                        <span class="ml-2 px-3 py-1 text-sm rounded-full 
-                            {{ $variety['stock']['status'] === 'ready' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                        <span class="ml-2 px-3 py-1 text-sm rounded-full
+                            {{ $variety['stock']['status'] === 'Available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                             {{ ucfirst($variety['stock']['status']) }}
                         </span>
                     </div>
@@ -42,7 +42,7 @@
                         {!! nl2br(e($variety['description'])) !!}
                     </p>
 
-                    <!-- Stok total -->
+                    <!-- Total Stok -->
                     <div class="flex items-center text-green-700 mb-6 font-semibold">
                         <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path d="M5 13l4 4L19 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -60,35 +60,41 @@
 
                         <div class="grid grid-cols-3 gap-4">
 
-                            <!-- BS -->
-                            <label class="group border rounded-lg p-4 cursor-pointer hover:border-green-600 peer-checked:border-green-700 bg-white/50 backdrop-blur-sm">
-                                <input type="radio" name="stockType" value="BS" class="peer hidden">
-                                <div class="font-semibold text-gray-900">BS</div>
-                                <div class="text-gray-600 text-sm">Benih Sehat</div>
-                                <div class="mt-2 text-green-700 font-semibold text-sm">
-                                    {{ $variety['stock_bs_kg'] ?? 0 }} kg tersedia
-                                </div>
-                            </label>
+                            @php
+                                $classLabels = [
+                                    'BS' => [
+                                        'name' => 'BS',
+                                        'desc' => 'Benih Sehat',
+                                    ],
+                                    'FS' => [
+                                        'name' => 'FS',
+                                        'desc' => 'Foundation Seed',
+                                    ],
+                                    'PLANT' => [
+                                        'name' => 'PLANT',
+                                        'desc' => 'Tanaman Hidup',
+                                    ],
+                                ];
+                            @endphp
 
-                            <!-- FS -->
-                            <label class="group border rounded-lg p-4 cursor-pointer hover:border-green-600 peer-checked:border-green-700 bg-white/50 backdrop-blur-sm">
-                                <input type="radio" name="stockType" value="FS" class="peer hidden">
-                                <div class="font-semibold text-gray-900">FS</div>
-                                <div class="text-gray-600 text-sm">Foundation Stock</div>
-                                <div class="mt-2 text-green-700 font-semibold text-sm">
-                                    {{ $variety['stock']['FS'] ?? 0 }} kg tersedia
-                                </div>
-                            </label>
+                            @foreach ($classLabels as $code => $info)
+                                @php
+                                    $qty = $variety['stock_by_class'][$code] ?? 0;
+                                @endphp
 
-                            <!-- PLANT -->
-                            <label class="group border rounded-lg p-4 cursor-pointer hover:border-green-600 peer-checked:border-green-700 bg-white/50 backdrop-blur-sm">
-                                <input type="radio" name="stockType" value="PLANT" class="peer hidden">
-                                <div class="font-semibold text-gray-900">PLANT</div>
-                                <div class="text-gray-600 text-sm">Tanaman Hidup</div>
-                                <div class="mt-2 text-green-700 font-semibold text-sm">
-                                    {{ $variety['stock']['PLANT'] ?? 0 }} tersedia
-                                </div>
-                            </label>
+                                @if ($qty > 0)
+                                    <label class="group border rounded-lg p-4 cursor-pointer hover:border-green-600 peer-checked:border-green-700 bg-white/50 backdrop-blur-sm">
+                                        <input type="radio" name="stockType" value="{{ $code }}" class="peer hidden">
+
+                                        <div class="font-semibold text-gray-900">{{ $info['name'] }}</div>
+                                        <div class="text-gray-600 text-sm">{{ $info['desc'] }}</div>
+
+                                        <div class="mt-2 text-green-700 font-semibold text-sm">
+                                            {{ $qty }} kg tersedia
+                                        </div>
+                                    </label>
+                                @endif
+                            @endforeach
 
                         </div>
                     </div>
@@ -109,7 +115,7 @@
                 <!--      RIGHT: PRODUCT IMAGE    -->
                 <!-- ============================= -->
                 <div class="flex justify-center">
-                    <img src="{{ $variety['image_url'] }}"
+                    <img src="{{ $variety['image_url'] ?? asset('resources/img/sample-product.jpg') }}"
                          class="rounded-xl w-full max-w-md shadow-lg object-cover">
                 </div>
 

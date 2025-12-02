@@ -103,20 +103,7 @@
                     </a>
 
                     <!-- TOMBOL PESAN – DI LUAR <a> -->
-                    <div class="p-3 pt-0">
-                        <button 
-                            class="add-to-cart w-full border border-gray-900 text-gray-900 
-                                text-xs py-2 rounded-md hover:bg-gray-900 hover:text-white transition"
-                            data-id="{{ $variety['id'] }}"
-                            data-nama="{{ $variety['name'] }}"
-                            data-harga="{{ $priceClean }}"
-                            data-gambar="{{ $variety['image_url'] ?? asset('resources/img/sample-product.jpg') }}"
-                            data-minimum="{{ $variety['min_buy'] ?? 1 }}"
-                        >
-                            Pesan Sekarang <i class="fa fa-cart-plus"></i>
-                        </button>
-                    </div>
-
+                    
                 </div>
 
 

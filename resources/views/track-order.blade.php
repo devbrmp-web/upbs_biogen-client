@@ -3,6 +3,18 @@
 @section('title', 'Cek Pesanan • UPBS BRMP Biogen')
 
 @section('content')
+@if(isset($order))
+    <script>
+        console.log("Order:", @json($order));
+    </script>
+@endif
+
+@if(isset($search))
+    <script>
+        console.log("Search Query:", @json($search));
+    </script>
+@endif
+
 
 <div class="max-w-xl mx-auto py-10 mt-16">
 
