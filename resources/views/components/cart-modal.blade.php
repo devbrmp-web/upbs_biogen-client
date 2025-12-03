@@ -26,7 +26,7 @@
       <div class="mt-4 flex items-center justify-between">
         <div class="text-sm text-gray-600">Total Item: <span id="cartTotalItem">0</span></div>
         <div class="flex items-center gap-3">
-          <a href="{{ route('checkout.form') }}">
+         
               <button id="cartCheckoutBtn"
                       class="bg-gray-900 text-white px-4 py-2 rounded-lg w-full">
                   Checkout

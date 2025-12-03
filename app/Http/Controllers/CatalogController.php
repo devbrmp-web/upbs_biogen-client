@@ -13,6 +13,7 @@ class CatalogController extends Controller
         $url = config('app.url_dev_admin');
         $filter = request()->query('commodity');
         $search = request()->query('search');
+        $seedClassFilter = request()->query('seed_class'); // BS, FS, SS, ES
 
         try {
             // 🔸 Cache VARIETAS 30 menit
@@ -20,6 +21,36 @@ class CatalogController extends Controller
                 $response = Http::timeout(5)->get($url . '/api/varieties');
                 return $response->json('data') ?? [];
             });
+
+            // 🔹 Filter SEED CLASS (Fetch varieties by Seed Class)
+            if ($activeSeedClass = request('seed_class')) {
+                // Ambil seed lots untuk seed class tertentu
+                $seedLots = Http::get(config('app.url_dev_admin')."/api/seed-classes/{$activeSeedClass}/seed-lots")->json('data', []);
+                    
+                    if (empty($seedLots)) {
+                         // Fallback logic: try to find class by code first, then fetch
+                         // Because API above might expect ID, but we have code 'BS'
+                         $seedClasses = Cache::remember('seed_classes_all', 3600, function () use ($url) {
+                            return Http::timeout(5)->get($url . '/api/seed-classes')->json('data') ?? [];
+                         });
+                         
+                         $classObj = collect($seedClasses)->firstWhere('code', $activeSeedClass);
+                         
+                         if ($classObj) {
+                             $seedLots = Http::get(config('app.url_dev_admin')."/api/seed-classes/{$classObj['id']}/seed-lots")->json('data', []);
+                         }
+                    }
+
+                    // Ekstrak variety_id unik
+                    $varietyIds = array_unique(array_column($seedLots, 'variety_id'));
+                
+                if (empty($varietyIds)) {
+                    $varieties = [];
+                } else {
+                    // Ambil varietas berdasarkan variety_id
+                    $varieties = Http::get(config('app.url_dev_admin').'/api/varieties', ['ids' => implode(',', $varietyIds)])->json('data', []);
+                }
+            }
 
             // 🔸 Cache KOMODITAS 1 jam
             $commodities = Cache::remember('commodities_all', 3600, function () use ($url) {
@@ -42,15 +73,29 @@ class CatalogController extends Controller
                 });
             }
 
+
+
             return view('Katalog', [
                 'varieties' => $varieties,
                 'commodities' => $commodities,
                 'activeCommodity' => $filter,
                 'searchKeyword' => $search,
+                'activeSeedClass' => $seedClassFilter,
             ]);
 
         } catch (ConnectionException $e) {
             return response()->view('errors.server-busy', [], 503);
+        }
+    }
+
+    public function getSeedLots($varietyId, $seedClassId)
+    {
+        $url = config('app.url_dev_admin');
+        try {
+            $response = Http::timeout(5)->get($url . "/api/varieties/{$varietyId}/seed-classes/{$seedClassId}/seed-lots");
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch seed lots'], 500);
         }
     }
 
@@ -144,7 +189,13 @@ class CatalogController extends Controller
         }
 
         $variety = $response->json('data');
-        return view('produk.detail', compact('variety'));
+
+        // Fetch Seed Classes untuk mapping ID (karena API variety detail tidak menyertakan seed_class_id)
+        $seedClasses = Cache::remember('seed_classes_all', 3600, function () use ($url) {
+            return Http::timeout(5)->get($url . '/api/seed-classes')->json('data') ?? [];
+        });
+
+        return view('produk.detail', compact('variety', 'seedClasses'));
     }
 
     public function homeindex()

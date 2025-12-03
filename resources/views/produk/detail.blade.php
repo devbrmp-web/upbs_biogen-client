@@ -2,128 +2,154 @@
 
 @section('content')
 
-<body class="bg-gray-100">
+<body class="bg-gray-50">
 
-    <div class="max-w-7xl mx-auto px-6 py-8 mt-18">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-18">
 
-        <!-- CARD GLASS -->
-        <div class="backdrop-blur-xl bg-white/40 border border-white/20 shadow-xl rounded-2xl p-8">
+        <!-- Breadcrumb -->
+        <nav class="flex mb-8 text-sm text-gray-500">
+            <a href="/" class="hover:text-gray-900">Beranda</a>
+            <span class="mx-2">/</span>
+            <a href="/katalog" class="hover:text-gray-900">Katalog</a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-900 font-medium">{{ $variety['name'] }}</span>
+        </nav>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+            <div class="grid grid-cols-1 lg:grid-cols-2">
+                
+                <!-- Image Section -->
+                <div class="p-8 bg-gray-50 flex items-center justify-center h-full min-h-[400px]">
+                    <img src="{{ $variety['image_url'] ?? '/img/placeholder.jpg' }}" 
+                         alt="{{ $variety['name'] }}" 
+                         class="max-h-[500px] w-full object-contain rounded-lg shadow-sm hover:scale-105 transition duration-300">
+                </div>
 
-                <!-- ============================= -->
-                <!--     LEFT: PRODUCT CONTENT    -->
-                <!-- ============================= -->
-                <div>
-
-                    <!-- Breadcrumb -->
-                    <div class="text-sm text-gray-600 mb-4">
-                        <a href="/katalog" class="hover:text-gray-800">Katalog</a> /
-                        <span class="text-gray-800">{{ $variety['commodity']['name'] }}</span>
-                    </div>
-
-                    <h1 class="text-3xl font-bold text-gray-900 mb-3">
-                        {{ $variety['name'] }}
-                    </h1>
-
-                    <!-- Harga -->
-                    <div class="flex items-center gap-2 mb-4">
-                        <span class="text-2xl font-semibold text-gray-900">
-                            {{ $variety['price_idr'] }}
-                        </span>
-
-                        <span class="ml-2 px-3 py-1 text-sm rounded-full
-                            {{ $variety['stock']['status'] === 'Available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                            {{ ucfirst($variety['stock']['status']) }}
-                        </span>
-                    </div>
-
-                    <p class="text-gray-700 leading-relaxed mb-4">
-                        {!! nl2br(e($variety['description'])) !!}
-                    </p>
-
-                    <!-- Total Stok -->
-                    <div class="flex items-center text-green-700 mb-6 font-semibold">
-                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path d="M5 13l4 4L19 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Total Stok: {{ $variety['stock']['total_stock_kg'] }} kg
-                    </div>
-
-                    <!-- ============================= -->
-                    <!--          STOCK TYPE          -->
-                    <!-- ============================= -->
+                <!-- Content Section -->
+                <div class="p-8 lg:p-12 flex flex-col">
+                    
                     <div class="mb-6">
-                        <div class="text-sm font-semibold text-gray-900 mb-2">
-                            Pilih Jenis Stok
+                        <span class="text-blue-600 font-semibold tracking-wide uppercase text-sm">
+                            {{ $variety['commodity']['name'] }}
+                        </span>
+                        <h1 class="text-4xl font-bold text-gray-900 mt-2 mb-2">{{ $variety['name'] }}</h1>
+                        
+                        <!-- Dynamic Price Display based on selection -->
+                        <div class="flex items-center gap-4">
+                            <p id="display-price" class="text-2xl font-semibold text-gray-900">{{ $variety['price_idr'] }} <span class="text-sm text-gray-500 font-normal">/ kg</span></p>
                         </div>
+                    </div>
 
-                        <div class="grid grid-cols-3 gap-4">
+                    <div class="prose prose-blue text-gray-600 mb-8 max-w-none">
+                        {!! nl2br(e($variety['description'])) !!}
+                    </div>
 
-                            @php
-                                $classLabels = [
-                                    'BS' => [
-                                        'name' => 'BS',
-                                        'desc' => 'Benih Sehat',
-                                    ],
-                                    'FS' => [
-                                        'name' => 'FS',
-                                        'desc' => 'Foundation Seed',
-                                    ],
-                                    'PLANT' => [
-                                        'name' => 'PLANT',
-                                        'desc' => 'Tanaman Hidup',
-                                    ],
+                    <!-- Seed Class Cards Section (New Design) -->
+                    <div class="mb-8" id="seed-selection-container">
+                        <h3 class="font-semibold text-gray-900 mb-4 text-lg">Pilih Kelas Benih & Stok</h3>
+                        
+                        @php
+                            $seedLots = collect($variety['seed_lots'] ?? []);
+                            $allSeedClasses = collect($seedClasses ?? []);
+                            
+                            // Filter lots yang memiliki data seed_class valid (code harus ada)
+                            $classes = $seedLots->filter(function($lot) {
+                                return !empty($lot['seed_class']) && isset($lot['seed_class']['code']);
+                            })->groupBy('seed_class.code')->map(function($lots, $code) use ($allSeedClasses) {
+                                $first = $lots->first();
+                                $seedClass = $first['seed_class'] ?? [];
+                                
+                                // Cari ID dari referensi seedClasses jika tidak ada di response variety
+                                $classRef = $allSeedClasses->firstWhere('code', $code);
+                                $realId = $classRef['id'] ?? ($seedClass['id'] ?? 0);
+
+                                return [
+                                    'id' => $realId,
+                                    'code' => $code,
+                                    'name' => $seedClass['name'] ?? ($classRef['name'] ?? $code),
+                                    'total_stock' => $lots->where('is_sellable', true)->sum('quantity'),
+                                    'min_order' => $code === 'BS' ? 5 : ($code === 'FS' ? 1 : 1),
+                                    'unit' => $first['unit'] ?? 'kg'
                                 ];
-                            @endphp
+                            })->filter(function($c) {
+                                return $c['id'] !== 0;
+                            });
+                        @endphp
 
-                            @foreach ($classLabels as $code => $info)
-                                @php
-                                    $qty = $variety['stock_by_class'][$code] ?? 0;
-                                @endphp
-
-                                @if ($qty > 0)
-                                    <label class="group border rounded-lg p-4 cursor-pointer hover:border-green-600 peer-checked:border-green-700 bg-white/50 backdrop-blur-sm">
-                                        <input type="radio" name="stockType" value="{{ $code }}" class="peer hidden">
-
-                                        <div class="font-semibold text-gray-900">{{ $info['name'] }}</div>
-                                        <div class="text-gray-600 text-sm">{{ $info['desc'] }}</div>
-
-                                        <div class="mt-2 text-green-700 font-semibold text-sm">
-                                            {{ $qty }} kg tersedia
+                        <div id="class-cards-container" class="space-y-4">
+                            @forelse($classes as $class)
+                                <div class="seed-class-card border rounded-xl p-5 relative group hover:border-blue-300 transition bg-white cursor-pointer" 
+                                     data-seed-class-id="{{ $class['id'] }}" 
+                                     data-seed-class-code="{{ $class['code'] }}"
+                                     data-minimum-limit="{{ $class['min_order'] }}"
+                                     onclick="selectClass('{{ $class['code'] }}')">
+                                     
+                                     <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="px-2 py-0.5 rounded text-xs font-bold border {{ $class['code'] == 'BS' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-purple-50 text-purple-700 border-purple-200' }}">{{ $class['code'] }}</span>
+                                                <h4 class="font-bold text-gray-900 text-lg">{{ $class['name'] }}</h4>
+                                            </div>
+                                            <p class="text-sm text-gray-500">
+                                                Total Stok: <span class="font-semibold text-gray-900">{{ $class['total_stock'] }} {{ $class['unit'] }}</span>
+                                            </p>
+                                            <p class="text-xs text-gray-400 mt-1">Min. Pembelian: {{ $class['min_order'] }} {{ $class['unit'] }}</p>
                                         </div>
-                                    </label>
-                                @endif
-                            @endforeach
-
+                                     </div>
+                        
+                                    <div class="quantity-controls hidden absolute right-5 bottom-5 bg-white shadow-lg border rounded-lg p-1 items-center gap-2 z-10" onclick="event.stopPropagation()"> 
+                                        <button type="button" class="decrease w-8 h-8 flex items-center justify-center bg-gray-100 rounded hover:bg-gray-200">-</button> 
+                                        <input type="number" class="quantity w-16 text-center border-gray-200 rounded text-sm" value="{{ $class['min_order'] }}" min="{{ $class['min_order'] }}" step="{{ $class['code'] == 'BS' ? 5 : 1 }}" oninput="handleQtyInput(this)"> 
+                                        <button type="button" class="increase w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded hover:bg-blue-700">+</button> 
+                                    </div> 
+                                    <p class="qty-error text-xs text-red-600 mt-1 hidden">Jumlah untuk Breeder Seed (BS) harus kelipatan 5 kg</p>
+                                </div>
+                            @empty
+                                <div class="p-6 bg-gray-50 rounded-xl text-center text-gray-500 italic border border-dashed border-gray-300">Stok belum tersedia untuk varietas ini.</div>
+                            @endforelse
                         </div>
+
+                        <p id="loading-error" class="text-red-500 text-sm mt-2 hidden">Gagal memuat data stok.</p>
                     </div>
 
-                    <!-- BUTTON -->
-                    <button
-                        class="w-full bg-green-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-green-700 transition">
-                        Tambah ke keranjang
-                    </button>
-
-                    <div class="flex justify-center mt-4 text-gray-600 text-sm">
-                        🔒 Bergaransi & Terverifikasi BRIN Biogen
+                    <!-- Hidden Inputs for Checkout/Cart -->
+                    <input type="hidden" id="selected-lot-id">
+                    <input type="hidden" id="selected-qty">
+                    
+                    <!-- Action Buttons (Initially Hidden or Disabled until selection) -->
+                    <div class="mt-auto grid grid-cols-2 gap-4 sticky bottom-0 bg-white py-4 border-t border-gray-100">
+                        <button id="btn-add-cart" onclick="addToCartAction(false)" disabled class="flex items-center justify-center gap-2 bg-white border-2 border-blue-600 text-blue-600 py-3.5 rounded-xl font-bold hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            + Keranjang
+                        </button>
+                        <button id="btn-buy-now" onclick="addToCartAction(true)" disabled class="bg-blue-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            Beli Sekarang
+                        </button>
                     </div>
+                    
+                    <!-- Helper text for selection -->
+                    <p id="selection-helper" class="text-center text-sm text-gray-500 mt-2">Silakan pilih kelas benih dan jumlah di atas.</p>
+
 
                 </div>
-
-                <!-- ============================= -->
-                <!--      RIGHT: PRODUCT IMAGE    -->
-                <!-- ============================= -->
-                <div class="flex justify-center">
-                    <img src="{{ $variety['image_url'] ?? asset('resources/img/sample-product.jpg') }}"
-                         class="rounded-xl w-full max-w-md shadow-lg object-cover">
-                </div>
-
             </div>
         </div>
-
     </div>
 
-</body>
+    <!-- Data for JS -->
+    <script>
+        window.varietyData = {
+            id: "{{ $variety['id'] }}",
+            slug: "{{ $variety['slug'] }}",
+            name: "{{ $variety['name'] }}",
+            image: "{{ $variety['image_url'] ?? '/img/placeholder.jpg' }}",
+            base_price: {{ $variety['price_cents'] / 100 }},
+            // Pass initial seed lots to extract classes
+            // Note: Admin API returns 'seed_lots' array. We use it to list classes.
+            seed_lots: @json($variety['seed_lots'] ?? [])
+        };
+    </script>
 
+    @vite(['resources/js/produk.js', 'resources/css/produk.css'])
+</body>
 @endsection
