@@ -22,13 +22,13 @@
       </a>
     </li>
     <li>
-      <a href="#"
+      <a href="{{ route('about') }}" 
          class="hover:text-indigo-600 transition">
          Tentang Kami
       </a>
     </li>
     <li>
-      <a href="#"
+      <a href="{{ route('cek-pesanan') }}"
          class="hover:text-indigo-600 transition">
          Cek Pesanan
       </a>
@@ -38,11 +38,12 @@
   <!-- 🌾 Ikon kanan -->
   <div class="flex items-center space-x-4">
     <!-- 🛒 Keranjang (FA Icon) -->
-    <div id="cartIcon" class="relative cursor-pointer" >
-      <i class="fa fa-shopping-cart text-gray-800 text-xl hover:text-indigo-600 transition"></i>
-      <span id="cartBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full px-[5px] py-[1px]">3</span>
-    </div>
-
+     <a href="{{ route('cart.show') }}">
+      <div id="cartIcon" class="relative cursor-pointer" >
+        <i class="fa fa-shopping-cart text-gray-800 text-xl hover:text-indigo-600 transition"></i>
+        <span id="cartBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full px-[5px] py-[1px]">3</span>
+      </div>
+    </a>
     <!-- 🍔 Menu mobile -->
     <button id="menuToggle" class="md:hidden focus:outline-none">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -54,7 +55,7 @@
 
   <!-- 📱 Dropdown Mobile -->
   <div id="mobileMenu"
-       class="hidden absolute top-full right-0 mt-3 w-56 bg-white/70 backdrop-blur-xl border border-white/30 shadow-xl rounded-2xl p-4 md:hidden">
+       class="hidden absolute top-full right-0 mt-3 w-56 bg-white/99 backdrop-blur-xl  rounded-2xl p-4 md:hidden">
     <ul class="space-y-3 text-gray-800 font-medium">
       <li>
         <a href="{{ route('home') }}" 
@@ -83,7 +84,7 @@
 
       <!-- 🛒 Keranjang di Mobile -->
       <li>
-        <a href="#" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-[#B4DEBD]/40 transition">
+        <a href="{{ route('cart.show') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-[#B4DEBD]/40 transition">
           <i class="fa fa-shopping-cart text-gray-800"></i>
           <span>Keranjang</span>
         </a>
@@ -92,33 +93,5 @@
   </div>
 </nav>
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const cartIcon = document.getElementById("cartIcon");
-    const cartModal = document.getElementById("cartModal");
-    const closeCartBtn = document.getElementById("closeCartBtn");
-
-    if (!cartIcon || !cartModal) {
-        console.warn("Cart modal elements not found.");
-        return;
-    }
-
-    // Open modal
-    cartIcon.addEventListener("click", () => {
-        cartModal.classList.remove("hidden");
-    });
-
-    // Close modal (X button)
-    if (closeCartBtn) {
-        closeCartBtn.addEventListener("click", () => {
-            cartModal.classList.add("hidden");
-        });
-    }
-
-    // Close if clicking the dark backdrop
-    cartModal.addEventListener("click", (e) => {
-        if (e.target === cartModal) {
-            cartModal.classList.add("hidden");
-        }
-    });
-});
+ 
 </script>
