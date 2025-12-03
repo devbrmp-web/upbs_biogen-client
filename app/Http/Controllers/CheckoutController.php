@@ -39,4 +39,22 @@ class CheckoutController extends Controller
             ], 500);
         }
     }
+
+    public function paymentFinish(Request $request)
+    {
+        $orderCode = $request->query('order_id') ?? $request->query('order_code');
+        return view('payment-success', [
+            'order_code' => $orderCode,
+        ]);
+    }
+
+    public function paymentError(Request $request)
+    {
+        $orderCode = $request->query('order_id') ?? $request->query('order_code');
+        $message = $request->query('message') ?? 'Pembayaran tidak berhasil atau dibatalkan.';
+        return view('payment-error', [
+            'order_code' => $orderCode,
+            'message' => $message,
+        ]);
+    }
 }

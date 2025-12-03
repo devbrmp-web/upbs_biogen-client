@@ -8,8 +8,6 @@
 
         <!-- Breadcrumb -->
         <nav class="flex mb-8 text-sm text-gray-500">
-            <a href="/" class="hover:text-gray-900">Beranda</a>
-            <span class="mx-2">/</span>
             <a href="/katalog" class="hover:text-gray-900">Katalog</a>
             <span class="mx-2">/</span>
             <span class="text-gray-900 font-medium">{{ $variety['name'] }}</span>

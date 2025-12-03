@@ -22,6 +22,8 @@ Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
 // Checkout Routes
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
+Route::get('/payment/finish', [CheckoutController::class, 'paymentFinish'])->name('payment.finish');
+Route::get('/payment/error', [CheckoutController::class, 'paymentError'])->name('payment.error');
 
 // AJAX
 Route::get('/products/seed-lots/{variety}/{seed_class}', [CatalogController::class, 'getSeedLots']);
@@ -37,7 +39,6 @@ Route::view('/tentang-kami', 'tentang-kami')->name('about');
 use App\Http\Controllers\TrackOrderController;
 
 Route::get('/cek-pesanan', [TrackOrderController::class, 'index'])->name('cek-pesanan');
-
 
 
 
