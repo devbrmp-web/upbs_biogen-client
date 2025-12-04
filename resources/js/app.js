@@ -59,6 +59,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Dev toggle: hide katalog query string after navigation based on env
+document.addEventListener('DOMContentLoaded', () => {
+  const hide = (import.meta.env.VITE_HIDE_FILTER_QUERY === 'true') || (import.meta.env.VITE_HIDE_FILTER_QUERY === '1');
+  if (hide && window.location.pathname === '/katalog' && window.location.search) {
+    history.replaceState(null, '', '/katalog');
+  }
+
+  // Lightweight loading state on seed class change (no heavy DOM updates)
+  document.addEventListener('change', (e) => {
+    if (e.target && e.target.id === 'seed-class-select') {
+      document.body.classList.add('cursor-wait');
+      setTimeout(() => document.body.classList.remove('cursor-wait'), 1500);
+    }
+  });
+});
 //navbar
 document.addEventListener("DOMContentLoaded", () => {
   const menuToggle = document.getElementById("menuToggle");
@@ -78,4 +93,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-

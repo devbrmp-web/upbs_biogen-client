@@ -38,6 +38,7 @@
                     @php 
                         $slug = strtolower($commodity['slug']);
                         $isActive = $activeCommodity === $slug;
+                        $seedParam = $activeSeedClass ? "&seed_class={$activeSeedClass}" : '';
                     @endphp
 
                     @if ($isActive)
@@ -46,7 +47,7 @@
                             {{ $commodity['name'] }}
                         </span>
                     @else
-                        <a href="/katalog?commodity={{ $slug }}"
+                        <a href="/katalog?commodity={{ $slug }}{{ $seedParam }}"
                            class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md whitespace-nowrap
                            bg-[#B4DEBD]/40 text-gray-800 hover:bg-[#B4DEBD]/60 transition">
                             {{ $commodity['name'] }}
@@ -58,16 +59,21 @@
         </div>
 
         <!-- =======================
-             FILTER SEED CLASS (Dropdown + JS)
+             FILTER SEED CLASS (Dropdown + SSR)
         ======================== -->
         <div class="mb-10">
             <h2 class="text-lg font-semibold text-gray-800 mb-2">Filter Kelas Benih</h2>
             <div class="flex items-center gap-3">
-                <select id="seed-class-select" class="border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 bg-white">
+                <select id="seed-class-select"
+                    onchange="window.location.href = '/katalog?seed_class=' + this.value + '&commodity={{ $activeCommodity ?? '' }}';"
+                    class="block w-full max-w-xs rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5 bg-white border">
                     <option value="">Semua Kelas</option>
+                    @foreach ($seedClasses as $sc)
+                        <option value="{{ $sc['code'] }}" {{ ($activeSeedClass == $sc['code']) ? 'selected' : '' }}>
+                            {{ $sc['name'] }} ({{ $sc['code'] }})
+                        </option>
+                    @endforeach
                 </select>
-                <span id="seed-class-loading" class="hidden text-sm text-gray-500">Memuat...</span>
-                <span id="seed-class-error" class="hidden text-sm text-red-600">Gagal memuat data</span>
             </div>
         </div>
 
@@ -89,9 +95,11 @@
                     <a href="{{ route('product.detail', $variety['slug']) }}" class="block">
 
                         <div class="h-40 bg-gray-100 overflow-hidden">
-                            <img src="{{ 'http:127.0.0.1:8000//storage/' . $variety['image_url'] }}"
+                            <img src="{{ ($variety['image_url'] ?? null) ?: (config('app.url_dev_admin').'/storage/'.($variety['image_path'] ?? '')) }}"
                                 alt="{{ $variety['name'] }}"
-                                class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                                class="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                                loading="lazy"
+                                onerror="this.src='https://placehold.co/400x300?text=No+Image'">
                         </div>
 
 
@@ -124,113 +132,11 @@
 
             @empty
                 <p class="col-span-4 text-center text-gray-600">
-                    Tidak ada data varietas tersedia.
+                    Tidak ada data varietas tersedia untuk filter ini.
                 </p>
             @endforelse
         </div>
 
     </div>
 </section>
-<script>
-    // Populate seed class options
-    const selectEl = document.getElementById('seed-class-select');
-    const loadingEl = document.getElementById('seed-class-loading');
-    const errorEl = document.getElementById('seed-class-error');
-    const gridEl = document.getElementById('catalog-grid');
-
-    const ADMIN_BASE = "{{ config('app.url_dev_admin') }}";
-
-    async function fetchSeedClasses() {
-        loadingEl.classList.remove('hidden');
-        try {
-            const res = await window.axios.get(`${ADMIN_BASE}/api/seed-classes`);
-            const classes = res.data.data || [];
-            classes.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c.id;
-                opt.textContent = `${c.name} (${c.code})`;
-                selectEl.appendChild(opt);
-            });
-        } catch (e) {
-            errorEl.classList.remove('hidden');
-        } finally {
-            loadingEl.classList.add('hidden');
-        }
-    }
-
-    async function fetchVarietiesByClass(classId) {
-        loadingEl.classList.remove('hidden');
-        try {
-            if (!classId) {
-                // Reload initial SSR varieties via current URL
-                window.location.href = '/katalog';
-                return;
-            }
-            const res = await window.axios.get(`${ADMIN_BASE}/api/seed-classes/${classId}/varieties`);
-            const list = res.data.data || [];
-            // Render grid
-            gridEl.innerHTML = list.map(v => {
-                const priceClean = v.price_cents/100;
-                const img = v.image_url || '/img/placeholder.jpg';
-                return `
-                <div class="backdrop-blur-md bg-white/30 border border-white/20 shadow-md hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden">
-                    <a href="/produk/${v.slug}" class="block">
-                        <div class="h-40 bg-gray-100 overflow-hidden">
-                            <img src="${img}" alt="${v.name}" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="p-3">
-                            <h3 class="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">${v.name}</h3>
-                            <p class="text-xs text-gray-500 mt-1">${(v.commodity && v.commodity.name) || '-'}</p>
-                            <p class="text-sm text-green-700 font-semibold mt-2">Rp ${new Intl.NumberFormat('id-ID').format(priceClean)}</p>
-                            <p class="text-xs text-gray-500 mt-1">Minimum: ${(v.minimum_limit||0)} kg</p>
-                        </div>
-                    </a>
-                </div>`;
-            }).join('');
-        } catch (e) {
-            errorEl.textContent = 'Gagal memuat varietas untuk kelas ini';
-            errorEl.classList.remove('hidden');
-        } finally {
-            loadingEl.classList.add('hidden');
-        }
-    }
-
-    selectEl.addEventListener('change', (e) => {
-        const id = e.target.value;
-        if (!id) {
-            // fetch all varieties
-            loadingEl.classList.remove('hidden');
-            window.axios.get(`${ADMIN_BASE}/api/varieties`).then(res => {
-                const list = res.data.data || [];
-                gridEl.innerHTML = list.map(v => {
-                    const priceClean = v.price_cents/100;
-                    const img = v.image_url || '/img/placeholder.jpg';
-                    return `
-                    <div class=\"backdrop-blur-md bg-white/30 border border-white/20 shadow-md hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden\">
-                        <a href=\"/produk/${v.slug}\" class=\"block\">
-                            <div class=\"h-40 bg-gray-100 overflow-hidden\">
-                                <img src=\"${img}\" alt=\"${v.name}\" class=\"w-full h-full object-cover hover:scale-110 transition-transform duration-500\">
-                            </div>
-                            <div class=\"p-3\">
-                                <h3 class=\"font-semibold text-gray-900 text-sm leading-tight line-clamp-2\">${v.name}</h3>
-                                <p class=\"text-xs text-gray-500 mt-1\">${(v.commodity && v.commodity.name) || '-'}<\/p>
-                                <p class=\"text-sm text-green-700 font-semibold mt-2\">Rp ${new Intl.NumberFormat('id-ID').format(priceClean)}<\/p>
-                                <p class=\"text-xs text-gray-500 mt-1\">Minimum: ${(v.minimum_limit||0)} kg<\/p>
-                            </div>
-                        </a>
-                    </div>`;
-                }).join('');
-            }).catch(() => {
-                errorEl.classList.remove('hidden');
-            }).finally(() => {
-                loadingEl.classList.add('hidden');
-            });
-        } else {
-            fetchVarietiesByClass(id);
-        }
-    });
-
-    // Init
-    fetchSeedClasses();
-</script>
 @endsection

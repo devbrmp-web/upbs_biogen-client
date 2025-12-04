@@ -18,9 +18,11 @@
                 
                 <!-- Image Section -->
                 <div class="p-8 bg-gray-50 flex items-center justify-center h-full min-h-[400px]">
-                    <img src="{{ $variety['image_url'] ?? '/img/placeholder.jpg' }}" 
+                    <img src="{{ ($variety['image_url'] ?? null) ?: (config('app.url_dev_admin').'/storage/'.($variety['image_path'] ?? '')) }}" 
                          alt="{{ $variety['name'] }}" 
-                         class="max-h-[500px] w-full object-contain rounded-lg shadow-sm hover:scale-105 transition duration-300">
+                         class="max-h-[500px] w-full object-contain rounded-lg shadow-sm hover:scale-105 transition duration-300"
+                         loading="lazy"
+                         onerror="this.src='https://placehold.co/600x400?text=No+Image'">
                 </div>
 
                 <!-- Content Section -->
@@ -140,7 +142,7 @@
             id: "{{ $variety['id'] }}",
             slug: "{{ $variety['slug'] }}",
             name: "{{ $variety['name'] }}",
-            image: "{{ $variety['image_url'] ?? '/img/placeholder.jpg' }}",
+            image: "{{ ($variety['image_url'] ?? null) ?: (config('app.url_dev_admin').'/storage/'.($variety['image_path'] ?? '')) }}",
             base_price: {{ $variety['price_cents'] / 100 }},
             // Pass initial seed lots to extract classes
             // Note: Admin API returns 'seed_lots' array. We use it to list classes.
