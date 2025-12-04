@@ -19,7 +19,7 @@
       <ul class="space-y-2 text-sm">
         <li><a href="/" class="hover:text-gray-900 transition">Beranda</a></li>
         <li><a href="/katalog" class="hover:text-gray-900 transition">Katalog</a></li>
-        <li><a href="/tentang" class="hover:text-gray-900 transition">Tentang Kami</a></li>
+        <li><a href="/tentang-kami" class="hover:text-gray-900 transition">Tentang Kami</a></li>
         <li><a href="/kontak" class="hover:text-gray-900 transition">Kontak</a></li>
       </ul>
     </div>

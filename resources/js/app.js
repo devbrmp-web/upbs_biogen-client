@@ -4,6 +4,17 @@ import './cart.js';
 import './render-cart.js';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
+// Animasi halaman: jalankan sekali per navigasi
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    document.body.classList.remove('page-animated');
+    // Beri waktu animasi halaman selesai (>=0.5s)
+    setTimeout(() => {
+      document.body.classList.add('page-animated');
+    }, 700);
+  } catch (e) {}
+});
+
 
 // Category Scroll
 

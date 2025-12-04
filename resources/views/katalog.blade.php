@@ -2,6 +2,14 @@
 @section('title', 'Katalog Produk - UPBS BRMP Biogen')
 
 @section('content')
+@if(request()->has('commodity') || request()->has('seed_class') || request()->has('search'))
+<script>document.body.classList.add('page-animated');</script>
+@else
+<script>
+try{var r=document.referrer?new URL(document.referrer):null;if(r&&r.pathname==='/katalog'){document.body.classList.add('page-animated');}}catch(e){}
+</script>
+@endif
+<div class="page-animate-rise">
 <section class="pt-28 pb-16 bg-gray-50 min-h-screen">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
 
@@ -139,4 +147,5 @@
 
     </div>
 </section>
+</div>
 @endsection

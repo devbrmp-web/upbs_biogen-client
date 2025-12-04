@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Pembayaran Berhasil')
 @section('content')
-<section class="pt-28 pb-16 bg-gray-50 min-h-screen">
+<section class="pt-28 pb-16 bg-gray-50 min-h-screen page-animate-zoomIn">
   <div class="max-w-3xl mx-auto px-6">
     <div class="bg-white shadow-lg rounded-xl p-6">
       <h1 class="text-2xl font-bold text-green-700">Pembayaran Berhasil</h1>

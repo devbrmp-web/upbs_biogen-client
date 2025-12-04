@@ -2,9 +2,8 @@
 @section('title', 'Tentang Kami - UPBS BRMP Biogen')
 
 @section('content')
-<div class="bg-white">
-    <!-- Hero Section -->
-    <div class="relative bg-green-900 py-24 sm:py-32">
+<div class="bg-white page-animate-fadeIn">
+    <div class="relative bg-gradient-to-b from-green-900 to-green-950 py-24 sm:py-32">
         <div class="absolute inset-0 overflow-hidden">
             <img 
                 src="https://images.unsplash.com/photo-1595839085880-a972b916303d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
@@ -14,17 +13,34 @@
             <div class="absolute inset-0 bg-gradient-to-b from-green-900/80 to-green-950"></div>
         </div>
         <div class="relative mx-auto max-w-7xl px-6 lg:px-8 text-center">
-            <h1 class="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
+            <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
                 Tentang Kami
             </h1>
             <p class="mt-6 text-lg leading-8 text-green-100 max-w-2xl mx-auto">
                 Mengenal lebih dekat Balai Besar Pengujian Standar Instrumen Bioteknologi dan Sumber Daya Genetik Pertanian.
             </p>
+            <div class="mt-8 flex justify-center gap-4">
+                <a href="/katalog" class="px-5 py-3 rounded-lg bg-white text-green-900 font-semibold shadow hover:bg-green-50">Lihat Katalog</a>
+                <a href="/cek-pesanan" class="px-5 py-3 rounded-lg bg-green-700 text-white font-semibold shadow hover:bg-green-600">Cek Pesanan</a>
+            </div>
         </div>
     </div>
 
-    <!-- Profile Section -->
     <div class="mx-auto max-w-7xl px-6 lg:px-8 py-16 sm:py-24">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div class="bg-white border border-gray-100 rounded-xl shadow p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Visi</h3>
+                <p class="text-gray-700">Menjadi pusat unggulan bioteknologi dan benih sumber untuk pertanian berkelanjutan Indonesia.</p>
+            </div>
+            <div class="bg-white border border-gray-100 rounded-xl shadow p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Misi</h3>
+                <p class="text-gray-700">Menyediakan benih sumber berkualitas, riset bioteknologi, dan pelestarian sumber daya genetik.</p>
+            </div>
+            <div class="bg-white border border-gray-100 rounded-xl shadow p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Nilai</h3>
+                <p class="text-gray-700">Integritas, inovasi, kolaborasi, dan pelayanan masyarakat.</p>
+            </div>
+        </div>
         <div class="mx-auto max-w-3xl text-base leading-7 text-gray-700">
             <p class="mb-8 text-xl font-semibold leading-8 text-gray-900">
                 Balai Besar Pengujian Standar Instrumen Bioteknologi dan Sumber Daya Genetik Pertanian (BRMP) Biogen adalah unit kerja di bawah Badan Penelitian dan Pengembangan Pertanian.

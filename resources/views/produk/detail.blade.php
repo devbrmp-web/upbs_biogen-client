@@ -2,6 +2,8 @@
 
 @section('content')
 
+<div class="page-animate-zoomIn">
+
 <body class="bg-gray-50">
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-18">
@@ -151,5 +153,6 @@
     </script>
 
     @vite(['resources/js/produk.js', 'resources/css/produk.css'])
+</div>
 </body>
 @endsection

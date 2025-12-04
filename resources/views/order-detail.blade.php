@@ -3,76 +3,110 @@
 @section('title', 'Detail Pesanan • UPBS BRMP Biogen')
 
 @section('content')
-<div class="max-w-4xl mx-auto py-10 mt-16">
-  <h1 class="text-2xl font-bold mb-6">Detail Pesanan</h1>
-
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-10 mt-16 page-animate-rise">
   @if(empty($data))
     <div class="bg-white p-6 rounded-xl shadow">
       <p class="text-red-600">Pesanan tidak ditemukan.</p>
     </div>
   @else
-    <div class="bg-white p-6 rounded-xl shadow space-y-4">
-      <div class="flex justify-between items-start">
+    @php
+      $statusMap = [
+        'completed' => 'bg-green-100 text-green-700',
+        'paid' => 'bg-green-100 text-green-700',
+        'awaiting_payment' => 'bg-yellow-100 text-yellow-700',
+        'processing' => 'bg-blue-100 text-blue-700',
+        'delivery_coordination' => 'bg-blue-100 text-blue-700',
+        'shipped' => 'bg-blue-100 text-blue-700',
+        'pickup_ready' => 'bg-blue-100 text-blue-700'
+      ];
+      $statusClass = $statusMap[$data->status ?? ''] ?? 'bg-gray-100 text-gray-800';
+    @endphp
+
+    <div class="bg-white p-6 rounded-xl shadow">
+      <div class="flex flex-wrap justify-between items-start gap-4">
         <div>
-          <p class="text-sm text-gray-600">Kode Pesanan</p>
-          <p class="text-lg font-semibold">{{ $data->order_code ?? '-' }}</p>
-          <p class="text-sm text-gray-600 mt-2">Status</p>
-          <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">{{ $data->status ?? '-' }}</span>
+          <h2 class="text-xl font-semibold">Order #{{ $data->order_code ?? '-' }}</h2>
+          <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm {{ $statusClass }}">{{ $data->status ?? '-' }}</div>
         </div>
-        <div class="text-right">
-          <p class="text-sm text-gray-600">Kurir</p>
-          <p class="font-medium">{{ $data->courier_name ?? '-' }}</p>
-          <p class="text-sm text-gray-600 mt-2">Tracking Number</p>
-          <p class="font-medium">{{ $data->tracking_number ?? '-' }}</p>
+        <div class="flex gap-2">
+          <a href="/cek-pesanan" class="px-3 py-2 rounded-lg border border-gray-200">Kembali</a>
+          @if(($data->status ?? '') === 'awaiting_payment')
+            <a href="/checkout" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Bayar</a>
+          @endif
+          <button id="btn-print" class="px-3 py-2 rounded-lg bg-gray-900 text-white" data-order-code="{{ $data->order_code }}" data-order-status="{{ $data->status }}">Cetak</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+      <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="font-semibold mb-4">Data Pelanggan</h3>
+        <div class="space-y-2 text-sm">
+          <div><span class="text-gray-600">Nama</span><div class="font-medium">{{ $data->customer_name ?? '-' }}</div></div>
+          <div><span class="text-gray-600">Nomor HP</span><div>{{ $data->customer_phone ?? '-' }}</div></div>
+          <div><span class="text-gray-600">Alamat</span><div>{{ $data->customer_address ?? '-' }}</div></div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <h3 class="font-semibold mb-2">Data Pelanggan</h3>
-          <p>{{ $data->customer_name ?? '-' }}</p>
-          <p>{{ $data->customer_phone ?? '-' }}</p>
-          <p class="text-sm text-gray-600">{{ $data->customer_address ?? '-' }}</p>
-        </div>
-        <div>
-          <h3 class="font-semibold mb-2">Ringkasan Pembayaran</h3>
-          <p>Subtotal: Rp {{ number_format((int)($data->subtotal ?? 0), 0, ',', '.') }}</p>
-          <p>Total: Rp {{ number_format((int)($data->total_amount ?? 0), 0, ',', '.') }}</p>
+      <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="font-semibold mb-4">Ringkasan Pembayaran</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-gray-600">Subtotal</span><span class="font-medium">Rp {{ number_format((int)($data->subtotal ?? 0), 0, ',', '.') }}</span></div>
+          <div class="flex justify-between"><span class="text-gray-600">Total</span><span class="font-semibold text-blue-700">Rp {{ number_format((int)($data->total_amount ?? 0), 0, ',', '.') }}</span></div>
+          <div class="mt-2 text-xs text-gray-500">Status pembayaran mengikuti pembaruan dari gateway.</div>
         </div>
       </div>
 
-      <div>
-        <h3 class="font-semibold mb-2">Item Pesanan</h3>
-        <div class="divide-y">
-          @foreach(($data->items ?? []) as $it)
-            <div class="py-2 flex justify-between">
-              <div>
-                <p class="font-medium">{{ $it['name'] ?? ('Variety #' . ($it['variety_id'] ?? '?')) }}</p>
-                <p class="text-sm text-gray-600">Kelas: {{ $it['seed_class_code'] ?? '-' }} • Lot: {{ $it['seed_lot_id'] ?? '-' }}</p>
-              </div>
-              <div class="text-right">
-                <p>{{ $it['quantity'] ?? 0 }} kg</p>
-                <p class="text-sm text-gray-600">Rp {{ number_format((int)($it['unit_price'] ?? 0), 0, ',', '.') }} / kg</p>
-              </div>
-            </div>
-          @endforeach
+      <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="font-semibold mb-4">Informasi Pengiriman</h3>
+        <div class="space-y-2 text-sm">
+          <div><span class="text-gray-600">Kurir</span><div class="font-medium">{{ $data->courier_name ?? '-' }}</div></div>
+          <div><span class="text-gray-600">Tracking</span><div class="font-mono">{{ $data->tracking_number ?? '-' }}</div></div>
+          <div><span class="text-gray-600">Status</span><div>{{ $data->shipment_status ?? '-' }}</div></div>
         </div>
       </div>
+    </div>
 
-      <div class="flex items-center gap-3 mt-4">
-        @if(($data->status ?? '') === 'awaiting_payment')
-          <a href="/checkout" class="px-4 py-2 rounded-lg bg-blue-600 text-white">Bayar</a>
-        @endif
-        @if(!empty($data->invoice_url))
-          <a href="{{ $data->invoice_url }}" class="px-4 py-2 rounded-lg bg-green-600 text-white" target="_blank">Unduh Invoice</a>
-        @endif
-        <button onclick="window.print()" class="px-4 py-2 rounded-lg bg-gray-200">Cetak</button>
+    <div class="bg-white rounded-xl shadow p-6 mt-6">
+      <h3 class="font-semibold mb-4">Item Pesanan</h3>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="text-left px-4 py-2">Produk</th>
+              <th class="text-center px-4 py-2">Jumlah</th>
+              <th class="text-right px-4 py-2">Harga Satuan</th>
+              <th class="text-right px-4 py-2">Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            @foreach(($data->items ?? []) as $it)
+              <tr>
+                <td class="px-4 py-2">
+                  <div class="font-medium">{{ $it['name'] ?? ($it['variety_name'] ?? ($it['product_name'] ?? ('Variety #' . ($it['variety_id'] ?? '?')))) }}</div>
+                  <div class="text-xs text-gray-600">Kelas {{ $it['seed_class_code'] ?? '-' }} • Lot {{ $it['seed_lot_id'] ?? '-' }}</div>
+                </td>
+                <td class="text-center px-4 py-2">{{ $it['quantity'] ?? 0 }} kg</td>
+                <td class="text-right px-4 py-2">Rp {{ number_format((int)($it['unit_price'] ?? 0), 0, ',', '.') }}</td>
+                <td class="text-right px-4 py-2 font-semibold">Rp {{ number_format(((int)($it['unit_price'] ?? 0)) * ((int)($it['quantity'] ?? 0)), 0, ',', '.') }}</td>
+              </tr>
+            @endforeach
+          </tbody>
+          <tfoot class="bg-gray-50">
+            <tr>
+              <th colspan="3" class="text-right px-4 py-2">Subtotal</th>
+              <th class="text-right px-4 py-2">Rp {{ number_format((int)($data->subtotal ?? 0), 0, ',', '.') }}</th>
+            </tr>
+            <tr>
+              <th colspan="3" class="text-right px-4 py-2">Total</th>
+              <th class="text-right px-4 py-2">Rp {{ number_format((int)($data->total_amount ?? 0), 0, ',', '.') }}</th>
+            </tr>
+          </tfoot>
+        </table>
       </div>
     </div>
   @endif
-
-  <div class="mt-6">
-    <a href="/cek-pesanan" class="text-blue-600">← Kembali ke Cek Pesanan</a>
-  </div>
 </div>
+
+@vite('resources/js/print.js')
 @endsection

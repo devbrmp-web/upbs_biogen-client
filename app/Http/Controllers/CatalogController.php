@@ -218,7 +218,17 @@ class CatalogController extends Controller
                 return $response->json('data') ?? [];
             });
 
-            return view('home', compact('commodities'));
+            $allVarieties = Cache::remember('varieties_all', 1800, function () use ($url) {
+                $response = Http::timeout(5)->get($url . '/api/varieties');
+                return $response->json('data') ?? [];
+            });
+
+            $varieties = array_slice($allVarieties, 0, 8);
+
+            return view('home', [
+                'commodities' => $commodities,
+                'varieties' => $varieties,
+            ]);
 
         } catch (ConnectionException $e) {
             return response()->view('errors.server-busy', [], 503);

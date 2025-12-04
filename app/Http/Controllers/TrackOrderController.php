@@ -63,4 +63,42 @@ class TrackOrderController extends Controller
             abort(404);
         }
     }
+
+    public function print(string $orderCode)
+    {
+        $baseUrl = config('app.url_dev_admin');
+        $order = null;
+        $payment = null;
+        try {
+            $statusRes = Http::timeout(8)->get("$baseUrl/api/orders/" . urlencode($orderCode) . "/payment/status");
+            if ($statusRes->successful()) {
+                $payload = $statusRes->json();
+                $order = $payload['order'] ?? null;
+                $payment = $order['payment'] ?? null;
+            }
+            if (!$order) {
+                $orderRes = Http::timeout(8)->get("$baseUrl/api/orders/" . urlencode($orderCode));
+                if (!$orderRes->successful()) {
+                    abort(404);
+                }
+                $order = $orderRes->json('data');
+            }
+
+            $isPaid = false;
+            $status = $order['status'] ?? null;
+            if (in_array($status, ['paid', 'completed', 'picked_up', 'shipped'])) {
+                $isPaid = true;
+            }
+            if (!$isPaid && $payment) {
+                $isPaid = ($payment['status'] ?? null) === 'paid';
+            }
+
+            if ($isPaid) {
+                return view('receipt', ['order' => $order, 'payment' => $payment]);
+            }
+            return view('invoice', ['order' => $order]);
+        } catch (\Throwable $e) {
+            abort(404);
+        }
+    }
 }
