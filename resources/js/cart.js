@@ -205,7 +205,7 @@ window.cart = {
             return `
                 <div class="cart-item p-6 flex gap-6 items-start border-b border-gray-100 last:border-0" data-item-key="${this.itemKey(item)}">
                     <div class="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-                        <img src="${item.image || '/img/placeholder.jpg'}" class="w-full h-full object-cover">
+                        <img src="${item.image || '/img/placeholder.jpg'}" class="w-full h-full object-cover" loading="lazy">
                     </div>
                     <div class="flex-1">
                         <div class="flex justify-between mb-2">
@@ -273,7 +273,7 @@ window.cart = {
             return `
               <div class="flex items-start gap-4 border-b pb-3 last:border-0" data-item-key="${this.itemKey(item)}">
                 <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-                  <img src="${item.image || '/img/placeholder.jpg'}" class="w-full h-full object-cover">
+                  <img src="${item.image || '/img/placeholder.jpg'}" class="w-full h-full object-cover" loading="lazy">
                 </div>
                 <div class="flex-1">
                   <div class="flex justify-between">

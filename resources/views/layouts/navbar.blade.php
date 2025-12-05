@@ -70,13 +70,13 @@
         </a>
       </li>
       <li>
-        <a href="#"
+        <a href="{{ route('about') }}"
            class="block px-3 py-2 rounded-lg hover:bg-[#B4DEBD]/40 transition">
            Tentang Kami
         </a>
       </li>
       <li>
-        <a href="#"
+        <a href="{{ route('cek-pesanan') }}"
            class="block px-3 py-2 rounded-lg hover:bg-[#B4DEBD]/40 transition">
            Cek Pesanan
         </a>
