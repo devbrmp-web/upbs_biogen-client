@@ -200,9 +200,9 @@ window.processCheckout = async function() {
 
     // Reset UI
     errorEl.classList.add('hidden');
-    
+
     // 1. Validate Form
-    saveReceiverData(); // Save changes before validation/checkout
+    saveReceiverData();
     const name = document.getElementById('form-name').value.trim();
     const phone = document.getElementById('form-phone').value.trim();
     const address = document.getElementById('form-address').value.trim();
@@ -226,13 +226,8 @@ window.processCheckout = async function() {
 
     try {
         const cartItems = getCart();
-        
-        // Hapus Validasi Stok di Client-Side
-        // await validateStock(cartItems);
-
         const shippingMethod = document.querySelector('input[name="shipping_method"]:checked').value;
 
-        // 3. Send Payload (Format Sesuai Backend)
         const payload = {
             items: cartItems.map(item => ({
                 variety_id: item.variety_id,
@@ -248,20 +243,50 @@ window.processCheckout = async function() {
             terms_accepted: document.getElementById('terms-checkbox')?.checked === true
         };
 
-        // Validasi Terms sebelum request
         if (!payload.terms_accepted) {
             throw new Error('Anda harus menyetujui Syarat dan Ketentuan.');
         }
 
+        // 🔥 REQUEST KE BACKEND (HARUS BALIKAN snap_token)
         const response = await window.axios.post('/orders/checkout', payload);
-        const paymentUrl = response?.data?.payment_url || response?.data?.data?.payment_url;
-        const orderCode = response?.data?.order_code || response?.data?.data?.order_code;
-        if (paymentUrl) {
-            localStorage.removeItem(CART_KEY);
-            window.location.href = paymentUrl;
-        } else {
-            window.location.href = '/checkout/error';
+        console.log(response)
+
+        // Ambil data dari backend
+        const snapToken =
+            response?.data?.snap_token ||
+            response?.data?.token ||
+            response?.data?.data?.snap_token;
+
+        const orderCode =
+            response?.data?.order_code ||
+            response?.data?.data?.order_code;
+
+        if (!snapToken) {
+            throw new Error('Gagal mendapatkan token pembayaran.');
         }
+
+        // 🔥 JALANKAN SNAP POPUP
+        window.snap.pay(snapToken, {
+            onSuccess: function(result) {
+                console.log(result);
+                localStorage.removeItem(CART_KEY);
+                window.location.href = '/orders/success?order=' + orderCode;
+            },
+            onPending: function(result) {
+                console.log(result);
+                window.location.href = '/orders/pending?order=' + orderCode;
+            },
+            onError: function(result) {
+                console.log(result);
+                window.location.href = '/orders/error';
+            },
+            onClose: function() {
+                alert("Anda menutup pop-up pembayaran.");
+                btn.disabled = false;
+                btn.classList.remove('hidden');
+                loadingEl.classList.add('hidden');
+            }
+        });
 
     } catch (error) {
         console.error(error);
@@ -269,19 +294,19 @@ window.processCheckout = async function() {
         if (error.response && error.response.data) {
             const d = error.response.data;
             if (d.message) msg = d.message;
-            // Handle specific stock errors if backend returns them
         } else if (error.message) {
             msg = error.message;
         }
-        
+
         errorEl.textContent = msg;
         errorEl.classList.remove('hidden');
-        
+
         btn.disabled = false;
         btn.classList.remove('hidden');
         loadingEl.classList.add('hidden');
     }
 };
+
 
 // Validasi stok sesuai hierarki 
 async function validateStock(items) { 

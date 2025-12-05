@@ -3,6 +3,9 @@
 @section('title', 'Checkout • UPBS BRMP Biogen')
 
 @section('content')
+ <script type="text/javascript"
+      src="https://app.sandbox.midtrans.com/snap/snap.js"
+      data-client-key="Mid-client-0HeQjinK75x-iLk0"></script>
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-18 page-animate-slideUp">
     <h1 class="text-3xl font-bold text-gray-900 mb-8">Checkout Pesanan</h1>
 
