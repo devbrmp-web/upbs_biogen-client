@@ -11,28 +11,40 @@ class CatalogController extends Controller
     public function catalogindex()
     {
         $url = config('app.url_dev_admin');
+
         $search = request()->query('search');
-        // Support both id and slug/code params for commodity & seed class
-        $commodityId = request()->query('commodity_id');
-        $commoditySlug = request()->query('commodity');
-        $seedClassIdParam = request()->query('seed_class_id');
+
+        // Support ID & slug
+        $commodityId        = request()->query('commodity_id');
+        $commoditySlugParam = request()->query('commodity');
+
+        // Support ID & code
+        $seedClassIdParam   = request()->query('seed_class_id');
         $seedClassCodeParam = request()->query('seed_class');
 
         try {
-            // Cache Seed Classes for dropdown
+
+            /* =====================================================
+            | MASTER DATA (CACHED)
+            ===================================================== */
             $seedClasses = Cache::remember('seed_classes_all', 3600, function () use ($url) {
-                return Http::timeout(5)->get($url . '/api/seed-classes')->json('data') ?? [];
+                return Http::timeout(5)
+                    ->get($url . '/api/seed-classes')
+                    ->json('data') ?? [];
             });
 
-            // Cache Commodities for mapping id->slug and dropdown
             $commodities = Cache::remember('commodities_all', 3600, function () use ($url) {
-                $response = Http::timeout(5)->get($url . '/api/commodities');
-                return $response->json('data') ?? [];
+                return Http::timeout(5)
+                    ->get($url . '/api/commodities')
+                    ->json('data') ?? [];
             });
 
-            // Resolve active seed class ID from either code or id
-            $activeSeedClassId = null;
+            /* =====================================================
+            | RESOLVE ACTIVE SEED CLASS
+            ===================================================== */
+            $activeSeedClassId   = null;
             $activeSeedClassCode = null;
+
             if (!empty($seedClassIdParam) && is_numeric($seedClassIdParam)) {
                 $activeSeedClassId = (int) $seedClassIdParam;
                 $match = collect($seedClasses)->firstWhere('id', $activeSeedClassId);
@@ -40,43 +52,53 @@ class CatalogController extends Controller
             } elseif (!empty($seedClassCodeParam)) {
                 $match = collect($seedClasses)->firstWhere('code', $seedClassCodeParam);
                 if ($match) {
-                    $activeSeedClassId = $match['id'];
+                    $activeSeedClassId   = $match['id'];
                     $activeSeedClassCode = $match['code'];
                 }
             }
 
-            // Resolve active commodity slug from either id or slug
+            /* =====================================================
+            | RESOLVE ACTIVE COMMODITY
+            ===================================================== */
             $activeCommoditySlug = null;
+
             if (!empty($commodityId) && is_numeric($commodityId)) {
                 $c = collect($commodities)->firstWhere('id', (int) $commodityId);
                 $activeCommoditySlug = strtolower($c['slug'] ?? '');
-            } elseif (!empty($commoditySlug)) {
-                $activeCommoditySlug = strtolower($commoditySlug);
+            } elseif (!empty($commoditySlugParam)) {
+                $activeCommoditySlug = strtolower($commoditySlugParam);
             }
 
-            // Build varieties list considering seed class first (narrower dataset)
+            /* =====================================================
+            | FETCH VARIETIES (PRIORITIZE SEED CLASS)
+            ===================================================== */
             if (!empty($activeSeedClassId)) {
-                $cacheKey = 'varieties_by_class_' . $activeSeedClassId;
+                $cacheKey = "varieties_by_seed_class_{$activeSeedClassId}";
                 $varieties = Cache::remember($cacheKey, 600, function () use ($url, $activeSeedClassId) {
-                    $resp = Http::timeout(5)->get($url . "/api/seed-classes/{$activeSeedClassId}/varieties");
-                    return $resp->json('data') ?? [];
+                    return Http::timeout(5)
+                        ->get($url . "/api/seed-classes/{$activeSeedClassId}/varieties")
+                        ->json('data') ?? [];
                 });
             } else {
-                // Fallback: all active varieties
                 $varieties = Cache::remember('varieties_all', 1800, function () use ($url) {
-                    $response = Http::timeout(5)->get($url . '/api/varieties');
-                    return $response->json('data') ?? [];
+                    return Http::timeout(5)
+                        ->get($url . '/api/varieties')
+                        ->json('data') ?? [];
                 });
             }
 
-            // Apply commodity filter if requested
+            /* =====================================================
+            | FILTER BY COMMODITY
+            ===================================================== */
             if (!empty($activeCommoditySlug)) {
                 $varieties = array_values(array_filter($varieties, function ($v) use ($activeCommoditySlug) {
                     return strtolower($v['commodity']['slug'] ?? '') === $activeCommoditySlug;
                 }));
             }
 
-            // Apply search keyword if present
+            /* =====================================================
+            | SEARCH FILTER
+            ===================================================== */
             if (!empty($search)) {
                 $varieties = array_values(array_filter($varieties, function ($v) use ($search) {
                     return stripos($v['name'], $search) !== false
@@ -84,19 +106,60 @@ class CatalogController extends Controller
                 }));
             }
 
-            return view('Katalog', [
-                'varieties' => $varieties,
-                'commodities' => $commodities,
-                'seedClasses' => $seedClasses,
-                'activeCommodity' => $activeCommoditySlug,
-                'searchKeyword' => $search,
-                'activeSeedClass' => $activeSeedClassCode,
+            /* =====================================================
+            | BUILD STOCK BY SEED CLASS (CORE FIX)
+            ===================================================== */
+            $varieties = array_map(function ($v) {
+
+                $stockByClass = [];
+
+                foreach (($v['seed_lots'] ?? []) as $lot) {
+
+                    if (
+                        !($lot['is_sellable'] ?? false) ||
+                        ($lot['quantity'] ?? 0) <= 0 ||
+                        empty($lot['seed_class']['code'])
+                    ) {
+                        continue;
+                    }
+
+                    $code = $lot['seed_class']['code'];
+                    $name = $lot['seed_class']['name'] ?? $code;
+
+                    if (!isset($stockByClass[$code])) {
+                        $stockByClass[$code] = [
+                            'name'  => $name,
+                            'stock' => 0,
+                        ];
+                    }
+
+                    $stockByClass[$code]['stock'] += (int) $lot['quantity'];
+                }
+
+                // inject ke varietas
+                $v['stock_by_class'] = $stockByClass;
+
+                return $v;
+
+            }, $varieties);
+
+            /* =====================================================
+            | RETURN VIEW
+            ===================================================== */
+            return view('katalog', [
+                'varieties'        => $varieties,
+                'commodities'      => $commodities,
+                'seedClasses'      => $seedClasses,
+                'activeCommodity'  => $activeCommoditySlug,
+                'activeSeedClass'  => $activeSeedClassCode,
+                'searchKeyword'    => $search,
             ]);
 
         } catch (ConnectionException $e) {
             return response()->view('errors.server-busy', [], 503);
         }
     }
+
 
     public function getSeedLots($varietyId, $seedClassId)
     {

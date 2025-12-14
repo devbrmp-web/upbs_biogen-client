@@ -2,7 +2,7 @@
  * Checkout Logic V2
  * Handles Seed Hierarchy, Stock Validation per Lot, and Midtrans
  */
-
+let lastOrderData = [];
 const CART_KEY = 'upbs_cart_v2';
 
 const COOKIE_NAME = 'upbs_receiver_data';
@@ -250,7 +250,7 @@ window.processCheckout = async function() {
         // 🔥 REQUEST KE BACKEND (HARUS BALIKAN snap_token)
         const response = await window.axios.post('/orders/checkout', payload);
         console.log(response)
-
+        lastOrderData = response?.data?.data?.order; // 💡 simpan di sini
         // Ambil data dari backend
         const snapToken =
             response?.data?.snap_token ||
@@ -269,9 +269,39 @@ window.processCheckout = async function() {
         window.snap.pay(snapToken, {
             onSuccess: function(result) {
                 console.log(result);
+                if (lastOrderData) {
+
+                    // Simpan ke localStorage
+                    try {
+                        let arr = JSON.parse(localStorage.getItem("lastOrderData") || "[]");
+                        if (!Array.isArray(arr)) arr = [];
+
+                        arr.push(lastOrderData);
+                        localStorage.setItem("lastOrderData", JSON.stringify(arr));
+                    } catch (e) {
+                        console.error("failed to store local history", e);
+                    }
+
+                    // Simpan juga ke cookie (untuk fallback)
+                    const d = new Date();
+                    d.setTime(d.getTime() + (7 * 24 * 60 * 60 * 1000));
+                    const expires = "expires=" + d.toUTCString();
+                    document.cookie =
+                        "upbs_last_order=" +
+                        JSON.stringify(lastOrderData) +
+                        ";" +
+                        expires +
+                        ";path=/;SameSite=Lax";
+                }
+
+
                 localStorage.removeItem(CART_KEY);
-                window.location.href = '/orders/success?order=' + orderCode;
+                window.location.href = '/cek-pesanan?search=' + (lastOrderData?.order_code || '') + '&method=order_code';
             },
+            //     localStorage.removeItem(CART_KEY);
+            //     // window.location.href = '/orders/success?order=' + orderCode;
+            //     window.location.href = '/cart';
+            // },
             onPending: function(result) {
                 console.log(result);
                 window.location.href = '/orders/pending?order=' + orderCode;
