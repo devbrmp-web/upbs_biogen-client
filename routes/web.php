@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\OrderMailController;
 
 use App\Http\Controllers\CheckoutController;
 
@@ -41,4 +42,10 @@ use App\Http\Controllers\TrackOrderController;
 Route::get('/cek-pesanan', [TrackOrderController::class, 'index'])->name('cek-pesanan');
 Route::get('/pesanan/{order_code}', [TrackOrderController::class, 'detail'])->name('order.detail');
 Route::get('/pesanan/{order_code}/cetak', [TrackOrderController::class, 'print'])->name('order.print');
+
+
+// Email resi sender
+Route::post('/orders/send-invoice', [OrderMailController::class, 'sendInvoice']);
+
+
 
