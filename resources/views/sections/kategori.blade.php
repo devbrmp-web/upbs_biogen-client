@@ -20,15 +20,17 @@
                     
                     <div class="h-24 w-24 mx-auto mb-3 flex items-center justify-center overflow-hidden rounded-full bg-gray-50">
                         @php
-                            $cimg = $commodity['image_url'] ?? null;
+                            $imagePath = $commodity['image'] ?? null;
+                            $imageUrl = $imagePath
+                                ? rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($imagePath, '/')
+                                : 'https://placehold.co/400x300?text=No+Image';
                         @endphp
-                        <img src="{{ $cimg ?? 'https://placehold.co/96x96?text=' . urlencode($commodity['name']) }}"
+                        <img src="{{ $imageUrl}}"
                              alt="{{ $commodity['name'] }}"
                              class="object-contain w-full h-full group-hover:scale-110 transition-transform duration-300"
                              loading="lazy"
                              onerror="this.src='https://placehold.co/96x96?text=No+Img'">
                     </div>
-
                     <!-- Nama Komoditas -->
                     <p class="font-semibold text-gray-800">{{ $commodity['name'] }}</p>
 
