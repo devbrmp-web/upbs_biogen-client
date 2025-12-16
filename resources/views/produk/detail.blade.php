@@ -15,33 +15,44 @@
             <span class="text-gray-900 font-medium">{{ $variety['name'] }}</span>
         </nav>
 
-        <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
-            <div class="grid grid-cols-1 lg:grid-cols-2">
-                
-                <!-- Image Section -->
-                <div class="p-8 bg-gray-50 flex items-center justify-center h-full min-h-[400px]">
-                    <img src="{{ ($variety['image_url'] ?? null) ?: (config('app.url_dev_admin').'/storage/'.($variety['image_path'] ?? '')) }}" 
-                         alt="{{ $variety['name'] }}" 
-                         class="max-h-[500px] w-full object-contain rounded-lg shadow-sm hover:scale-105 transition duration-300"
-                         loading="lazy"
-                         onerror="this.src='https://placehold.co/600x400?text=No+Image'">
-                </div>
+        <div class="bg-white shadow-md rounded-xl overflow-hidden border border-gray-100">
+    <div class="grid grid-cols-1 lg:grid-cols-2">
 
-                <!-- Content Section -->
-                <div class="p-8 lg:p-12 flex flex-col">
-                    
-                    <div class="mb-6">
-                        <span class="text-blue-600 font-semibold tracking-wide uppercase text-sm">
-                            {{ $variety['commodity']['name'] }}
-                        </span>
-                        <h1 class="text-4xl font-bold text-gray-900 mt-2 mb-2">{{ $variety['name'] }}</h1>
-                        
-                        <!-- Dynamic Price Display based on selection -->
-                        <div class="flex items-center gap-4">
-                            <p id="display-price" class="text-2xl font-semibold text-gray-900">{{ $variety['price_idr'] }} <span class="text-sm text-gray-500 font-normal">/ kg</span></p>
-                        </div>
-                    </div>
+        @php
+            $imagePath = $variety['image_path'] ?? null;
+            $imageUrl = $imagePath
+                ? rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($imagePath, '/')
+                : 'https://placehold.co/400x300?text=No+Image';
+        @endphp
 
+        <!-- Image Section -->
+        <div class="bg-gray-50 flex items-center justify-center aspect-[1/1]">
+            <img
+                src="{{ $imageUrl }}"
+                alt="{{ $variety['name'] }}"
+                class="w-full h-full object-contain rounded-md"
+                loading="lazy"
+            >
+        </div>
+
+        <!-- Content Section -->
+        <div class="p-6 flex flex-col justify-center">
+
+            <div class="mb-4">
+                <span class="text-xs text-blue-600 font-medium uppercase tracking-wide">
+                    {{ $variety['commodity']['name'] }}
+                </span>
+
+                <h1 class="text-xl font-semibold text-gray-900 mt-1">
+                    {{ $variety['name'] }}
+                </h1>
+
+                <!-- Price -->
+                <div class="mt-2">
+                    <p id="display-price" class="text-lg font-semibold text-gray-900">
+                        {{ $variety['price_idr'] }}
+                        <span class="text-sm text-gray-500 font-normal">/ kg</span>
+                    </p>
                     <div class="prose prose-blue text-gray-600 mb-8 max-w-none">
                         {!! nl2br(e($variety['description'])) !!}
                     </div>
@@ -77,7 +88,7 @@
                                 return $c['id'] !== 0;
                             });
                         @endphp
-
+ 
                         <div id="class-cards-container" class="space-y-4">
                             @forelse($classes as $class)
                                 <div class="seed-class-card border rounded-xl p-5 relative group hover:border-blue-300 transition bg-white cursor-pointer" 

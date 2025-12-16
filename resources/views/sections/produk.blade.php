@@ -8,9 +8,12 @@
                 <div class="group relative bg-white border border-gray-100 rounded-2xl shadow hover:shadow-lg overflow-hidden transition-all">
                     <div class="h-44 bg-gray-50 flex items-center justify-center overflow-hidden">
                         @php
-                            $img = ($v['image_url'] ?? null) ?: (config('app.url_dev_admin').'/storage/'.($v['image_path'] ?? ''));
+                            $imagePath = $v['image_path'] ?? null;
+                            $imageUrl = $imagePath
+                                ? rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($imagePath, '/')
+                                : 'https://placehold.co/400x300?text=No+Image';
                         @endphp
-                        <img src="{{ $img }}" alt="{{ $v['name'] }}" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.src='https://placehold.co/400x300?text=No+Image'">
+                        <img src="{{ $imageUrl }}" alt="{{ $v['name'] }}" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.src='https://placehold.co/400x300?text=No+Image'">
                     </div>
                     <div class="p-4">
                         <div class="flex items-center justify-between mb-2">

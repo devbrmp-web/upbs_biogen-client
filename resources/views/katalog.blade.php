@@ -86,64 +86,111 @@ try{var r=document.referrer?new URL(document.referrer):null;if(r&&r.pathname==='
         </div>
 
         <!-- =======================
-             GRID PRODUK
-        ======================== -->
-        <div id="catalog-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            @forelse ($varieties as $variety)
+        GRID PRODUK
+======================== -->
+<div id="catalog-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
 
-                @php
-                    $priceRaw = $variety['price_idr'] ?? 0;
-                    $priceClean = (float) preg_replace('/[^\d.]/', '', $priceRaw);
-                @endphp
+    @forelse ($varieties as $variety)
 
-               <div class="backdrop-blur-md bg-white/30 border border-white/20 shadow-md 
-                hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden">
+        @php
+            // =========================
+            // PRICE
+            // =========================
+            $priceRaw = $variety['price_idr'] ?? 0;
+            $priceClean = (float) preg_replace('/[^\d.]/', '', $priceRaw);
 
-                    <!-- BAGIAN YANG KLIKABLE -->
-                    <a href="{{ route('product.detail', $variety['slug']) }}" class="block">
+            // =========================
+            // IMAGE
+            // =========================
+            $imagePath = $variety['image_path'] ?? null;
+            $imageUrl = $imagePath
+                ? rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($imagePath, '/')
+                : 'https://placehold.co/400x300?text=No+Image';
 
-                        <div class="h-40 bg-gray-100 overflow-hidden">
-                            <img src="{{ ($variety['image_url'] ?? null) ?: (config('app.url_dev_admin').'/storage/'.($variety['image_path'] ?? '')) }}"
-                                alt="{{ $variety['name'] }}"
-                                class="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-                                loading="lazy"
-                                onerror="this.src='https://placehold.co/400x300?text=No+Image'">
-                        </div>
+            // =========================
+            // STOCK BY SEED CLASS
+            // =========================
+            $seedLots = collect($variety['seed_lots'] ?? []);
 
+            $stockByClass = $seedLots
+                ->filter(function ($lot) {
+                    return ($lot['is_sellable'] ?? false)
+                        && !empty($lot['seed_class']['code'])
+                        && ($lot['quantity'] ?? 0) > 0;
+                })
+                ->groupBy(fn ($lot) => $lot['seed_class']['code'])
+                ->map(fn ($lots) => $lots->sum('quantity'));
+        @endphp
 
+        <div
+            class="backdrop-blur-md bg-white/30 border border-white/20 shadow-md
+                   hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden"
+            data-seed-classes="{{ implode(',', $stockByClass->keys()->toArray()) }}"
+        >
 
-                        <!-- Konten produk -->
-                        <div class="p-3">
-                            <h3 class="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
-                                {{ $variety['name'] }}
-                            </h3>
+            <!-- AREA KLIK -->
+            <a href="{{ route('product.detail', $variety['slug']) }}" class="block">
 
-                            <p class="text-xs text-gray-500 mt-1">
-                                {{ $variety['commodity']['name'] ?? '-' }}
-                            </p>
-
-                            <p class="text-sm text-green-700 font-semibold mt-2">
-                                Rp {{ number_format($priceClean, 0, ',', '.') }}
-                            </p>
-
-                            <p class="text-xs text-gray-500 mt-1">
-                                Minimum: {{ $variety['minimum_limit'] ?? 0 }} kg
-                            </p>
-                        </div>
-
-                    </a>
-
-                    <!-- TOMBOL PESAN – DI LUAR <a> -->
-                    
+                <!-- IMAGE -->
+                <div class="h-40 bg-gray-100 overflow-hidden">
+                    <img
+                        src="{{ $imageUrl }}"
+                        alt="{{ $variety['name'] }}"
+                        class="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                        loading="lazy"
+                        onerror="this.src='https://placehold.co/400x300?text=No+Image'"
+                    >
                 </div>
 
+                <!-- CONTENT -->
+                <div class="p-3">
 
-            @empty
-                <p class="col-span-4 text-center text-gray-600">
-                    Tidak ada data varietas tersedia untuk filter ini.
-                </p>
-            @endforelse
+                    <!-- NAME -->
+                    <h3 class="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
+                        {{ $variety['name'] }}
+                    </h3>
+
+                    <!-- COMMODITY -->
+                    <p class="text-xs text-gray-500 mt-1">
+                        {{ $variety['commodity']['name'] ?? '-' }}
+                    </p>
+
+                    <!-- PRICE -->
+                    <p class="text-sm text-green-700 font-semibold mt-2">
+                        Rp {{ number_format($priceClean, 0, ',', '.') }}
+                    </p>
+
+                    <!-- MIN ORDER -->
+                    <p class="text-xs text-gray-500 mt-1">
+                        Minimum: {{ $variety['minimum_limit'] ?? 0 }} kg
+                    </p>
+
+                    <!-- STOCK BY SEED CLASS -->
+                    @if ($stockByClass->isNotEmpty())
+                        <p class="text-xs text-gray-600 mt-2 flex flex-wrap items-center">
+                            @foreach ($stockByClass as $code => $qty)
+                                <span>
+                                    <span class="font-semibold">{{ $code }}</span>: {{ $qty }}
+                                </span>
+
+                                @if (!$loop->last)
+                                    <span class="mx-1 text-gray-400">|</span>
+                                @endif
+                            @endforeach
+                        </p>
+                    @endif
+
+                </div>
+            </a>
         </div>
+
+    @empty
+        <p class="col-span-4 text-center text-gray-600">
+            Tidak ada data varietas tersedia.
+        </p>
+    @endforelse
+
+</div>
 
     </div>
 </section>
