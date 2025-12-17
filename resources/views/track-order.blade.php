@@ -202,7 +202,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 : 'bg-blue-100 text-blue-700';
 
             card.innerHTML = `
-                <button class="absolute top-2 right-2 text-red-500 remove-history"
+                <button class="absolute top-4 right-4
+                                text-red-600 font-extrabold text-xl
+                                hover:scale-110 transition
+                                remove-history"
                         data-index="${originalIndex}">✕</button>
 
                 <p class="text-sm text-gray-600">Kode Pesanan</p>
@@ -228,5 +231,62 @@ document.addEventListener("DOMContentLoaded", function () {
     renderHistory();
 });
 </script>
+{{-- ================================================================= --}}
+{{--               SCRIPT HANDLE DELETE HISTORY                        --}}
+{{-- ================================================================= --}}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+    const historySection = document.getElementById("history-section");
+    const historyList = document.getElementById("history-list");
+    const clearBtn = document.getElementById("clear-history");
+
+    const formCol = document.getElementById("form-col");
+    const resultCol = document.getElementById("result-col");
+
+    function getData() {
+        return JSON.parse(localStorage.getItem("lastOrderData") || "[]");
+    }
+
+    function setData(data) {
+        localStorage.setItem("lastOrderData", JSON.stringify(data));
+    }
+
+    function refreshLayout(data) {
+        if (data.length === 0) {
+            historySection.classList.add("hidden");
+            formCol.classList.remove("lg:col-span-1");
+            formCol.classList.add("lg:col-span-3");
+            resultCol.classList.add("hidden");
+        }
+    }
+
+    /* ===================== HAPUS SATU ===================== */
+    historyList.addEventListener("click", function (e) {
+        if (!e.target.classList.contains("remove-history")) return;
+
+        const index = e.target.dataset.index;
+        if (index === undefined) return;
+
+        let data = getData();
+        data.splice(index, 1);
+        setData(data);
+
+        e.target.closest(".bg-white").remove();
+        refreshLayout(data);
+    });
+
+    /* ===================== HAPUS SEMUA ===================== */
+    clearBtn.addEventListener("click", function () {
+        if (!confirm("Hapus semua riwayat pesanan?")) return;
+
+        localStorage.removeItem("lastOrderData");
+        historyList.innerHTML = "";
+
+        refreshLayout([]);
+    });
+
+});
+</script>
+4
 @endsection

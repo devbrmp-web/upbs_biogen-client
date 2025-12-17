@@ -80,18 +80,36 @@
             </tr>
           </thead>
           <tbody class="divide-y">
-            @foreach(($data->items ?? []) as $it)
-              <tr>
-                <td class="px-4 py-2">
-                  <div class="font-medium">{{ $it['name'] ?? ($it['variety_name'] ?? ($it['product_name'] ?? ('Variety #' . ($it['variety_id'] ?? '?')))) }}</div>
-                  <div class="text-xs text-gray-600">Kelas {{ $it['seed_class_code'] ?? '-' }} • Lot {{ $it['seed_lot_id'] ?? '-' }}</div>
-                </td>
-                <td class="text-center px-4 py-2">{{ $it['quantity'] ?? 0 }} kg</td>
-                <td class="text-right px-4 py-2">Rp {{ number_format((int)($it['unit_price'] ?? 0), 0, ',', '.') }}</td>
-                <td class="text-right px-4 py-2 font-semibold">Rp {{ number_format(((int)($it['unit_price'] ?? 0)) * ((int)($it['quantity'] ?? 0)), 0, ',', '.') }}</td>
-              </tr>
-            @endforeach
+          @foreach(($data->items ?? []) as $it)
+          <tr>
+            <td class="px-4 py-2">
+              <div class="font-medium">
+                {{ $it['resolved_variety_name'] ?? 'Varietas Tidak Diketahui' }}
+              </div>
+              <div class="text-xs text-gray-600">
+                Kelas {{ $it['seed_class_code'] ?? '-' }}
+                • Lot {{ $it['seed_lot_id'] ?? '-' }}
+              </div>
+            </td>
+
+            <td class="text-center px-4 py-2">
+              {{ (int)($it['quantity'] ?? 0) }} kg
+            </td>
+
+            <td class="text-right px-4 py-2">
+              Rp {{ number_format((int)($it['unit_price'] ?? 0), 0, ',', '.') }}
+            </td>
+
+            <td class="text-right px-4 py-2 font-semibold">
+              Rp {{ number_format(
+                ((int)($it['unit_price'] ?? 0)) * ((int)($it['quantity'] ?? 0)),
+                0, ',', '.'
+              ) }}
+            </td>
+          </tr>
+          @endforeach
           </tbody>
+
           <tfoot class="bg-gray-50">
             <tr>
               <th colspan="3" class="text-right px-4 py-2">Subtotal</th>

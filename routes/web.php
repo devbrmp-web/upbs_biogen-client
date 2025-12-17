@@ -42,6 +42,12 @@ use App\Http\Controllers\TrackOrderController;
 Route::get('/cek-pesanan', [TrackOrderController::class, 'index'])->name('cek-pesanan');
 Route::get('/pesanan/{order_code}', [TrackOrderController::class, 'detail'])->name('order.detail');
 Route::get('/pesanan/{order_code}/cetak', [TrackOrderController::class, 'print'])->name('order.print');
+Route::get('/tutorial', function () {
+    return view('tutorial-buy');
+})->name('tutorial');
+Route::get('/home', function () {
+    return view('beranda-statis');
+})->name('home');
 
 
 // Email resi sender
