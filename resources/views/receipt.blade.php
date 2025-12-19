@@ -71,19 +71,30 @@
         </tr>
       </thead>
       <tbody>
-        @foreach(($order['items'] ?? []) as $it)
-          <tr>
-            <td>{{ $it['name'] ?? ($it['variety_name'] ?? ($it['product_name'] ?? ('Variety #' . ($it['variety_id'] ?? '?')))) }}</td>
-            <td class="qty">{{ (int)($it['quantity'] ?? 0) }}</td>
-            <td class="price">Rp {{ number_format((int)($it['unit_price'] ?? 0), 0, ',', '.') }}</td>
-            <td class="amount">Rp {{ number_format(((int)($it['unit_price'] ?? 0))*((int)($it['quantity'] ?? 0)), 0, ',', '.') }}</td>
-          </tr>
-        @endforeach
-        <tr class="total-row">
-          <td colspan="3" style="text-align:right">Total</td>
-          <td class="amount">Rp {{ number_format((int)($order['total_amount'] ?? 0), 0, ',', '.') }}</td>
-        </tr>
-      </tbody>
+@foreach(($order['items'] ?? []) as $it)
+<tr>
+    <td>{{ $it['resolved_variety_name'] }}</td>
+    <td class="qty">{{ (int)($it['quantity'] ?? 0) }}</td>
+    <td class="price">
+        Rp {{ number_format((int)($it['unit_price'] ?? 0), 0, ',', '.') }}
+    </td>
+    <td class="amount">
+        Rp {{ number_format(
+            ((int)($it['unit_price'] ?? 0)) * ((int)($it['quantity'] ?? 0)),
+            0, ',', '.'
+        ) }}
+    </td>
+</tr>
+@endforeach
+
+<tr class="total-row">
+    <td colspan="3" style="text-align:right">Total</td>
+    <td class="amount">
+        Rp {{ number_format((int)($order['total_amount'] ?? 0), 0, ',', '.') }}
+    </td>
+</tr>
+</tbody>
+
     </table>
 
     <div class="foot">

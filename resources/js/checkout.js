@@ -267,36 +267,11 @@ window.processCheckout = async function() {
 
         // 🔥 JALANKAN SNAP POPUP
         window.snap.pay(snapToken, {
-            onSuccess: async function(result) {
+            onSuccess: function(result) {
                 console.log(result);
-
-                const email = document.getElementById('form-email')?.value?.trim();
-
                 if (lastOrderData) {
 
-                    // ==============================
-                    // 🔥 KIRIM EMAIL INVOICE (BARU)
-                    // ==============================
-                    if (email) {
-                        try {
-                            await window.axios.post('/orders/send-invoice', {
-                                email: email,
-                                order: {
-                                    order_code: lastOrderData.order_code,
-                                    status: lastOrderData.status,
-                                    total_amount: lastOrderData.total_amount,
-                                    items: lastOrderData.items
-                                }
-                            });
-                        } catch (e) {
-                            console.error('Gagal mengirim invoice email', e);
-                            // ❗ sengaja tidak throw → tidak ganggu UX
-                        }
-                    }
-
-                    // ==============================
-                    // SIMPAN KE LOCAL STORAGE
-                    // ==============================
+                    // Simpan ke localStorage
                     try {
                         let arr = JSON.parse(localStorage.getItem("lastOrderData") || "[]");
                         if (!Array.isArray(arr)) arr = [];
@@ -307,9 +282,7 @@ window.processCheckout = async function() {
                         console.error("failed to store local history", e);
                     }
 
-                    // ==============================
-                    // SIMPAN KE COOKIE (FALLBACK)
-                    // ==============================
+                    // Simpan juga ke cookie (untuk fallback)
                     const d = new Date();
                     d.setTime(d.getTime() + (7 * 24 * 60 * 60 * 1000));
                     const expires = "expires=" + d.toUTCString();
@@ -321,11 +294,9 @@ window.processCheckout = async function() {
                         ";path=/;SameSite=Lax";
                 }
 
+
                 localStorage.removeItem(CART_KEY);
-                window.location.href =
-                    '/cek-pesanan?search=' +
-                    (lastOrderData?.order_code || '') +
-                    '&method=order_code';
+                window.location.href = '/cek-pesanan?search=' + (lastOrderData?.order_code || '') + '&method=order_code';
             },
             //     localStorage.removeItem(CART_KEY);
             //     // window.location.href = '/orders/success?order=' + orderCode;
