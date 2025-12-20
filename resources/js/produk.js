@@ -14,7 +14,7 @@ function initInteraction() {
             e.stopPropagation();
             const input = btn.parentElement.querySelector('.quantity');
             const code = btn.closest('.seed-class-card')?.dataset.seedClassCode;
-            const step = code === 'BS' ? 5 : 1;
+            const step = code === 'FS' ? 5 : 1;
             const current = parseInt(input.value) || 0;
             input.value = current + step;
             updateSelection(btn.closest('.seed-class-card'));
@@ -26,7 +26,7 @@ function initInteraction() {
             e.stopPropagation();
             const input = btn.parentElement.querySelector('.quantity');
             const code = btn.closest('.seed-class-card')?.dataset.seedClassCode;
-            const step = code === 'BS' ? 5 : 1;
+            const step = code === 'FS' ? 5 : 1;
             const current = parseInt(input.value) || 0;
             const min = parseInt(input.min) || 1;
             if (current > min) {
@@ -147,7 +147,7 @@ window.handleQtyInput = function(el) {
 
 function validateQtyInput(input, code) {
     let val = parseInt(input.value) || 0;
-    if (code === 'BS') {
+    if (code === 'FS') {
         const ok = val % 5 === 0 && val >= 5;
         const errEl = input.closest('.seed-class-card')?.querySelector('.qty-error');
         if (!ok) {
