@@ -41,7 +41,7 @@ window.cart = {
                 if (key) {
                     const item = this.data.items.find(i => this.itemKey(i) === key);
                     if (item) {
-                        const step = item.seed_class_code === 'BS' ? 5 : 1;
+                        const step = item.seed_class_code === 'FS' ? 5 : 1;
                         if (item.quantity <= step) {
                             if (confirm('Yakin mau menghapus dari keranjang?')) {
                                 this.removeItem(key);
@@ -67,12 +67,12 @@ window.cart = {
                 const item = this.data.items.find(i => this.itemKey(i) === key);
                 if (!item) return;
                 let val = parseInt(target.value) || 0;
-                const step = item.seed_class_code === 'BS' ? 5 : 1;
-                let valid = item.seed_class_code === 'BS' ? (val % 5 === 0 && val >= 5) : (val >= 1);
+                const step = item.seed_class_code === 'FS' ? 5 : 1;
+                let valid = item.seed_class_code === 'FS' ? (val % 5 === 0 && val >= 5) : (val >= 1);
                 const msgEl = target.closest('.cart-item')?.querySelector('.error-msg');
                 if (!valid) {
-                    if (item.seed_class_code === 'BS') {
-                        if (msgEl) { msgEl.textContent = 'Jumlah untuk Breeder Seed (BS) harus kelipatan 5 kg'; msgEl.classList.remove('hidden'); }
+                    if (item.seed_class_code === 'FS') {
+                        if (msgEl) { msgEl.textContent = 'Jumlah untuk Foundation Seed (FS) harus kelipatan 5 kg'; msgEl.classList.remove('hidden'); }
                         val = Math.max(5, val - (val % 5));
                     } else {
                         if (msgEl) { msgEl.textContent = 'Jumlah minimal 1'; msgEl.classList.remove('hidden'); }
@@ -139,9 +139,9 @@ window.cart = {
     updateQty(itemKey, delta) {
         const item = this.data.items.find(i => this.itemKey(i) === itemKey);
         if (!item) return;
-        const step = item.seed_class_code === 'BS' ? 5 : 1;
+        const step = item.seed_class_code === 'FS' ? 5 : 1;
         let newQty = item.quantity + (delta * step);
-        if (item.seed_class_code === 'BS') {
+        if (item.seed_class_code === 'FS') {
             if (newQty < step) newQty = step;
             newQty = newQty - (newQty % step);
         } else {
@@ -232,7 +232,7 @@ window.cart = {
                             <div class="flex flex-col items-end gap-2">
                                 <div class="flex items-center bg-white rounded-md border border-gray-200">
                                     <button class="btn-dec px-3 py-1 text-gray-600 hover:bg-gray-50 border-r border-gray-200">-</button>
-                                    <input type="number" class="qty-input w-16 text-center text-sm font-medium text-gray-900 border-0 focus:ring-0 p-1" value="${item.quantity}" min="${item.seed_class_code === 'BS' ? 5 : 1}" step="${item.seed_class_code === 'BS' ? 5 : 1}">
+                                    <input type="number" class="qty-input w-16 text-center text-sm font-medium text-gray-900 border-0 focus:ring-0 p-1" value="${item.quantity}" min="${item.seed_class_code === 'FS' ? 5 : 1}" step="${item.seed_class_code === 'FS' ? 5 : 1}">
                                     <button class="btn-inc px-3 py-1 text-gray-600 hover:bg-gray-50 border-l border-gray-200">+</button>
                                 </div>
                                 <div class="error-msg text-xs text-red-600 mt-1 hidden"></div>
