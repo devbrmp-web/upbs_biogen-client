@@ -115,9 +115,8 @@
                                     'paid' => 'bg-green-100 text-green-700',
                                     'awaiting_payment' => 'bg-yellow-100 text-yellow-700',
                                     'processing' => 'bg-blue-100 text-blue-700',
-                                    'delivery_coordination' => 'bg-blue-100 text-blue-700',
-                                    'shipped' => 'bg-blue-100 text-blue-700',
-                                    'pickup_ready' => 'bg-blue-100 text-blue-700'
+                                    'pickup_ready' => 'bg-blue-100 text-blue-700',
+                                    'cancelled' => 'bg-red-100 text-red-700'
                                 ];
                                 $cls = $map[$order->status] ?? 'bg-gray-100 text-gray-800';
                             @endphp
@@ -199,7 +198,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const statusClass =
                 (o.status === 'completed' || o.status === 'paid') ? 'bg-green-100 text-green-700'
                 : (o.status === 'awaiting_payment') ? 'bg-yellow-100 text-yellow-700'
-                : 'bg-blue-100 text-blue-700';
+                : (o.status === 'cancelled') ? 'bg-red-100 text-red-700'
+                : (o.status === 'processing' || o.status === 'pickup_ready') ? 'bg-blue-100 text-blue-700'
+                : 'bg-gray-100 text-gray-800';
 
             card.innerHTML = `
                 <button class="absolute top-4 right-4
