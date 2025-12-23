@@ -132,9 +132,45 @@
                                 </div>
                             </div>
                             <div>
+<<<<<<< HEAD
                                 <a href="/pesanan/{{ $order->order_code }}" class="inline-flex bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
                                     Lihat Detail
                                 </a>
+=======
+                                <p class="text-sm text-gray-600">Kode Pesanan</p>
+                                <p class="text-lg font-semibold">{{ $order->order_code }}</p>
+                            </div>
+
+                            @php
+                                $map = [
+                                    'completed' => 'bg-green-100 text-green-700',
+                                    'paid' => 'bg-green-100 text-green-700',
+                                    'awaiting_payment' => 'bg-yellow-100 text-yellow-700',
+                                    'processing' => 'bg-blue-100 text-blue-700',
+                                    'pickup_ready' => 'bg-blue-100 text-blue-700',
+                                    'cancelled' => 'bg-red-100 text-red-700'
+                                ];
+                                $cls = $map[$order->status] ?? 'bg-gray-100 text-gray-800';
+                            @endphp
+
+                            <span class="px-3 py-1 text-sm rounded-full {{ $cls }}">
+                                {{ $order->status }}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                            <div class="p-4 rounded-lg bg-gray-50">
+                                <p class="text-sm text-gray-600">Kurir</p>
+                                <p class="font-medium">{{ $order->courier_name ?? '-' }}</p>
+                            </div>
+                            <div class="p-4 rounded-lg bg-gray-50">
+                                <p class="text-sm text-gray-600">Tracking Number</p>
+                                <p class="font-medium">{{ $order->tracking_number ?? '-' }}</p>
+                            </div>
+                            <div class="p-4 rounded-lg bg-gray-50">
+                                <p class="text-sm text-gray-600">Status Pengiriman</p>
+                                <p class="font-medium">{{ $order->shipment_status ?? '-' }}</p>
+>>>>>>> 286371db198c23149de4415d2fae874b81db505f
                             </div>
                         </div>
                     </div>
@@ -187,7 +223,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const statusClass =
                 (o.status === 'completed' || o.status === 'paid') ? 'bg-green-100 text-green-700'
                 : (o.status === 'awaiting_payment') ? 'bg-yellow-100 text-yellow-700'
-                : 'bg-blue-100 text-blue-700';
+                : (o.status === 'cancelled') ? 'bg-red-100 text-red-700'
+                : (o.status === 'processing' || o.status === 'pickup_ready') ? 'bg-blue-100 text-blue-700'
+                : 'bg-gray-100 text-gray-800';
 
             card.innerHTML = `
                 <button class="absolute top-3 left-3 text-red-600 font-extrabold text-xl hover:scale-110 transition remove-history" data-index="${originalIndex}">✕</button>

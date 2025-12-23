@@ -156,7 +156,7 @@
                                     'code' => $code,
                                     'name' => $seedClass['name'] ?? ($classRef['name'] ?? $code),
                                     'total_stock' => $lots->where('is_sellable', true)->sum('quantity'),
-                                    'min_order' => $code === 'BS' ? 5 : ($code === 'FS' ? 1 : 1),
+                                    'min_order' => $code === 'FS' ? 5 : 1,
                                     'unit' => $first['unit'] ?? 'kg'
                                 ];
                             })->filter(function($c) {
@@ -187,10 +187,10 @@
                         
                                     <div class="quantity-controls hidden absolute right-5 bottom-5 bg-white shadow-lg border rounded-lg p-1 items-center gap-2 z-10" onclick="event.stopPropagation()"> 
                                         <button type="button" class="decrease w-8 h-8 flex items-center justify-center bg-gray-100 rounded hover:bg-gray-200">-</button> 
-                                        <input type="number" class="quantity w-16 text-center border-gray-200 rounded text-sm" value="{{ $class['min_order'] }}" min="{{ $class['min_order'] }}" step="{{ $class['code'] == 'BS' ? 5 : 1 }}" oninput="handleQtyInput(this)"> 
+                                        <input type="number" class="quantity w-16 text-center border-gray-200 rounded text-sm" value="{{ $class['min_order'] }}" min="{{ $class['min_order'] }}" step="{{ $class['code'] == 'FS' ? 5 : 1 }}" oninput="handleQtyInput(this)"> 
                                         <button type="button" class="increase w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded hover:bg-blue-700">+</button> 
                                     </div> 
-                                    <p class="qty-error text-xs text-red-600 mt-1 hidden">Jumlah untuk Breeder Seed (BS) harus kelipatan 5 kg</p>
+                                    <p class="qty-error text-xs text-red-600 mt-1 hidden">Jumlah untuk Foundation Seed (FS) harus kelipatan 5 kg</p>
                                 </div>
                             @empty
                                 <div class="p-6 bg-gray-50 rounded-xl text-center text-gray-500 italic border border-dashed border-gray-300">Stok belum tersedia untuk varietas ini.</div>
