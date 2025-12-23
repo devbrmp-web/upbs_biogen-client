@@ -31,7 +31,7 @@
         <div class="flex gap-2">
           <a href="/cek-pesanan" class="px-3 py-2 rounded-lg border border-gray-200">Kembali</a>
           @if(($data->status ?? '') === 'awaiting_payment')
-            <a href="/checkout" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Bayar</a>
+            <a href="/checkout?resume_order={{ $data->order_code }}" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Bayar</a>
           @endif
           <button id="btn-print" class="px-3 py-2 rounded-lg bg-gray-900 text-white" data-order-code="{{ $data->order_code }}" data-order-status="{{ $data->status }}">Cetak</button>
         </div>

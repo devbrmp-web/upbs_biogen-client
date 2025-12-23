@@ -1,28 +1,25 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
-use App\Http\Controllers\OrderMailController;
-
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\OrderMailController;
+use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
 //     return view('home');
 // })->name('home');
 
-
-
 Route::get('/', [CatalogController::class, 'homeindex'])->name('home');
 Route::get('/katalog', [CatalogController::class, 'catalogindex'])->name('katalog');
-
-
 
 Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
 
 // Checkout Routes
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
+Route::post('/orders/payment/sync', [CheckoutController::class, 'syncPaymentStatus'])->name('orders.payment.sync');
+Route::post('/orders/payment/snap-token', [CheckoutController::class, 'getSnapToken'])->name('orders.payment.snap-token');
 Route::get('/payment/finish', [CheckoutController::class, 'paymentFinish'])->name('payment.finish');
 Route::get('/payment/error', [CheckoutController::class, 'paymentError'])->name('payment.error');
 
@@ -40,6 +37,7 @@ Route::view('/tentang-kami', 'tentang-kami')->name('about');
 use App\Http\Controllers\TrackOrderController;
 
 Route::get('/cek-pesanan', [TrackOrderController::class, 'index'])->name('cek-pesanan');
+Route::get('/pesanan/signature/{order_code}', [TrackOrderController::class, 'signature'])->name('order.signature');
 Route::get('/pesanan/{order_code}', [TrackOrderController::class, 'detail'])->name('order.detail');
 Route::get('/pesanan/{order_code}/cetak', [TrackOrderController::class, 'print'])->name('order.print');
 Route::get('/tutorial', function () {
@@ -49,9 +47,5 @@ Route::get('/home', function () {
     return view('beranda-statis');
 })->name('home');
 
-
 // Email resi sender
 Route::post('/orders/send-invoice', [OrderMailController::class, 'sendInvoice']);
-
-
-

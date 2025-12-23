@@ -31,14 +31,7 @@
 
                 <form method="GET" action="/cek-pesanan" id="track-form">
 
-                    <div class="mb-4">
-                        <label class="block mb-2 font-medium">Metode Pencarian</label>
-                        <select name="method" class="w-full border rounded-lg p-3">
-                            <option value="tracking" {{ request('method')=='tracking'?'selected':'' }}>Tracking Number</option>
-                            <option value="order_code" {{ request('method')=='order_code'?'selected':'' }}>Kode Pesanan</option>
-                            <option value="phone" {{ request('method')=='phone'?'selected':'' }}>Nomor HP</option>
-                        </select>
-                    </div>
+                    <input type="hidden" name="method" id="methodField" value="{{ request('method','order_code') }}">
 
                     <div class="mb-4">
                         <label class="block mb-2 font-medium">Masukkan nilai pencarian</label>
@@ -46,7 +39,7 @@
                                name="search"
                                value="{{ request('search') }}"
                                class="w-full border rounded-lg p-3"
-                               placeholder="Masukkan nilai pencarian"
+                               placeholder="Masukkan kode pesanan atau nomor HP"
                                required>
                     </div>
 
@@ -75,7 +68,7 @@
                 </div>
 
                 <div id="history-list"
-                     class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                     class="space-y-4"></div>
 
             </div>
 
@@ -89,66 +82,61 @@
                 @else
 
                     {{-- SAVE TO LOCALSTORAGE --}}
+                    <script type="application/json" id="orderJson">@json($order)</script>
                     <script>
                     document.addEventListener("DOMContentLoaded", function(){
-                        let data = @json($order);
-                        let list = JSON.parse(localStorage.getItem("lastOrderData") || "[]");
-
-                        list = list.filter(x => x.order_code !== data.order_code);
+                        var el = document.getElementById("orderJson");
+                        var data = {};
+                        try { data = JSON.parse(el?.textContent || "{}"); } catch(e) {}
+                        var list = [];
+                        try { list = JSON.parse(localStorage.getItem("lastOrderData") || "[]"); } catch(e) {}
+                        list = list.filter(function(x){ return x.order_code !== data.order_code; });
                         list.push(data);
-
                         localStorage.setItem("lastOrderData", JSON.stringify(list));
                     });
                     </script>
 
                     <div class="bg-white p-6 rounded-xl shadow animate-fadeIn">
-
-                        <div class="flex justify-between items-start">
+                        @php
+                            $map = [
+                                'completed' => 'bg-green-100 text-green-700',
+                                'paid' => 'bg-green-100 text-green-700',
+                                'awaiting_payment' => 'bg-yellow-100 text-yellow-700',
+                                'processing' => 'bg-blue-100 text-blue-700',
+                                'delivery_coordination' => 'bg-blue-100 text-blue-700',
+                                'shipped' => 'bg-blue-100 text-blue-700',
+                                'pickup_ready' => 'bg-blue-100 text-blue-700'
+                            ];
+                            $cls = $map[$order->status] ?? 'bg-gray-100 text-gray-800';
+                        @endphp
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <div>
+                                    <p class="text-xs text-gray-600">Kode Pesanan</p>
+                                    <p class="text-lg font-semibold">{{ $order->order_code }}</p>
+                                </div>
+                                <span class="px-3 py-1 text-sm rounded-full {{ $cls }}">{{ $order->status }}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-4">
+                                <div class="rounded-lg bg-gray-50 px-4 py-2">
+                                    <span class="text-xs text-gray-600">Kurir</span>
+                                    <div class="font-medium">{{ $order->courier_name ?? '-' }}</div>
+                                </div>
+                                <div class="rounded-lg bg-gray-50 px-4 py-2">
+                                    <span class="text-xs text-gray-600">Tracking</span>
+                                    <div class="font-medium">{{ $order->tracking_number ?? '-' }}</div>
+                                </div>
+                                <div class="rounded-lg bg-gray-50 px-4 py-2">
+                                    <span class="text-xs text-gray-600">Pengiriman</span>
+                                    <div class="font-medium">{{ $order->shipment_status ?? '-' }}</div>
+                                </div>
+                            </div>
                             <div>
-                                <p class="text-sm text-gray-600">Kode Pesanan</p>
-                                <p class="text-lg font-semibold">{{ $order->order_code }}</p>
-                            </div>
-
-                            @php
-                                $map = [
-                                    'completed' => 'bg-green-100 text-green-700',
-                                    'paid' => 'bg-green-100 text-green-700',
-                                    'awaiting_payment' => 'bg-yellow-100 text-yellow-700',
-                                    'processing' => 'bg-blue-100 text-blue-700',
-                                    'delivery_coordination' => 'bg-blue-100 text-blue-700',
-                                    'shipped' => 'bg-blue-100 text-blue-700',
-                                    'pickup_ready' => 'bg-blue-100 text-blue-700'
-                                ];
-                                $cls = $map[$order->status] ?? 'bg-gray-100 text-gray-800';
-                            @endphp
-
-                            <span class="px-3 py-1 text-sm rounded-full {{ $cls }}">
-                                {{ $order->status }}
-                            </span>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                            <div class="p-4 rounded-lg bg-gray-50">
-                                <p class="text-sm text-gray-600">Kurir</p>
-                                <p class="font-medium">{{ $order->courier_name ?? '-' }}</p>
-                            </div>
-                            <div class="p-4 rounded-lg bg-gray-50">
-                                <p class="text-sm text-gray-600">Tracking Number</p>
-                                <p class="font-medium">{{ $order->tracking_number ?? '-' }}</p>
-                            </div>
-                            <div class="p-4 rounded-lg bg-gray-50">
-                                <p class="text-sm text-gray-600">Status Pengiriman</p>
-                                <p class="font-medium">{{ $order->shipment_status ?? '-' }}</p>
+                                <a href="/pesanan/{{ $order->order_code }}" class="inline-flex bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
+                                    Lihat Detail
+                                </a>
                             </div>
                         </div>
-
-                        <div class="mt-6">
-                            <a href="/pesanan/{{ $order->order_code }}"
-                                class="inline-flex bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
-                                Lihat Detail
-                            </a>
-                        </div>
-
                     </div>
                 @endif
             @endif
@@ -194,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const originalIndex = lastOrderData.length - 1 - idxRev;
 
             const card = document.createElement("div");
-            card.className = "bg-white p-4 rounded-xl shadow relative";
+            card.className = "bg-white p-4 pl-10 rounded-xl shadow relative flex flex-col md:flex-row md:items-center md:justify-between gap-4";
 
             const statusClass =
                 (o.status === 'completed' || o.status === 'paid') ? 'bg-green-100 text-green-700'
@@ -202,33 +190,44 @@ document.addEventListener("DOMContentLoaded", function () {
                 : 'bg-blue-100 text-blue-700';
 
             card.innerHTML = `
-                <button class="absolute top-4 right-4
-                                text-red-600 font-extrabold text-xl
-                                hover:scale-110 transition
-                                remove-history"
-                        data-index="${originalIndex}">✕</button>
-
-                <p class="text-sm text-gray-600">Kode Pesanan</p>
-                <p class="font-semibold text-lg">${o.order_code}</p>
-
-                <span class="inline-block mt-2 px-3 py-1 text-xs rounded-full ${statusClass}">
-                    ${o.status}
-                </span>
-
-                <p class="mt-3 text-sm">
-                    <b>${o.items?.length ?? 0}</b> item • Total <b>${formatCurrency(o.total_amount)}</b>
-                </p>
-
-                <a href="/pesanan/${o.order_code}"
-                   class="mt-3 inline-block bg-green-600 text-white px-3 py-1 rounded-lg text-sm">
-                    Lihat Detail
-                </a>
+                <button class="absolute top-3 left-3 text-red-600 font-extrabold text-xl hover:scale-110 transition remove-history" data-index="${originalIndex}">✕</button>
+                <div class="flex items-center gap-4">
+                    <div>
+                        <p class="text-xs text-gray-600">Kode Pesanan</p>
+                        <p class="font-semibold text-lg">${o.order_code}</p>
+                    </div>
+                    <span class="px-3 py-1 text-xs rounded-full ${statusClass}">${o.status}</span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <span class="text-sm"><b>${o.items?.length ?? 0}</b> item</span>
+                    <span class="text-sm">Total <b>${formatCurrency(o.total_amount)}</b></span>
+                </div>
+                <div>
+                    <a href="/pesanan/${o.order_code}" class="inline-block bg-green-600 text-white px-3 py-1 rounded-lg text-sm">Lihat Detail</a>
+                </div>
             `;
             historyList.appendChild(card);
         });
     }
 
     renderHistory();
+});
+</script>
+<script>
+// Auto detect method sebelum submit: phone vs order_code
+document.addEventListener('DOMContentLoaded', function () {
+  var form = document.getElementById('track-form');
+  if (!form) return;
+  form.addEventListener('submit', function (e) {
+    var input = form.querySelector('input[name="search"]');
+    var methodEl = document.getElementById('methodField');
+    var v = (input?.value || '').trim();
+    var digits = v.replace(/\D/g, '');
+    var isPhone = false;
+    if (digits.length >= 10) isPhone = true;
+    if (/^\+?62/.test(v) || /^08/.test(v)) isPhone = true;
+    methodEl.value = isPhone ? 'phone' : 'order_code';
+  });
 });
 </script>
 {{-- ================================================================= --}}
@@ -288,5 +287,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
-4
 @endsection

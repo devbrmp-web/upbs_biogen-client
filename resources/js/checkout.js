@@ -12,6 +12,36 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePaymentSummary();
     loadReceiverData(); // Load from cookies
 
+    const resumeOrderCode = new URLSearchParams(window.location.search).get('resume_order');
+    if (resumeOrderCode) {
+        const btn = document.getElementById('btn-pay');
+        const loadingEl = document.getElementById('loading-state');
+        const errorEl = document.getElementById('checkout-error');
+
+        if (errorEl) errorEl.classList.add('hidden');
+        if (btn) btn.classList.add('hidden');
+        if (loadingEl) loadingEl.classList.remove('hidden');
+
+        resumePendingPayment(resumeOrderCode)
+            .catch((e) => {
+                let msg = 'Terjadi kesalahan.';
+                if (e?.response?.data?.message) {
+                    msg = e.response.data.message;
+                } else if (e?.message) {
+                    msg = e.message;
+                }
+                if (errorEl) {
+                    errorEl.textContent = msg;
+                    errorEl.classList.remove('hidden');
+                }
+            })
+            .finally(() => {
+                if (loadingEl) loadingEl.classList.add('hidden');
+                if (btn) btn.classList.remove('hidden');
+            });
+        return;
+    }
+
     const cart = getCart();
     if (cart.length === 0) {
         document.getElementById('checkout-cart-items').innerHTML = `
@@ -32,6 +62,80 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+async function resumePendingPayment(orderCode) {
+    try {
+        const resp = await window.axios.post(
+            `/orders/payment/snap-token`, { order_code: orderCode }
+        );
+
+        const snapToken = resp?.data?.data?.snap_token;
+        if (!snapToken) {
+            throw new Error(
+                resp?.data?.message || 'Gagal mendapatkan token pembayaran.'
+            );
+        }
+
+        openSnapPopup(snapToken, orderCode);
+
+    } catch (err) {
+        console.error(err);
+        alert(err.message || 'Terjadi kesalahan saat memproses pembayaran.');
+    }
+}
+
+
+function openSnapPopup(snapToken, orderCode) {
+    const btn = document.getElementById('btn-pay');
+    const loadingEl = document.getElementById('loading-state');
+
+    window.snap.pay(snapToken, {
+        onSuccess: function(result) {
+            console.log(result);
+
+            const syncOrderId = (lastOrderData?.order_code || orderCode);
+            if (syncOrderId) {
+                window.axios.post('/orders/payment/sync', {
+                    order_id: syncOrderId,
+                }).catch(() => {});
+            }
+
+            localStorage.removeItem(CART_KEY);
+            window.location.href = '/cek-pesanan?search=' + (lastOrderData?.order_code || orderCode || '') + '&method=order_code';
+        },
+        onPending: function(result) {
+            console.log(result);
+            
+            // Simpan ke history agar user bisa bayar nanti
+            if (lastOrderData) {
+                 let list = [];
+                 try { list = JSON.parse(localStorage.getItem("lastOrderData") || "[]"); } catch(e) {}
+                 // Hapus data lama jika ada (update)
+                 list = list.filter(x => x.order_code !== lastOrderData.order_code);
+                 list.push(lastOrderData);
+                 localStorage.setItem("lastOrderData", JSON.stringify(list));
+            }
+
+            // Hapus keranjang karena order sudah terbentuk
+            localStorage.removeItem(CART_KEY);
+
+            // Redirect ke halaman cek pesanan
+            window.location.href = '/cek-pesanan?search=' + (lastOrderData?.order_code || orderCode || '') + '&method=order_code';
+        },
+        onError: function(result) {
+            console.log(result);
+            window.location.href = '/payment/error?order_code=' + encodeURIComponent(orderCode);
+        },
+        onClose: function() {
+            alert("Anda menutup pop-up pembayaran.");
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('hidden');
+            }
+            if (loadingEl) loadingEl.classList.add('hidden');
+        }
+    });
+}
 
 function saveReceiverData() {
     const data = {
@@ -248,6 +352,7 @@ window.processCheckout = async function() {
         }
 
         // 🔥 REQUEST KE BACKEND (HARUS BALIKAN snap_token)
+        // Updated to match web.php route: /checkout/process
         const response = await window.axios.post('/orders/checkout', payload);
         console.log(response)
         lastOrderData = response?.data?.data?.order; // 💡 simpan di sini
@@ -265,58 +370,7 @@ window.processCheckout = async function() {
             throw new Error('Gagal mendapatkan token pembayaran.');
         }
 
-        // 🔥 JALANKAN SNAP POPUP
-        window.snap.pay(snapToken, {
-            onSuccess: function(result) {
-                console.log(result);
-                if (lastOrderData) {
-
-                    // Simpan ke localStorage
-                    try {
-                        let arr = JSON.parse(localStorage.getItem("lastOrderData") || "[]");
-                        if (!Array.isArray(arr)) arr = [];
-
-                        arr.push(lastOrderData);
-                        localStorage.setItem("lastOrderData", JSON.stringify(arr));
-                    } catch (e) {
-                        console.error("failed to store local history", e);
-                    }
-
-                    // Simpan juga ke cookie (untuk fallback)
-                    const d = new Date();
-                    d.setTime(d.getTime() + (7 * 24 * 60 * 60 * 1000));
-                    const expires = "expires=" + d.toUTCString();
-                    document.cookie =
-                        "upbs_last_order=" +
-                        JSON.stringify(lastOrderData) +
-                        ";" +
-                        expires +
-                        ";path=/;SameSite=Lax";
-                }
-
-
-                localStorage.removeItem(CART_KEY);
-                window.location.href = '/cek-pesanan?search=' + (lastOrderData?.order_code || '') + '&method=order_code';
-            },
-            //     localStorage.removeItem(CART_KEY);
-            //     // window.location.href = '/orders/success?order=' + orderCode;
-            //     window.location.href = '/cart';
-            // },
-            onPending: function(result) {
-                console.log(result);
-                window.location.href = '/orders/pending?order=' + orderCode;
-            },
-            onError: function(result) {
-                console.log(result);
-                window.location.href = '/orders/error';
-            },
-            onClose: function() {
-                alert("Anda menutup pop-up pembayaran.");
-                btn.disabled = false;
-                btn.classList.remove('hidden');
-                loadingEl.classList.add('hidden');
-            }
-        });
+        openSnapPopup(snapToken, orderCode);
 
     } catch (error) {
         console.error(error);

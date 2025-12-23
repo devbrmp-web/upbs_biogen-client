@@ -26,14 +26,89 @@
         @endphp
 
         <!-- Image Section -->
-        <div class="bg-gray-50 flex items-center justify-center aspect-[1/1]">
-            <img
-                src="{{ $imageUrl }}"
-                alt="{{ $variety['name'] }}"
-                class="w-full h-full object-contain rounded-md"
-                loading="lazy"
-            >
+        <div class="bg-gray-50 flex flex-col items-center justify-center p-4">
+            <!-- Main Image -->
+            <div class="w-full aspect-[4/3] flex items-center justify-center mb-4 overflow-hidden rounded-lg bg-white border border-gray-100 relative">
+                <img
+                    id="mainImage"
+                    src="{{ $imageUrl }}"
+                    alt="{{ $variety['name'] }}"
+                    class="w-full h-full object-cover transition-opacity duration-300"
+                    loading="lazy" onerror="this.src='https://placehold.co/800x600?text=No+Image'"
+                >
+            </div>
+
+            <!-- Thumbnails (Horizontal Scroll) -->
+            @php
+                $images = collect($variety['images'] ?? []);
+                $minThumbs = 7;
+                $actualThumbs = 1 + $images->count();
+                $placeholders = max(0, $minThumbs - $actualThumbs);
+                $thumbPlaceholder = 'https://placehold.co/160x160/e2e8f0/475569?text=Image';
+                $mainPlaceholder = 'https://placehold.co/800x600/e2e8f0/475569?text=Image';
+            @endphp
+            <div class="w-full relative group">
+                <div class="flex overflow-x-auto space-x-2 py-2 px-1 scrollbar-hide snap-x" id="thumbnailsScroll">
+                    <!-- Main Image Thumbnail -->
+                    <div class="flex-shrink-0 w-20 h-20 border-2 border-blue-500 rounded-md cursor-pointer overflow-hidden snap-start thumbnail-item"
+                         onclick="changeMainImage('{{ $imageUrl }}', this)">
+                        <img src="{{ $imageUrl }}" data-large-url="{{ $imageUrl }}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='{{ $thumbPlaceholder }}'">
+                    </div>
+                    
+                    @foreach($images as $img)
+                        @php
+                            $thumbUrl = $img['image_url'] ?? asset('storage/' . $img['image_path']);
+                        @endphp
+                        <div class="flex-shrink-0 w-20 h-20 border border-gray-200 rounded-md cursor-pointer overflow-hidden snap-start hover:border-blue-300 thumbnail-item"
+                             onclick="changeMainImage('{{ $thumbUrl }}', this)">
+                            <img src="{{ $thumbUrl }}" data-large-url="{{ $thumbUrl }}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='{{ $thumbPlaceholder }}'">
+                        </div>
+                    @endforeach
+                    
+                    @for($i = 0; $i < $placeholders; $i++)
+                        <div class="flex-shrink-0 w-20 h-20 border border-gray-200 rounded-md overflow-hidden snap-start bg-gray-100 cursor-pointer thumbnail-item"
+                             onclick="changeMainImage('{{ $mainPlaceholder }}', this)">
+                            <img src="{{ $thumbPlaceholder }}" data-large-url="{{ $mainPlaceholder }}" class="w-full h-full object-cover opacity-60 select-none" alt="Placeholder">
+                        </div>
+                    @endfor
+                </div>
+                <!-- Scroll Indicators -->
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1 shadow-md cursor-pointer hidden md:flex hover:bg-white" onclick="scrollThumbnails('left')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </div>
+                <div class="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1 shadow-md cursor-pointer hidden md:flex hover:bg-white" onclick="scrollThumbnails('right')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </div>
+            </div>
         </div>
+
+        <script>
+            function changeMainImage(url, element) {
+                const mainImg = document.getElementById('mainImage');
+                mainImg.style.opacity = '0.5';
+                setTimeout(() => {
+                    mainImg.src = url;
+                    mainImg.style.opacity = '1';
+                }, 150);
+
+                document.querySelectorAll('.thumbnail-item').forEach(el => {
+                    el.classList.remove('border-blue-500', 'border-2');
+                    el.classList.add('border-gray-200', 'border');
+                });
+                element.classList.remove('border-gray-200', 'border');
+                element.classList.add('border-blue-500', 'border-2');
+            }
+
+            function scrollThumbnails(direction) {
+                const container = document.getElementById('thumbnailsScroll');
+                const scrollAmount = 200;
+                if (direction === 'left') {
+                    container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                } else {
+                    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                }
+            }
+        </script>
 
         <!-- Content Section -->
         <div class="p-6 flex flex-col justify-center">
@@ -163,7 +238,7 @@
         };
     </script>
 
-    @vite(['resources/js/produk.js', 'resources/css/produk.css'])
+    @vite(['resources/js/produk.js', 'resources/css/produk.css', 'resources/js/produk-gallery.js'])
 </div>
 </body>
 @endsection

@@ -37,7 +37,8 @@ class TrackOrderController extends Controller
 
             if ($response->successful()) {
                 $json = $response->json();
-                $order = (object) ($json['order'] ?? []);
+                $orderData = $json['order'] ?? [];
+                $order = !empty($orderData) ? (object) $orderData : null;
             }
         } catch (\Throwable $e) {
             $order = null;
@@ -80,6 +81,35 @@ class TrackOrderController extends Controller
             abort(404);
         }
     }
+
+    public function signature(string $orderCode)
+    {
+        $baseUrl = config('app.url_dev_admin');
+
+        try {
+            $res = Http::timeout(8)->get(
+                "$baseUrl/api/orders/" . urlencode($orderCode)
+            );
+
+            if (!$res->successful()) {
+                abort(404);
+            }
+
+            $data = $res->json('data') ?? [];
+
+            if (!empty($data['items']) && is_array($data['items'])) {
+                $data['items'] = $this->mapOrderItemsWithVarieties($data['items']);
+            }
+
+            return view('signature', [
+                'data' => (object) $data
+            ]);
+
+        } catch (\Throwable $e) {
+            abort(404);
+        }
+    }
+
 
 
     // ======================================================

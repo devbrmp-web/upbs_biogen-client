@@ -120,13 +120,24 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-end pt-6 border-t mt-6">
-                        <button onclick="saveReceiverForm()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium shadow-sm">
-                            Simpan Data
-                        </button>
-                    </div>
+                <div class="flex justify-end pt-6 border-t mt-6">
+                    <button onclick="saveReceiverForm()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium shadow-sm">
+                        Simpan Data
+                    </button>
                 </div>
             </div>
+            <div class="bg-white/80 backdrop-blur-md shadow-lg rounded-xl p-6 border border-white/50">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Tanda Tangan Pembeli</h2>
+                <div class="flex flex-col items-center">
+                    <canvas id="checkoutSignatureCanvas" class="border-2 border-dashed border-gray-300 rounded bg-gray-50 cursor-crosshair" width="320" height="160"></canvas>
+                    <div class="mt-3 flex gap-2">
+                        <button type="button" id="btnClearCheckoutSig" class="text-sm bg-red-100 text-red-600 px-3 py-1 rounded">Hapus</button>
+                        <button type="button" id="btnSaveCheckoutSig" class="text-sm bg-blue-600 text-white px-3 py-1 rounded">Simpan</button>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500">Tanda tangan akan disalin ke dokumen kerja sama setelah pembayaran.</p>
+                </div>
+            </div>
+        </div>
         </div>
 
         <!-- Right Column (40%) -->
@@ -228,6 +239,34 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeTermsModal();
   });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+  (function(){
+    const c = document.getElementById('checkoutSignatureCanvas');
+    if (!c) return;
+    const pad = new SignaturePad(c);
+    const KEY = 'signature_temp';
+    const saved = localStorage.getItem(KEY);
+    if (saved) {
+      try {
+        const img = new Image();
+        img.onload = () => c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        img.src = saved;
+      } catch {}
+    }
+    document.getElementById('btnSaveCheckoutSig')?.addEventListener('click', () => {
+      if (pad.isEmpty()) return alert('Silakan tanda tangan terlebih dahulu.');
+      const dataUrl = pad.toDataURL();
+      localStorage.setItem(KEY, dataUrl);
+      alert('Tanda tangan disimpan.');
+    });
+    document.getElementById('btnClearCheckoutSig')?.addEventListener('click', () => {
+      pad.clear();
+      localStorage.removeItem(KEY);
+    });
+  })();
 </script>
 
 <script>
