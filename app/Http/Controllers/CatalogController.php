@@ -70,21 +70,30 @@ class CatalogController extends Controller
             }
 
             /* =====================================================
-            | FETCH VARIETIES (PRIORITIZE SEED CLASS)
+            | FETCH VARIETIES (ALWAYS FETCH ALL & FILTER LOCALLY)
             ===================================================== */
-            if (!empty($activeSeedClassId)) {
-                $cacheKey = "varieties_by_seed_class_{$activeSeedClassId}";
-                $varieties = Cache::remember($cacheKey, 600, function () use ($url, $activeSeedClassId) {
-                    return Http::timeout(5)
-                        ->get($url . "/api/seed-classes/{$activeSeedClassId}/varieties")
-                        ->json('data') ?? [];
-                });
-            } else {
-                $varieties = Cache::remember('varieties_all', 1800, function () use ($url) {
-                    return Http::timeout(5)
-                        ->get($url . '/api/varieties')
-                        ->json('data') ?? [];
-                });
+            $varieties = Cache::remember('varieties_all', 1800, function () use ($url) {
+                return Http::timeout(5)
+                    ->get($url . '/api/varieties')
+                    ->json('data') ?? [];
+            });
+
+            /* =====================================================
+            | FILTER BY SEED CLASS
+            ===================================================== */
+            if (!empty($activeSeedClassCode)) {
+                $varieties = array_values(array_filter($varieties, function ($v) use ($activeSeedClassCode) {
+                    foreach (($v['seed_lots'] ?? []) as $lot) {
+                        if (
+                            ($lot['seed_class']['code'] ?? '') === $activeSeedClassCode && 
+                            ($lot['is_sellable'] ?? false) && 
+                            ($lot['quantity'] ?? 0) > 0
+                        ) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }));
             }
 
             /* =====================================================

@@ -112,9 +112,12 @@ try{
                     $priceClean = (float) preg_replace('/[^\d.]/', '', $priceRaw);
 
                     $imagePath = $variety['image_path'] ?? null;
-                    $imageUrl = $imagePath
-                        ? rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($imagePath, '/')
-                        : 'https://placehold.co/400x300?text=No+Image';
+                    if ($imagePath) {
+                        $cleanPath = str_replace(['public/', 'storage/'], '', $imagePath);
+                        $imageUrl = rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($cleanPath, '/');
+                    } else {
+                        $imageUrl = 'https://placehold.co/400x300?text=No+Image';
+                    }
 
                     $seedLots = collect($variety['seed_lots'] ?? []);
                     $stockByClass = $seedLots

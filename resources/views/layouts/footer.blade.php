@@ -1,5 +1,5 @@
-<footer class="relative bg-[#B4DEBD]/60 backdrop-blur-lg border-t border-white/40 mt-20">
-  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-10 text-gray-800">
+<footer class="relative bg-[#B4DEBD]/60 backdrop-blur-lg border-t border-white/40 mt-20 z-10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-10 text-gray-800">
 
     <!-- 🧬 Logo dan Deskripsi -->
     <div>

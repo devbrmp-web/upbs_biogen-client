@@ -25,6 +25,7 @@ class TrackOrderController extends Controller
         $baseUrl = config('app.url_dev_admin');
 
         try {
+            // 1. Coba endpoint tracking khusus
             if ($method === 'order_code') {
                 $endpoint = "$baseUrl/api/orders/track?order_code=" . urlencode($value);
             } elseif ($method === 'phone') {
@@ -37,9 +38,27 @@ class TrackOrderController extends Controller
 
             if ($response->successful()) {
                 $json = $response->json();
-                $orderData = $json['order'] ?? [];
-                $order = !empty($orderData) ? (object) $orderData : null;
+                // Support structure: { order: {...} } OR { data: {...} }
+                $orderData = $json['order'] ?? $json['data'] ?? [];
+                if (!empty($orderData)) {
+                    $order = (object) $orderData;
+                }
             }
+
+            // 2. Fallback: Jika gagal dan bukan pencarian via HP, coba direct GET /api/orders/{code}
+            if (!$order && $method !== 'phone') {
+                 $fallbackEndpoint = "$baseUrl/api/orders/" . urlencode($value);
+                 $fallbackResponse = Http::timeout(8)->get($fallbackEndpoint);
+                 
+                 if ($fallbackResponse->successful()) {
+                     $json = $fallbackResponse->json();
+                     $orderData = $json['data'] ?? $json['order'] ?? [];
+                     if (!empty($orderData)) {
+                         $order = (object) $orderData;
+                     }
+                 }
+            }
+
         } catch (\Throwable $e) {
             $order = null;
         }
@@ -188,18 +207,34 @@ class TrackOrderController extends Controller
             }
 
             // ==============================
-            // FALLBACK ORDER DETAIL
+            // FALLBACK ORDER DETAIL / FETCH ITEMS
             // ==============================
-            if (!$order) {
+            // Jika order belum ada atau items kosong, ambil data lengkap
+            if (!$order || empty($order['items'])) {
                 $orderRes = Http::timeout(8)->get(
                     "$baseUrl/api/orders/" . urlencode($orderCode)
                 );
 
-                if (!$orderRes->successful()) {
+                if ($orderRes->successful()) {
+                    $fullData = $orderRes->json('data');
+
+                    if (!$order) {
+                        // Jika order awal null, pakai full data
+                        $order = $fullData;
+                    } else {
+                        // Jika order ada (dari payment/status) tapi items kosong, lengkapi
+                        $order['items'] = $fullData['items'] ?? [];
+                        
+                        // Lengkapi field lain jika kosong
+                        $order['customer_name']    = $order['customer_name']    ?? ($fullData['customer_name'] ?? '-');
+                        $order['customer_address'] = $order['customer_address'] ?? ($fullData['customer_address'] ?? '-');
+                        $order['customer_phone']   = $order['customer_phone']   ?? ($fullData['customer_phone'] ?? '-');
+                        $order['total_amount']     = $order['total_amount']     ?? ($fullData['total_amount'] ?? 0);
+                    }
+                } elseif (!$order) {
+                    // Jika fetch detail gagal dan order awal juga null => 404
                     abort(404);
                 }
-
-                $order = $orderRes->json('data');
             }
 
             // ==============================

@@ -4,9 +4,7 @@
 
 <div class="page-animate-zoomIn">
 
-<body class="bg-gray-50">
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-18">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-28">
 
         <!-- Breadcrumb -->
         <nav class="flex mb-8 text-sm text-gray-500">
@@ -20,9 +18,12 @@
 
         @php
             $imagePath = $variety['image_path'] ?? null;
-            $imageUrl = $imagePath
-                ? rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($imagePath, '/')
-                : 'https://placehold.co/400x300?text=No+Image';
+            if ($imagePath) {
+                $cleanPath = str_replace(['public/', 'storage/'], '', $imagePath);
+                $imageUrl = rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($cleanPath, '/');
+            } else {
+                $imageUrl = 'https://placehold.co/400x300?text=No+Image';
+            }
         @endphp
 
         <!-- Image Section -->
@@ -230,7 +231,7 @@
             id: "{{ $variety['id'] }}",
             slug: "{{ $variety['slug'] }}",
             name: "{{ $variety['name'] }}",
-            image: "{{ ($variety['image_url'] ?? null) ?: (config('app.url_dev_admin').'/storage/'.($variety['image_path'] ?? '')) }}",
+            image: "{{ $imageUrl }}",
             base_price: {{ $variety['price_cents'] / 100 }},
             // Pass initial seed lots to extract classes
             // Note: Admin API returns 'seed_lots' array. We use it to list classes.

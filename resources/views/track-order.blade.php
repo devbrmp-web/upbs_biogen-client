@@ -8,7 +8,7 @@
     $hasSearch = request()->has('search');
 @endphp
 
-<div class="max-w-7xl mx-auto px-4 lg:px-8 py-10 mt-16 page-animate-fadeIn">
+<div class="max-w-7xl mx-auto px-4 lg:px-8 py-10 mt-28 page-animate-fadeIn">
 
     <h1 class="text-2xl font-bold mb-6 text-center">Cek Pesanan</h1>
 
@@ -108,6 +108,18 @@
                                 'pickup_ready' => 'bg-blue-100 text-blue-700'
                             ];
                             $cls = $map[$order->status] ?? 'bg-gray-100 text-gray-800';
+
+                            $statusLabelMap = [
+                                'awaiting_payment' => 'Menunggu Pembayaran',
+                                'paid' => 'Lunas',
+                                'processing' => 'Diproses',
+                                'pickup_ready' => 'Siap Diambil',
+                                'completed' => 'Selesai',
+                                'cancelled' => 'Dibatalkan',
+                                'shipped' => 'Dikirim',
+                                'delivery_coordination' => 'Koordinasi Pengiriman'
+                            ];
+                            $statusLabel = $statusLabelMap[$order->status] ?? $order->status;
                         @endphp
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <div class="flex items-center gap-4">
@@ -115,7 +127,7 @@
                                     <p class="text-xs text-gray-600">Kode Pesanan</p>
                                     <p class="text-lg font-semibold">{{ $order->order_code }}</p>
                                 </div>
-                                <span class="px-3 py-1 text-sm rounded-full {{ $cls }}">{{ $order->status }}</span>
+                                <span class="px-3 py-1 text-sm rounded-full {{ $cls }}">{{ $statusLabel }}</span>
                             </div>
                             <div class="flex flex-wrap gap-4">
                                 <div class="rounded-lg bg-gray-50 px-4 py-2">
@@ -132,45 +144,9 @@
                                 </div>
                             </div>
                             <div>
-<<<<<<< HEAD
                                 <a href="/pesanan/{{ $order->order_code }}" class="inline-flex bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
                                     Lihat Detail
                                 </a>
-=======
-                                <p class="text-sm text-gray-600">Kode Pesanan</p>
-                                <p class="text-lg font-semibold">{{ $order->order_code }}</p>
-                            </div>
-
-                            @php
-                                $map = [
-                                    'completed' => 'bg-green-100 text-green-700',
-                                    'paid' => 'bg-green-100 text-green-700',
-                                    'awaiting_payment' => 'bg-yellow-100 text-yellow-700',
-                                    'processing' => 'bg-blue-100 text-blue-700',
-                                    'pickup_ready' => 'bg-blue-100 text-blue-700',
-                                    'cancelled' => 'bg-red-100 text-red-700'
-                                ];
-                                $cls = $map[$order->status] ?? 'bg-gray-100 text-gray-800';
-                            @endphp
-
-                            <span class="px-3 py-1 text-sm rounded-full {{ $cls }}">
-                                {{ $order->status }}
-                            </span>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                            <div class="p-4 rounded-lg bg-gray-50">
-                                <p class="text-sm text-gray-600">Kurir</p>
-                                <p class="font-medium">{{ $order->courier_name ?? '-' }}</p>
-                            </div>
-                            <div class="p-4 rounded-lg bg-gray-50">
-                                <p class="text-sm text-gray-600">Tracking Number</p>
-                                <p class="font-medium">{{ $order->tracking_number ?? '-' }}</p>
-                            </div>
-                            <div class="p-4 rounded-lg bg-gray-50">
-                                <p class="text-sm text-gray-600">Status Pengiriman</p>
-                                <p class="font-medium">{{ $order->shipment_status ?? '-' }}</p>
->>>>>>> 286371db198c23149de4415d2fae874b81db505f
                             </div>
                         </div>
                     </div>
@@ -227,6 +203,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 : (o.status === 'processing' || o.status === 'pickup_ready') ? 'bg-blue-100 text-blue-700'
                 : 'bg-gray-100 text-gray-800';
 
+            const statusMap = {
+                'awaiting_payment': 'Menunggu Pembayaran',
+                'paid': 'Lunas',
+                'processing': 'Diproses',
+                'pickup_ready': 'Siap Diambil',
+                'completed': 'Selesai',
+                'cancelled': 'Dibatalkan',
+                'shipped': 'Dikirim',
+                'delivery_coordination': 'Koordinasi Pengiriman'
+            };
+            const statusLabel = statusMap[o.status] || o.status;
+
             card.innerHTML = `
                 <button class="absolute top-3 left-3 text-red-600 font-extrabold text-xl hover:scale-110 transition remove-history" data-index="${originalIndex}">✕</button>
                 <div class="flex items-center gap-4">
@@ -234,7 +222,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <p class="text-xs text-gray-600">Kode Pesanan</p>
                         <p class="font-semibold text-lg">${o.order_code}</p>
                     </div>
-                    <span class="px-3 py-1 text-xs rounded-full ${statusClass}">${o.status}</span>
+                    <span class="px-3 py-1 text-xs rounded-full ${statusClass}">${statusLabel}</span>
                 </div>
                 <div class="flex items-center gap-6">
                     <span class="text-sm"><b>${o.items?.length ?? 0}</b> item</span>

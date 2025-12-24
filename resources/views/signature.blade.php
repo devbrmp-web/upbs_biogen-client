@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 mt-16 py-8 max-w-4xl">
+<div class="container mx-auto px-4 mt-28 py-8 max-w-4xl">
     <div class="bg-white shadow-lg rounded-lg p-8 print:shadow-none print:p-0" id="documentArea">
         <!-- Header Dokumen -->
         <div class="text-center mb-8 border-b pb-4">

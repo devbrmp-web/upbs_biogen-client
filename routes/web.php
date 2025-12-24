@@ -45,7 +45,7 @@ Route::get('/tutorial', function () {
 })->name('tutorial');
 Route::get('/home', function () {
     return view('beranda-statis');
-})->name('home');
+})->name('home.static');
 
 // Email resi sender
 Route::post('/orders/send-invoice', [OrderMailController::class, 'sendInvoice']);

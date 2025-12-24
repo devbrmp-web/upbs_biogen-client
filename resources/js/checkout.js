@@ -64,26 +64,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function resumePendingPayment(orderCode) {
-    try {
-        const resp = await window.axios.post(
-            `/orders/payment/snap-token`, { order_code: orderCode }
-        );
+    const resp = await window.axios.post('/orders/payment/snap-token', {
+        order_code: orderCode,
+    });
 
-        const snapToken = resp?.data?.data?.snap_token;
-        if (!snapToken) {
-            throw new Error(
-                resp?.data?.message || 'Gagal mendapatkan token pembayaran.'
-            );
-        }
-
-        openSnapPopup(snapToken, orderCode);
-
-    } catch (err) {
-        console.error(err);
-        alert(err.message || 'Terjadi kesalahan saat memproses pembayaran.');
+    const snapToken = resp?.data?.data?.snap_token;
+    if (!snapToken) {
+        throw new Error(resp?.data?.message || 'Gagal mendapatkan token pembayaran.');
     }
-}
 
+    openSnapPopup(snapToken, orderCode);
+}
 
 function openSnapPopup(snapToken, orderCode) {
     const btn = document.getElementById('btn-pay');
@@ -105,22 +96,7 @@ function openSnapPopup(snapToken, orderCode) {
         },
         onPending: function(result) {
             console.log(result);
-            
-            // Simpan ke history agar user bisa bayar nanti
-            if (lastOrderData) {
-                 let list = [];
-                 try { list = JSON.parse(localStorage.getItem("lastOrderData") || "[]"); } catch(e) {}
-                 // Hapus data lama jika ada (update)
-                 list = list.filter(x => x.order_code !== lastOrderData.order_code);
-                 list.push(lastOrderData);
-                 localStorage.setItem("lastOrderData", JSON.stringify(list));
-            }
-
-            // Hapus keranjang karena order sudah terbentuk
-            localStorage.removeItem(CART_KEY);
-
-            // Redirect ke halaman cek pesanan
-            window.location.href = '/cek-pesanan?search=' + (lastOrderData?.order_code || orderCode || '') + '&method=order_code';
+            window.location.href = '/pesanan/' + encodeURIComponent(orderCode);
         },
         onError: function(result) {
             console.log(result);
@@ -289,10 +265,13 @@ function updatePaymentSummary() {
     });
 
     const serviceFee = Math.round(subtotal * 0.01);
-    const total = subtotal + serviceFee;
+    const appFee = 4000;
+    const total = subtotal + serviceFee + appFee;
 
     document.getElementById('summary-subtotal').textContent = formatIDR(subtotal);
     document.getElementById('summary-service-fee').textContent = formatIDR(serviceFee);
+    const appFeeEl = document.getElementById('summary-app-fee');
+    if (appFeeEl) appFeeEl.textContent = formatIDR(appFee);
     document.getElementById('summary-total').textContent = formatIDR(total);
 }
 
@@ -352,7 +331,6 @@ window.processCheckout = async function() {
         }
 
         // 🔥 REQUEST KE BACKEND (HARUS BALIKAN snap_token)
-        // Updated to match web.php route: /checkout/process
         const response = await window.axios.post('/orders/checkout', payload);
         console.log(response)
         lastOrderData = response?.data?.data?.order; // 💡 simpan di sini

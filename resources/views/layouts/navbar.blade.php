@@ -4,7 +4,7 @@
     <div class="w-10 h-10 overflow-hidden rounded-full flex items-center justify-center bg-white/50">
       <img src="{{ Vite::asset('resources/img/logo.png') }}" alt="Logo" class="object-contain w-8 h-8">
     </div>
-    <span class="font-semibold text-gray-900 text-lg hidden sm:block">UPBS BRMP</span>
+    <span class="font-semibold text-gray-900 text-lg hidden sm:block">UPBS BRMP BIOGEN</span>
   </div>
 
   <!-- 🌿 Menu Tengah (desktop) -->
@@ -55,7 +55,7 @@
 
   <!-- 📱 Dropdown Mobile -->
   <div id="mobileMenu"
-       class="hidden absolute top-full right-0 mt-3 w-56 bg-white/99 backdrop-blur-xl  rounded-2xl p-4 md:hidden">
+       class="hidden absolute top-full right-0 mt-3 w-56 bg-white/95 backdrop-blur-xl  rounded-2xl p-4 md:hidden">
     <ul class="space-y-3 text-gray-800 font-medium">
       <li>
         <a href="{{ route('home') }}" 

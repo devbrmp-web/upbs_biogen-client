@@ -15,8 +15,9 @@
         'paid' => 'bg-green-100 text-green-700',
         'awaiting_payment' => 'bg-yellow-100 text-yellow-700',
         'processing' => 'bg-blue-100 text-blue-700',
-        'pickup_ready' => 'bg-blue-100 text-blue-700',
-        'cancelled' => 'bg-red-100 text-red-700'
+        'delivery_coordination' => 'bg-blue-100 text-blue-700',
+        'shipped' => 'bg-blue-100 text-blue-700',
+        'pickup_ready' => 'bg-blue-100 text-blue-700'
       ];
       $statusClass = $statusMap[$data->status ?? ''] ?? 'bg-gray-100 text-gray-800';
     @endphp
@@ -58,11 +59,27 @@
 
       <div class="bg-white rounded-xl shadow p-6">
         <h3 class="font-semibold mb-4">Informasi Pengiriman</h3>
-        <div class="space-y-2 text-sm">
-          <div><span class="text-gray-600">Kurir</span><div class="font-medium">{{ $data->courier_name ?? '-' }}</div></div>
-          <div><span class="text-gray-600">Tracking</span><div class="font-mono">{{ $data->tracking_number ?? '-' }}</div></div>
-          <div><span class="text-gray-600">Status</span><div>{{ $data->shipment_status ?? '-' }}</div></div>
-        </div>
+        @if(($data->shipping_method ?? '') === 'pickup')
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                <p class="font-bold text-blue-800 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    Ambil di Tempat (Pickup)
+                </p>
+                <div class="mt-2 text-sm text-blue-900">
+                    <p class="font-medium">Lokasi Pengambilan:</p>
+                    <p>Kantor UPBS BRMP Biogen</p>
+                    <p>Jl. Tentara Pelajar No. 3A, Bogor</p>
+                    <p class="mt-1 text-xs opacity-75">Tunjukkan kode order saat pengambilan.</p>
+                </div>
+            </div>
+        @else
+            <div class="space-y-2 text-sm">
+              <div><span class="text-gray-600">Kurir</span><div class="font-medium">{{ $data->courier_name ?? '-' }}</div></div>
+              <div><span class="text-gray-600">Layanan</span><div class="font-medium">{{ $data->courier_service ?? '-' }}</div></div>
+              <div><span class="text-gray-600">Tracking</span><div class="font-mono">{{ $data->tracking_number ?? '-' }}</div></div>
+              <div><span class="text-gray-600">Status</span><div>{{ $data->shipment_status ?? '-' }}</div></div>
+            </div>
+        @endif
       </div>
     </div>
 
