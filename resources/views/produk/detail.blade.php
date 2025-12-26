@@ -241,5 +241,4 @@
 
     @vite(['resources/js/produk.js', 'resources/css/produk.css', 'resources/js/produk-gallery.js'])
 </div>
-</body>
 @endsection

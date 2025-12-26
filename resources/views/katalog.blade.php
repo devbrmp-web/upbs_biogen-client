@@ -47,7 +47,7 @@ try{
                         Tampilkan Semua
                     </span>
                 @else
-                    <a href="/katalog"
+                    <a href="/katalog{{ $activeSeedClass ? '?seed_class='.$activeSeedClass : '' }}"
                        class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
                        bg-[#B4DEBD]/40 text-gray-800 hover:bg-[#B4DEBD]/60 transition whitespace-nowrap">
                         Tampilkan Semua
@@ -88,7 +88,6 @@ try{
 
             <select
                 id="seed-class-select"
-                onchange="window.location.href='/katalog?seed_class='+this.value+'&commodity={{ $activeCommodity ?? '' }}';"
                 class="block w-full max-w-xs rounded-lg border-gray-300 shadow-sm
                        focus:border-indigo-500 focus:ring-indigo-500
                        sm:text-sm p-2.5 bg-white border">
@@ -106,6 +105,15 @@ try{
         ======================== -->
         <div  class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
 
+            @if(empty($varieties))
+                 <div class="col-span-2 md:col-span-4 p-8 text-center bg-white rounded-xl shadow-sm border border-gray-100">
+                    <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h3 class="text-lg font-medium text-gray-900">Tidak ada varietas ditemukan</h3>
+                    <p class="text-gray-500 mt-1">Coba ubah filter atau kata kunci pencarian Anda.</p>
+                    <a href="/katalog" class="mt-4 inline-block text-blue-600 hover:underline">Reset Filter</a>
+                 </div>
+            @endif
+
             @forelse ($varieties as $variety)
                 @php
                     $priceRaw = $variety['price_idr'] ?? 0;
@@ -119,15 +127,25 @@ try{
                         $imageUrl = 'https://placehold.co/400x300?text=No+Image';
                     }
 
-                    $seedLots = collect($variety['seed_lots'] ?? []);
-                    $stockByClass = $seedLots
-                        ->filter(fn ($lot) =>
-                            ($lot['is_sellable'] ?? false) &&
-                            !empty($lot['seed_class']['code']) &&
-                            ($lot['quantity'] ?? 0) > 0
-                        )
-                        ->groupBy(fn ($lot) => $lot['seed_class']['code'])
-                        ->map(fn ($lots) => $lots->sum('quantity'));
+                    // Prepare Stock Data
+                    // Prioritize data from Controller (stock_by_class)
+                    $stockData = collect($variety['stock_by_class'] ?? []);
+                    $totalStock = $variety['stock']['total_stock_kg'] ?? 0;
+                    
+                    // Fallback to calculation if empty (legacy support or if seed_lots exists)
+                    if ($stockData->isEmpty() && !empty($variety['seed_lots'])) {
+                        $seedLots = collect($variety['seed_lots']);
+                        $stockData = $seedLots
+                            ->filter(fn ($lot) =>
+                                ($lot['is_sellable'] ?? false) &&
+                                !empty($lot['seed_class']['code']) &&
+                                ($lot['quantity'] ?? 0) > 0
+                            )
+                            ->groupBy(fn ($lot) => $lot['seed_class']['code'])
+                            ->map(fn ($lots) => [
+                                'stock' => $lots->sum('quantity')
+                            ]);
+                    }
                 @endphp
 
                 <div class="backdrop-blur-md bg-white/30 border border-white/20 shadow-md
@@ -158,13 +176,25 @@ try{
                                 Minimum: {{ $variety['minimum_limit'] ?? 0 }} kg
                             </p>
 
-                            @if ($stockByClass->isNotEmpty())
+                            @if ($stockData->isNotEmpty())
                                 <p class="text-xs text-gray-600 mt-2 flex flex-wrap">
-                                    @foreach ($stockByClass as $code => $qty)
+                                    @foreach ($stockData as $code => $data)
+                                        @php
+                                            // Handle both structures:
+                                            // 1. Controller normalized: ['name' => ..., 'stock' => ...]
+                                            // 2. View calculated: ['stock' => ...] (if I map it like that above)
+                                            // 3. Old structure: just $qty (if I didn't change map above)
+                                            
+                                            $qty = is_array($data) ? ($data['stock'] ?? 0) : $data;
+                                        @endphp
                                         <span class="mr-2">
                                             <b>{{ $code }}</b>: {{ $qty }}
                                         </span>
                                     @endforeach
+                                </p>
+                            @else
+                                <p class="text-xs text-gray-500 mt-2">
+                                    Total Stok: {{ $totalStock }} kg
                                 </p>
                             @endif
                         </div>
@@ -272,3 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </style>
 
 @endsection
+
+@push('scripts')
+@vite('resources/js/catalog.js')
+@endpush

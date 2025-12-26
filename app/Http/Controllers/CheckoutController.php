@@ -71,26 +71,13 @@ class CheckoutController extends Controller
         $orderCode = (string) $validated['order_code'];
 
         try {
-            // Coba POST ke endpoint spesifik
-            $response = Http::timeout(15)->post($url.'/api/orders/'.urlencode($orderCode).'/payment/snap-token');
-
-            // Jika 404, coba fallback ke endpoint umum dengan body (pola sync)
-            if ($response->status() === 404) {
-                $response = Http::timeout(15)->post($url.'/api/orders/payment/snap-token', [
-                    'order_code' => $orderCode
-                ]);
-            }
-            
-            // Jika masih 404 atau error method not allowed, coba GET (legacy)
-            if ($response->status() === 404 || $response->status() === 405) {
-                 $response = Http::timeout(15)->get($url.'/api/orders/'.urlencode($orderCode).'/payment/snap-token');
-            }
+            $response = Http::timeout(15)->get($url.'/api/orders/'.urlencode($orderCode).'/payment/snap-token');
 
             return response()->json($response->json(), $response->status());
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat menghubungi server pembayaran: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan saat menghubungi server pembayaran.',
             ], 500);
         }
     }

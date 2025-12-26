@@ -339,6 +339,7 @@
     function toggleShippingInfo() {
         const method = document.querySelector('input[name="shipping_method"]:checked').value;
         const info = document.getElementById('delivery-info');
+        try { localStorage.setItem('shipping_method', method); } catch(e){}
         if (method === 'delivery') {
             info.classList.remove('hidden');
         } else {
@@ -369,6 +370,7 @@
         const city = document.getElementById('form-city').value;
         const method = document.querySelector('input[name="shipping_method"]:checked').value;
         const methodLabel = method === 'pickup' ? 'Ambil di Tempat' : 'Dikirim';
+        try { localStorage.setItem('shipping_method', method); } catch(e){}
         
         document.getElementById('summary-name').textContent = name;
         document.getElementById('summary-address').innerHTML = `${address}, ${city}<br><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded mt-1 inline-block">${methodLabel}</span>`;

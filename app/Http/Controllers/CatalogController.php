@@ -70,34 +70,55 @@ class CatalogController extends Controller
             }
 
             /* =====================================================
-            | FETCH VARIETIES (ALWAYS FETCH ALL & FILTER LOCALLY)
+            | FETCH VARIETIES
             ===================================================== */
-            $varieties = Cache::remember('varieties_all', 1800, function () use ($url) {
-                return Http::timeout(5)
-                    ->get($url . '/api/varieties')
-                    ->json('data') ?? [];
-            });
+            $varieties = [];
 
-            /* =====================================================
-            | FILTER BY SEED CLASS
-            ===================================================== */
-            if (!empty($activeSeedClassCode)) {
-                $varieties = array_values(array_filter($varieties, function ($v) use ($activeSeedClassCode) {
-                    foreach (($v['seed_lots'] ?? []) as $lot) {
-                        if (
-                            ($lot['seed_class']['code'] ?? '') === $activeSeedClassCode && 
-                            ($lot['is_sellable'] ?? false) && 
-                            ($lot['quantity'] ?? 0) > 0
-                        ) {
-                            return true;
-                        }
+            if ($activeSeedClassId) {
+                // Scenario A: Filter by Seed Class (Use specific endpoint)
+                $cacheKey = "varieties_by_class_{$activeSeedClassId}";
+                $varieties = Cache::remember($cacheKey, 300, function () use ($url, $activeSeedClassId) {
+                    $response = Http::timeout(5)->get($url . "/api/seed-classes/{$activeSeedClassId}/varieties");
+                    if ($response->successful()) {
+                        return $response->json('data') ?? [];
                     }
-                    return false;
-                }));
+                    return [];
+                });
+
+                // Normalize stock data for the view
+                // The endpoint returns 'stock_by_class' => ['class_id' => ..., 'total' => ...]
+                // We need to inject this so the view can display it
+                $seedClassName = collect($seedClasses)->firstWhere('id', $activeSeedClassId)['name'] ?? $activeSeedClassCode;
+                
+                $varieties = array_map(function ($v) use ($activeSeedClassCode, $seedClassName) {
+                    // If the API returns stock_by_class, use it
+                    if (isset($v['stock_by_class']['total'])) {
+                        $v['stock_by_class'] = [
+                            $activeSeedClassCode => [
+                                'name' => $seedClassName,
+                                'stock' => $v['stock_by_class']['total']
+                            ]
+                        ];
+                    }
+                    return $v;
+                }, $varieties);
+
+            } else {
+                // Scenario B: No Seed Class Filter (Fetch All)
+                $varieties = Cache::remember('varieties_all', 1800, function () use ($url) {
+                    $response = Http::timeout(5)->get($url . '/api/varieties');
+                    if ($response->successful()) {
+                        return $response->json('data') ?? [];
+                    }
+                    return [];
+                });
+                
+                // Note: /api/varieties does NOT return seed_lots or stock breakdown.
+                // We rely on 'stock' => ['total_stock_kg' => ...]
             }
 
             /* =====================================================
-            | FILTER BY COMMODITY
+            | FILTER BY COMMODITY (Client Side)
             ===================================================== */
             if (!empty($activeCommoditySlug)) {
                 $varieties = array_values(array_filter($varieties, function ($v) use ($activeCommoditySlug) {
@@ -106,7 +127,7 @@ class CatalogController extends Controller
             }
 
             /* =====================================================
-            | SEARCH FILTER
+            | SEARCH FILTER (Client Side)
             ===================================================== */
             if (!empty($search)) {
                 $varieties = array_values(array_filter($varieties, function ($v) use ($search) {
@@ -115,42 +136,16 @@ class CatalogController extends Controller
                 }));
             }
 
-            /* =====================================================
-            | BUILD STOCK BY SEED CLASS (CORE FIX)
-            ===================================================== */
+            // Fallback for stock_by_class if it wasn't built (e.g. fetching all)
+            // The previous logic tried to build it from seed_lots, but seed_lots is missing in index API.
+            // So we leave it empty or null, and the view should handle it.
             $varieties = array_map(function ($v) {
-
-                $stockByClass = [];
-
-                foreach (($v['seed_lots'] ?? []) as $lot) {
-
-                    if (
-                        !($lot['is_sellable'] ?? false) ||
-                        ($lot['quantity'] ?? 0) <= 0 ||
-                        empty($lot['seed_class']['code'])
-                    ) {
-                        continue;
-                    }
-
-                    $code = $lot['seed_class']['code'];
-                    $name = $lot['seed_class']['name'] ?? $code;
-
-                    if (!isset($stockByClass[$code])) {
-                        $stockByClass[$code] = [
-                            'name'  => $name,
-                            'stock' => 0,
-                        ];
-                    }
-
-                    $stockByClass[$code]['stock'] += (int) $lot['quantity'];
+                if (!isset($v['stock_by_class'])) {
+                    $v['stock_by_class'] = [];
                 }
-
-                // inject ke varietas
-                $v['stock_by_class'] = $stockByClass;
-
                 return $v;
-
             }, $varieties);
+
 
             /* =====================================================
             | RETURN VIEW
