@@ -45,7 +45,10 @@
 
                     <button type="submit"
                             class="w-full bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg font-semibold">
-                        Cari Pesanan
+                        <span id="btn-text">Cari Pesanan</span>
+                        <span id="btn-loading" class="hidden">
+                            <i class="fas fa-spinner fa-spin"></i> Memuat...
+                        </span>
                     </button>
 
                 </form>
@@ -56,7 +59,7 @@
         {{-- =========================================================== --}}
         {{--      KANAN = HISTORY LIST / HASIL PENCARIAN                --}}
         {{-- =========================================================== --}}
-        <div id="result-col" class="lg:col-span-2 {{ !$hasSearch ? 'hidden' : '' }}">
+        <div id="result-col" class="lg:col-span-2 hidden">
 
             {{-- ====================== HISTORY CONTAINER ====================== --}}
             <div id="history-section" class="mb-6 hidden">
@@ -73,92 +76,18 @@
             </div>
 
             {{-- ========================= HASIL SEARCH ========================= --}}
-            @if($hasSearch)
-
-                @if(!$order)
-                    <div class="bg-white p-6 rounded-xl shadow text-center animate-fadeIn">
-                        <p class="text-red-600 font-semibold">Pesanan tidak ditemukan.</p>
-                    </div>
-                @else
-
-                    {{-- SAVE TO LOCALSTORAGE --}}
-                    <script type="application/json" id="orderJson">@json($order)</script>
-                    <script>
-                    document.addEventListener("DOMContentLoaded", function(){
-                        var el = document.getElementById("orderJson");
-                        var data = {};
-                        try { data = JSON.parse(el?.textContent || "{}"); } catch(e) {}
-                        var list = [];
-                        try { list = JSON.parse(localStorage.getItem("lastOrderData") || "[]"); } catch(e) {}
-                        list = list.filter(function(x){ return x.order_code !== data.order_code; });
-                        list.push(data);
-                        localStorage.setItem("lastOrderData", JSON.stringify(list));
-                    });
-                    </script>
-
-                    <div class="bg-white p-6 rounded-xl shadow animate-fadeIn">
-                        @php
-                            $map = [
-                                'completed' => 'bg-green-100 text-green-700',
-                                'paid' => 'bg-green-100 text-green-700',
-                                'awaiting_payment' => 'bg-yellow-100 text-yellow-700',
-                                'processing' => 'bg-blue-100 text-blue-700',
-                                'delivery_coordination' => 'bg-blue-100 text-blue-700',
-                                'shipped' => 'bg-blue-100 text-blue-700',
-                                'pickup_ready' => 'bg-blue-100 text-blue-700'
-                            ];
-                            $cls = $map[$order->status] ?? 'bg-gray-100 text-gray-800';
-
-                            $statusLabelMap = [
-                                'awaiting_payment' => 'Menunggu Pembayaran',
-                                'paid' => 'Lunas',
-                                'processing' => 'Diproses',
-                                'pickup_ready' => 'Siap Diambil',
-                                'completed' => 'Selesai',
-                                'cancelled' => 'Dibatalkan',
-                                'shipped' => 'Dikirim',
-                                'delivery_coordination' => 'Koordinasi Pengiriman'
-                            ];
-                            $statusLabel = $statusLabelMap[$order->status] ?? $order->status;
-                        @endphp
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div class="flex items-center gap-4">
-                                <div>
-                                    <p class="text-xs text-gray-600">Kode Pesanan</p>
-                                    <p class="text-lg font-semibold">{{ $order->order_code }}</p>
-                                </div>
-                                <span class="px-3 py-1 text-sm rounded-full {{ $cls }}">{{ $statusLabel }}</span>
-                            </div>
-                            <div class="flex flex-wrap gap-4">
-                                <div class="rounded-lg bg-gray-50 px-4 py-2">
-                                    <span class="text-xs text-gray-600">Kurir</span>
-                                    <div class="font-medium">{{ $order->courier_name ?? '-' }}</div>
-                                </div>
-                                <div class="rounded-lg bg-gray-50 px-4 py-2">
-                                    <span class="text-xs text-gray-600">Tracking</span>
-                                    <div class="font-medium">{{ $order->tracking_number ?? '-' }}</div>
-                                </div>
-                                <div class="rounded-lg bg-gray-50 px-4 py-2">
-                                    <span class="text-xs text-gray-600">Pengiriman</span>
-                                    <div class="font-medium">{{ $order->shipment_status ?? '-' }}</div>
-                                </div>
-                            </div>
-                            <div>
-                                <a href="/pesanan/{{ $order->order_code }}" class="inline-flex bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
-                                    Lihat Detail
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+            <div id="search-result-container">
+                @if($hasSearch)
+                    @include('partials.track-order-result', ['order' => $order])
                 @endif
-            @endif
+            </div>
 
         </div>
     </div>
 </div>
 
 {{-- ================================================================= --}}
-{{--                  SCRIPT HISTORY + AUTO LAYOUT                     --}}
+{{--                  SCRIPT COMBINED                                  --}}
 {{-- ================================================================= --}}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -166,38 +95,52 @@ document.addEventListener("DOMContentLoaded", function () {
     const historySection = document.getElementById("history-section");
     const historyList = document.getElementById("history-list");
     const clearBtn = document.getElementById("clear-history");
-
     const formCol = document.getElementById("form-col");
     const resultCol = document.getElementById("result-col");
+    const form = document.getElementById('track-form');
+    const resultContainer = document.getElementById("search-result-container");
+    const btnText = document.getElementById("btn-text");
+    const btnLoading = document.getElementById("btn-loading");
 
-    let lastOrderData = JSON.parse(localStorage.getItem("lastOrderData") || "[]");
-
-    // ⭐ Jika history ada → tampilkan layout 2 kolom
-    if (lastOrderData.length > 0) {
-        historySection.classList.remove("hidden");
-
-        formCol.classList.remove("lg:col-span-3");
-        formCol.classList.add("lg:col-span-1");
-
-        resultCol.classList.remove("hidden");
+    // Helper: Get Data
+    function getData() {
+        return JSON.parse(localStorage.getItem("lastOrderData") || "[]");
     }
-
+    function setData(data) {
+        localStorage.setItem("lastOrderData", JSON.stringify(data));
+    }
     function formatCurrency(num) {
         if (!num) return "-";
         return "Rp " + Number(num).toLocaleString("id-ID");
     }
 
+    // 1. Render History
     function renderHistory() {
+        const data = getData();
         historyList.innerHTML = "";
+        
+        if (data.length === 0) {
+            historySection.classList.add("hidden");
+            // Only hide result col if there is no search result either
+            if (!resultContainer.innerHTML.trim()) {
+                 resultCol.classList.add("hidden");
+                 formCol.classList.remove("lg:col-span-1");
+                 formCol.classList.add("lg:col-span-3");
+            }
+            return;
+        }
 
-        lastOrderData.slice().reverse().forEach((o, idxRev) => {
-            const originalIndex = lastOrderData.length - 1 - idxRev;
+        historySection.classList.remove("hidden");
+        resultCol.classList.remove("hidden");
+        formCol.classList.remove("lg:col-span-3");
+        formCol.classList.add("lg:col-span-1");
 
+        data.slice().reverse().forEach((o, idxRev) => {
+            const originalIndex = data.length - 1 - idxRev;
             const card = document.createElement("div");
             card.className = "bg-white p-4 pl-10 rounded-xl shadow relative flex flex-col md:flex-row md:items-center md:justify-between gap-4";
-
-            const statusClass =
-                (o.status === 'completed' || o.status === 'paid') ? 'bg-green-100 text-green-700'
+            
+            const statusClass = (o.status === 'completed' || o.status === 'paid') ? 'bg-green-100 text-green-700'
                 : (o.status === 'awaiting_payment') ? 'bg-yellow-100 text-yellow-700'
                 : (o.status === 'cancelled') ? 'bg-red-100 text-red-700'
                 : (o.status === 'processing' || o.status === 'pickup_ready') ? 'bg-blue-100 text-blue-700'
@@ -236,81 +179,129 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // Initial Render
     renderHistory();
-});
-</script>
-<script>
-// Auto detect method sebelum submit: phone vs order_code
-document.addEventListener('DOMContentLoaded', function () {
-  var form = document.getElementById('track-form');
-  if (!form) return;
-  form.addEventListener('submit', function (e) {
-    var input = form.querySelector('input[name="search"]');
-    var methodEl = document.getElementById('methodField');
-    var v = (input?.value || '').trim();
-    var digits = v.replace(/\D/g, '');
-    var isPhone = false;
-    if (digits.length >= 10) isPhone = true;
-    if (/^\+?62/.test(v) || /^08/.test(v)) isPhone = true;
-    methodEl.value = isPhone ? 'phone' : 'order_code';
-  });
-});
-</script>
-{{-- ================================================================= --}}
-{{--               SCRIPT HANDLE DELETE HISTORY                        --}}
-{{-- ================================================================= --}}
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const historySection = document.getElementById("history-section");
-    const historyList = document.getElementById("history-list");
-    const clearBtn = document.getElementById("clear-history");
-
-    const formCol = document.getElementById("form-col");
-    const resultCol = document.getElementById("result-col");
-
-    function getData() {
-        return JSON.parse(localStorage.getItem("lastOrderData") || "[]");
+    // Also check if PHP rendered a result (on first load with params)
+    if (resultContainer.innerHTML.trim().length > 0) {
+        resultCol.classList.remove("hidden");
+        formCol.classList.remove("lg:col-span-3");
+        formCol.classList.add("lg:col-span-1");
+        
+        // Also save to history if PHP passed it
+        // We can check if there's a script block that did it, or just rely on the AJAX flow from now on.
+        // The existing blade had a script block to save orderJson. I will keep it implicitly by checking the PHP variable $order in blade if needed, 
+        // but since I'm rewriting the file, I'll rely on the user to use the form for new searches, 
+        // OR I can parse the PHP order if present.
+        // For now, let's just let the PHP render happen.
     }
 
-    function setData(data) {
-        localStorage.setItem("lastOrderData", JSON.stringify(data));
+    // 2. Handle Form Submit (AJAX)
+    if (form) {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            
+            // Auto detect method
+            var input = form.querySelector('input[name="search"]');
+            var methodEl = document.getElementById('methodField');
+            var v = (input?.value || '').trim();
+            var digits = v.replace(/\D/g, '');
+            var isPhone = false;
+            if (digits.length >= 10) isPhone = true;
+            if (/^\+?62/.test(v) || /^08/.test(v)) isPhone = true;
+            methodEl.value = isPhone ? 'phone' : 'order_code';
+
+            // Loading state
+            const btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoading.classList.remove('hidden');
+
+            try {
+                const formData = new FormData(form);
+                const params = new URLSearchParams(formData);
+                const url = form.action + '?' + params.toString();
+
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update URL
+                    window.history.pushState({}, '', url);
+
+                    // Render Result
+                    resultContainer.innerHTML = data.html;
+                    
+                    // Update Layout
+                    resultCol.classList.remove("hidden");
+                    formCol.classList.remove("lg:col-span-3");
+                    formCol.classList.add("lg:col-span-1");
+
+                    // Save to History if order found
+                    if (data.order) {
+                        let list = getData();
+                        // Remove existing same order
+                        list = list.filter(x => x.order_code !== data.order.order_code);
+                        list.push(data.order);
+                        setData(list);
+                        renderHistory();
+                    }
+                } else {
+                    console.error('Error fetching order');
+                }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoading.classList.add('hidden');
+            }
+        });
     }
 
-    function refreshLayout(data) {
-        if (data.length === 0) {
-            historySection.classList.add("hidden");
-            formCol.classList.remove("lg:col-span-1");
-            formCol.classList.add("lg:col-span-3");
-            resultCol.classList.add("hidden");
-        }
-    }
-
-    /* ===================== HAPUS SATU ===================== */
+    // 3. Handle Delete History
     historyList.addEventListener("click", function (e) {
         if (!e.target.classList.contains("remove-history")) return;
-
         const index = e.target.dataset.index;
         if (index === undefined) return;
 
         let data = getData();
         data.splice(index, 1);
         setData(data);
-
-        e.target.closest(".bg-white").remove();
-        refreshLayout(data);
+        renderHistory();
     });
 
-    /* ===================== HAPUS SEMUA ===================== */
-    clearBtn.addEventListener("click", function () {
-        if (!confirm("Hapus semua riwayat pesanan?")) return;
+    // 4. Handle Clear All
+    if (clearBtn) {
+        clearBtn.addEventListener("click", function () {
+            if (confirm("Hapus semua riwayat?")) {
+                setData([]);
+                renderHistory();
+                // If no result currently shown, hide result col
+                if (!resultContainer.innerHTML.trim()) {
+                     resultCol.classList.add("hidden");
+                     formCol.classList.remove("lg:col-span-1");
+                     formCol.classList.add("lg:col-span-3");
+                }
+            }
+        });
+    }
 
-        localStorage.removeItem("lastOrderData");
-        historyList.innerHTML = "";
-
-        refreshLayout([]);
-    });
-
+    // Handle existing PHP-rendered order for history (on page load)
+    @if(isset($order) && $order)
+        const currentOrder = @json($order);
+        let list = getData();
+        if (!list.find(x => x.order_code === currentOrder.order_code)) {
+            list.push(currentOrder);
+            setData(list);
+            renderHistory();
+        }
+    @endif
 });
 </script>
 @endsection

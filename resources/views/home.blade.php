@@ -16,7 +16,7 @@
   {{-- Kategori Produk --}}
   @include('sections.kategori')
 
-  {{-- Produk --}}
-  @include('sections.produk')
+  {{-- Informasi Benih Unggul (Buku Saku) --}}
+  @include('sections.informasi-benih', ['infoVarietas' => $infoVarietas])
   </div>
 @endsection

@@ -1,60 +1,34 @@
 <section class="relative py-20 bg-gradient-to-b from-green-50 to-white animate-fadeIn">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         @php
-            $infos = [
-                [
-                    'name' => 'Benih Padi Inpari',
-                    'image' => 'https://images.unsplash.com/photo-1602164888808-f66f3c1574cc?q=80&w=1200&auto=format&fit=crop',
+            try {
+                $csvItems = \App\Services\VarietyInfoService::getAllVarieties(6);
+            } catch (\Throwable $e) {
+                $csvItems = [];
+            }
+            $infos = array_map(function($v){
+                $name = $v['nama_varietas'] ?? 'Varietas Unggul';
+                $komo = $v['komoditas'] ?? '';
+                $umur = $v['umur_tanaman_hari'] ?? '-';
+                $hasil = $v['rata_rata_hasil'] ?? '-';
+                $tekstur = $v['tekstur_nasi'] ?? '-';
+                $ketH = $v['ketahanan_hama'] ?? '';
+                $ketP = $v['ketahanan_penyakit'] ?? '';
+                $ket = trim(implode(' • ', array_filter([$ketH, $ketP])));
+                return [
+                    'name' => $name,
+                    'image' => 'https://placehold.co/800x600?text=' . urlencode($name),
                     'specs' => [
-                        ['label' => 'Ukuran', 'value' => '2.8–3.2 mm'],
-                        ['label' => 'Warna', 'value' => 'Kuning keemasan'],
-                        ['label' => 'Bentuk', 'value' => 'Lonjong'],
-                        ['label' => 'Kemurnian', 'value' => '≥ 98%'],
-                        ['label' => 'Kadar Air', 'value' => '≤ 12%'],
-                        ['label' => 'Rekomendasi Lahan', 'value' => 'Sawah irigasi']
+                        ['label' => 'Asal', 'value' => $v['asal'] ?? '-'],
+                        ['label' => 'Umur Tanaman', 'value' => $umur],
+                        ['label' => 'Rata-rata Hasil', 'value' => $hasil],
+                        ['label' => 'Tekstur', 'value' => $tekstur],
+                        ['label' => 'Ketahanan', 'value' => $ket !== '' ? $ket : '-'],
+                        ['label' => 'Komoditas', 'value' => $komo !== '' ? ucfirst($komo) : '—'],
                     ],
-                    'tags' => ['Toleran HPT', 'Daya tumbuh tinggi', 'Musim hujan']
-                ],
-                [
-                    'name' => 'Benih Jagung Hibrida',
-                    'image' => 'https://images.unsplash.com/photo-1598078363540-1fb701c9c82a?q=80&w=1200&auto=format&fit=crop',
-                    'specs' => [
-                        ['label' => 'Ukuran', 'value' => '5–8 mm'],
-                        ['label' => 'Warna', 'value' => 'Kuning oranye'],
-                        ['label' => 'Bentuk', 'value' => 'Bulat pipih'],
-                        ['label' => 'Kemurnian', 'value' => '≥ 97%'],
-                        ['label' => 'Kadar Air', 'value' => '≤ 10%'],
-                        ['label' => 'Rekomendasi Lahan', 'value' => 'Lahan tadah hujan']
-                    ],
-                    'tags' => ['Potensi hasil tinggi', 'Seragam', 'Cepat panen']
-                ],
-                [
-                    'name' => 'Benih Kedelai Unggul',
-                    'image' => 'https://images.unsplash.com/photo-1516849841032-87cbac4fbb0f?q=80&w=1200&auto=format&fit=crop',
-                    'specs' => [
-                        ['label' => 'Ukuran', 'value' => '5–7 mm'],
-                        ['label' => 'Warna', 'value' => 'Krem'],
-                        ['label' => 'Bentuk', 'value' => 'Bulat'],
-                        ['label' => 'Kemurnian', 'value' => '≥ 98%'],
-                        ['label' => 'Kadar Air', 'value' => '≤ 11%'],
-                        ['label' => 'Rekomendasi Lahan', 'value' => 'Dataran rendah']
-                    ],
-                    'tags' => ['Protein tinggi', 'Adaptif', 'Stabil']
-                ],
-                [
-                    'name' => 'Benih Padi Aromatik',
-                    'image' => 'https://images.unsplash.com/photo-1555361675-6ec1a19aeba4?q=80&w=1200&auto=format&fit=crop',
-                    'specs' => [
-                        ['label' => 'Ukuran', 'value' => '3–3.4 mm'],
-                        ['label' => 'Warna', 'value' => 'Putih gading'],
-                        ['label' => 'Bentuk', 'value' => 'Panjang ramping'],
-                        ['label' => 'Kemurnian', 'value' => '≥ 98%'],
-                        ['label' => 'Kadar Air', 'value' => '≤ 12%'],
-                        ['label' => 'Rekomendasi Lahan', 'value' => 'Sawah lebak']
-                    ],
-                    'tags' => ['Aroma wangi', 'Premium', 'Nilai jual tinggi']
-                ]
-            ];
+                    'tags' => array_filter([ $komo !== '' ? ucfirst($komo) : null, 'Buku Saku' ])
+                ];
+            }, $csvItems);
         @endphp
         <div class="text-center mb-12">
             <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900">Informasi Benih</h2>

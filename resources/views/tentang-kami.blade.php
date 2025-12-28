@@ -4,9 +4,18 @@
 @section('content')
 <div class="page-animate-fadeIn overflow-hidden">
     <!-- Hero Section -->
-    <div class="relative bg-gray-50 pt-24 pb-16 sm:pt-32 sm:pb-24 bg-black/20">
-        <div class="mx-auto max-w-8xl px-6 lg:px-8 bg-black/20 " >
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center lg:px-64">
+    <div class="relative pt-24 pb-16 sm:pt-32 sm:pb-24 overflow-hidden">
+        <!-- Background Hijau Gradasi (Sama dengan Home) -->
+        <div class="absolute inset-0 -z-10">
+            <div class="absolute inset-0 bg-gradient-to-r from-[#B4DEBD] via-[#B4DEBD]/70 to-transparent z-10"></div>
+            <img src="{{ Vite::asset('resources/img/herolp.jpeg') }}"
+                alt="Hero Padi"
+                class="hidden md:block absolute inset-0 w-full h-full object-cover object-right lg:object-right-top opacity-90"
+                onerror="this.src='https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=1920&auto=format&fit=crop'">
+        </div>
+
+        <div class="mx-auto max-w-7xl px-6 lg:px-8 relative z-20">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div class="z-10">
                     <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl mb-6">
                         Tentang Kami
@@ -24,10 +33,14 @@
                     </div>
                 </div>
                 <div class="relative">
-                    <div class="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-100 aspect-[4/3]">
+                    <!-- Backdrop Floating Effect -->
+                    <div class="absolute top-12 bottom-[-2rem] left-8 -right-4 bg-black/20 rounded-3xl -z-10 transform translate-x-2 translate-y-2"></div>
+
+                    <div class="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-100 aspect-[4/5] hover:scale-[1.01] transition duration-500">
                         <img src="https://images.unsplash.com/photo-1595839085880-a972b916303d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
                              alt="Fasilitas BRMP Biogen" 
                              class="w-full h-full object-cover">
+
                         <!-- Info Card Overlay -->
                         <div class="absolute bottom-6 left-6 bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-white/50 max-w-xs">
                             <div class="flex items-center gap-3 mb-2">

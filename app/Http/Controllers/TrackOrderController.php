@@ -63,6 +63,13 @@ class TrackOrderController extends Controller
             $order = null;
         }
 
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('partials.track-order-result', ['order' => $order])->render(),
+                'order' => $order
+            ]);
+        }
+
         return view('track-order', [
             'order'  => $order,
             'search' => $value,

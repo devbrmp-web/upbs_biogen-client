@@ -162,6 +162,73 @@
                         {!! nl2br(e($variety['description'])) !!}
                     </div>
 
+                    @if(!empty($varietyInfo))
+                    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Informasi Varietas</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="font-medium text-gray-700">Asal</p>
+                                <p class="mt-1 text-gray-900">{{ $varietyInfo['asal'] }}</p>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-700">Umur Tanaman</p>
+                                <p class="mt-1 text-gray-900">{{ is_numeric($varietyInfo['umur_tanaman_hari']) ? ((int) $varietyInfo['umur_tanaman_hari']) . ' hari' : $varietyInfo['umur_tanaman_hari'] }}</p>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-700">Rata-rata Hasil</p>
+                                <p class="mt-1 text-gray-900">{{ $varietyInfo['rata_rata_hasil'] }}</p>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-700">Tekstur Nasi</p>
+                                <p class="mt-1 text-gray-900">{{ $varietyInfo['tekstur_nasi'] }}</p>
+                            </div>
+                            <div class="md:col-span-2">
+                                <p class="font-medium text-gray-700">Ketahanan</p>
+                                <p class="mt-1 text-gray-900">
+                                    Hama: {{ $varietyInfo['ketahanan_hama'] }}<br>
+                                    Penyakit: {{ $varietyInfo['ketahanan_penyakit'] }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if(!empty($varietyAudience))
+                    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Ringkasan Ketahanan</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <p class="font-medium text-gray-700 mb-2">Versi Masyarakat Umum</p>
+                                <p class="text-gray-900">{{ $varietyAudience['public'] }}</p>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-700 mb-2">Versi Petani</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-sm text-gray-600 mb-1">Ketahanan terhadap hama</p>
+                                        <ul class="list-disc list-inside text-gray-900 text-sm">
+                                            @forelse(($varietyAudience['farmer']['hama'] ?? []) as $it)
+                                                <li>{{ $it }}</li>
+                                            @empty
+                                                <li>-</li>
+                                            @endforelse
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600 mb-1">Ketahanan terhadap penyakit</p>
+                                        <ul class="list-disc list-inside text-gray-900 text-sm">
+                                            @forelse(($varietyAudience['farmer']['penyakit'] ?? []) as $it)
+                                                <li>{{ $it }}</li>
+                                            @empty
+                                                <li>-</li>
+                                            @endforelse
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                     <!-- Seed Class Cards Section (New Design) -->
                     <div class="mb-8" id="seed-selection-container">
                         <h3 class="font-semibold text-gray-900 mb-4 text-lg">Pilih Kelas Benih & Stok</h3>

@@ -186,6 +186,12 @@ class CatalogController extends Controller
             /* =====================================================
             | RETURN VIEW
             ===================================================== */
+            if (request()->ajax()) {
+                return view('partials.katalog-grid', [
+                    'varieties' => $varieties,
+                ]);
+            }
+
             return view('katalog', [
                 'varieties'        => $varieties,
                 'commodities'      => $commodities,
@@ -308,7 +314,15 @@ class CatalogController extends Controller
             return Http::timeout(5)->get($url . '/api/seed-classes')->json('data') ?? [];
         });
 
-        return view('produk.detail', compact('variety', 'seedClasses'));
+        $varietyInfo = \App\Services\VarietyInfoService::matchVarietyDetails($variety) ?? null;
+        $varietyAudience = \App\Services\VarietyInfoService::summarizeByName($variety['name'] ?? '') ?? null;
+
+        return view('produk.detail', [
+            'variety' => $variety,
+            'seedClasses' => $seedClasses,
+            'varietyInfo' => $varietyInfo,
+            'varietyAudience' => $varietyAudience,
+        ]);
     }
 
     public function homeindex()
@@ -328,9 +342,12 @@ class CatalogController extends Controller
 
             $varieties = array_slice($allVarieties, 0, 8);
 
+            $infoVarietas = \App\Services\VarietyInfoService::getAllVarieties(10000);
+
             return view('home', [
                 'commodities' => $commodities,
                 'varieties' => $varieties,
+                'infoVarietas' => $infoVarietas,
             ]);
 
         } catch (ConnectionException $e) {
