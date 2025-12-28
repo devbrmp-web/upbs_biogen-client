@@ -18,9 +18,12 @@
 
         @php
             $imagePath = $variety['image_path'] ?? null;
+            $adminUrl = rtrim(config('app.url_dev_admin'), '/');
+
             if ($imagePath) {
+                // Hapus prefix jika ada, lalu bangun URL lengkap
                 $cleanPath = str_replace(['public/', 'storage/'], '', $imagePath);
-                $imageUrl = rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($cleanPath, '/');
+                $imageUrl = $adminUrl . '/storage/' . ltrim($cleanPath, '/');
             } else {
                 $imageUrl = 'https://placehold.co/400x300?text=No+Image';
             }
@@ -28,88 +31,116 @@
 
         <!-- Image Section -->
         <div class="bg-gray-50 flex flex-col items-center justify-center p-4">
-            <!-- Main Image -->
-            <div class="w-full aspect-[4/3] flex items-center justify-center mb-4 overflow-hidden rounded-lg bg-white border border-gray-100 relative">
-                <img
-                    id="mainImage"
-                    src="{{ $imageUrl }}"
-                    alt="{{ $variety['name'] }}"
-                    class="w-full h-full object-cover transition-opacity duration-300"
-                    loading="lazy" onerror="this.src='https://placehold.co/800x600?text=No+Image'"
-                >
+            
+            <!-- Swiper CSS -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+            <!-- Main Swiper -->
+            <div style="--swiper-navigation-color: #fff; --swiper-pagination-color: #fff" class="swiper main-swiper w-full aspect-[4/3] rounded-lg border border-gray-100 mb-4 bg-white">
+                <div class="swiper-wrapper">
+                    @php
+                        $images = collect($variety['images'] ?? []);
+                        if ($images->isEmpty()) {
+                            $images = collect([['image_url' => $imageUrl, 'is_primary' => true]]);
+                        }
+                        $images = $images->sortBy(function ($img) {
+                            $p = !empty($img['is_primary']) ? 0 : 1;
+                            $id = (int) ($img['id'] ?? 0);
+                            return ($p * 1000000) + $id;
+                        });
+                        $primaryImageUrlNormalized = (function() use ($variety, $adminUrl, $imageUrl) {
+                            $primary = collect($variety['images'] ?? [])->firstWhere('is_primary', true);
+                            if ($primary && !empty($primary['image_url'])) {
+                                $p = parse_url($primary['image_url'], PHP_URL_PATH);
+                                $c = str_replace(['public/', 'storage/'], '', $p ?: '');
+                                return $adminUrl . '/storage/' . ltrim($c, '/');
+                            }
+                            return $imageUrl;
+                        })();
+                    @endphp
+
+                     @foreach($images as $img)
+                         @php
+                             $rawUrl = $img['image_url'] ?? null;
+                             if ($rawUrl) {
+                                 $pathOnly = parse_url($rawUrl, PHP_URL_PATH);
+                                 $cleanP = str_replace(['public/', 'storage/'], '', $pathOnly ?: '');
+                                 $finalUrl = $adminUrl . '/storage/' . ltrim($cleanP, '/');
+                             } elseif (!empty($img['image_path'])) {
+                                 $cleanPath = str_replace(['public/', 'storage/'], '', $img['image_path']);
+                                 $finalUrl = $adminUrl . '/storage/' . ltrim($cleanPath, '/');
+                             } else {
+                                 $finalUrl = $imageUrl;
+                             }
+                         @endphp
+                         <div class="swiper-slide bg-white flex items-center justify-center">
+                             <img src="{{ $finalUrl }}" class="w-full h-full object-cover" loading="lazy" 
+                                  onerror="this.onerror=null;this.src='https://placehold.co/800x600?text=Image+Not+Found';" />
+                         </div>
+                     @endforeach
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
             </div>
 
-            <!-- Thumbnails (Horizontal Scroll) -->
-            @php
-                $images = collect($variety['images'] ?? []);
-                $minThumbs = 7;
-                $actualThumbs = 1 + $images->count();
-                $placeholders = max(0, $minThumbs - $actualThumbs);
-                $thumbPlaceholder = 'https://placehold.co/160x160/e2e8f0/475569?text=Image';
-                $mainPlaceholder = 'https://placehold.co/800x600/e2e8f0/475569?text=Image';
-            @endphp
-            <div class="w-full relative group">
-                <div class="flex overflow-x-auto space-x-2 py-2 px-1 scrollbar-hide snap-x" id="thumbnailsScroll">
-                    <!-- Main Image Thumbnail -->
-                    <div class="flex-shrink-0 w-20 h-20 border-2 border-blue-500 rounded-md cursor-pointer overflow-hidden snap-start thumbnail-item"
-                         onclick="changeMainImage('{{ $imageUrl }}', this)">
-                        <img src="{{ $imageUrl }}" data-large-url="{{ $imageUrl }}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='{{ $thumbPlaceholder }}'">
-                    </div>
-                    
+            <!-- Thumbs Swiper -->
+            <div class="swiper thumbs-swiper w-full h-24 box-border py-2">
+                <div class="swiper-wrapper">
                     @foreach($images as $img)
-                        @php
-                            $thumbUrl = $img['image_url'] ?? asset('storage/' . $img['image_path']);
-                        @endphp
-                        <div class="flex-shrink-0 w-20 h-20 border border-gray-200 rounded-md cursor-pointer overflow-hidden snap-start hover:border-blue-300 thumbnail-item"
-                             onclick="changeMainImage('{{ $thumbUrl }}', this)">
-                            <img src="{{ $thumbUrl }}" data-large-url="{{ $thumbUrl }}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='{{ $thumbPlaceholder }}'">
+                         @php
+                              // Logic yang sama untuk thumbnail
+                             $rawUrl = $img['image_url'] ?? null;
+                             if ($rawUrl) {
+                                 $pathOnly = parse_url($rawUrl, PHP_URL_PATH);
+                                 $cleanP = str_replace(['public/', 'storage/'], '', $pathOnly ?: '');
+                                 $finalUrl = $adminUrl . '/storage/' . ltrim($cleanP, '/');
+                             } elseif (!empty($img['image_path'])) {
+                                 $cleanPath = str_replace(['public/', 'storage/'], '', $img['image_path']);
+                                 $finalUrl = $adminUrl . '/storage/' . ltrim($cleanPath, '/');
+                             } else {
+                                 $finalUrl = $imageUrl;
+                             }
+                         @endphp
+                        <div class="swiper-slide w-20 h-20 rounded-md overflow-hidden border border-gray-200 cursor-pointer opacity-60 hover:opacity-100 transition-opacity relative">
+                            <img src="{{ $finalUrl }}" class="w-full h-full object-cover" 
+                                 onerror="this.onerror=null;this.src='https://placehold.co/160x160?text=Error';" />
+                            @if(!empty($img['is_primary']))
+                                <span class="absolute top-1 left-1 bg-blue-600 text-white text-[10px] px-1 rounded">Primary</span>
+                            @endif
                         </div>
-                    @endforeach
-                    
-                    @for($i = 0; $i < $placeholders; $i++)
-                        <div class="flex-shrink-0 w-20 h-20 border border-gray-200 rounded-md overflow-hidden snap-start bg-gray-100 cursor-pointer thumbnail-item"
-                             onclick="changeMainImage('{{ $mainPlaceholder }}', this)">
-                            <img src="{{ $thumbPlaceholder }}" data-large-url="{{ $mainPlaceholder }}" class="w-full h-full object-cover opacity-60 select-none" alt="Placeholder">
-                        </div>
-                    @endfor
-                </div>
-                <!-- Scroll Indicators -->
-                <div class="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1 shadow-md cursor-pointer hidden md:flex hover:bg-white" onclick="scrollThumbnails('left')">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                </div>
-                <div class="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1 shadow-md cursor-pointer hidden md:flex hover:bg-white" onclick="scrollThumbnails('right')">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                     @endforeach
                 </div>
             </div>
-        </div>
 
-        <script>
-            function changeMainImage(url, element) {
-                const mainImg = document.getElementById('mainImage');
-                mainImg.style.opacity = '0.5';
-                setTimeout(() => {
-                    mainImg.src = url;
-                    mainImg.style.opacity = '1';
-                }, 150);
+            <!-- Swiper JS -->
+            <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-                document.querySelectorAll('.thumbnail-item').forEach(el => {
-                    el.classList.remove('border-blue-500', 'border-2');
-                    el.classList.add('border-gray-200', 'border');
+            <!-- Initialize Swiper -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    var thumbsSwiper = new Swiper(".thumbs-swiper", {
+                        spaceBetween: 10,
+                        slidesPerView: 4,
+                        freeMode: true,
+                        watchSlidesProgress: true,
+                        breakpoints: {
+                            640: { slidesPerView: 5 },
+                            768: { slidesPerView: 6 }
+                        }
+                    });
+                    var mainSwiper = new Swiper(".main-swiper", {
+                        spaceBetween: 10,
+                        navigation: {
+                            nextEl: ".swiper-button-next",
+                            prevEl: ".swiper-button-prev",
+                        },
+                        thumbs: {
+                            swiper: thumbsSwiper,
+                        },
+                    });
                 });
-                element.classList.remove('border-gray-200', 'border');
-                element.classList.add('border-blue-500', 'border-2');
-            }
-
-            function scrollThumbnails(direction) {
-                const container = document.getElementById('thumbnailsScroll');
-                const scrollAmount = 200;
-                if (direction === 'left') {
-                    container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-                } else {
-                    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-                }
-            }
-        </script>
+            </script>
+        </div>
 
         <!-- Content Section -->
         <div class="p-6 flex flex-col justify-center">
@@ -231,8 +262,8 @@
             id: "{{ $variety['id'] }}",
             slug: "{{ $variety['slug'] }}",
             name: "{{ $variety['name'] }}",
-            image: "{{ $imageUrl }}",
-            base_price: {{ $variety['price_cents'] / 100 }},
+            image: "{{ $primaryImageUrlNormalized }}",
+            base_price: {{ ($variety['price_cents'] ?? 0) / 100 }},
             // Pass initial seed lots to extract classes
             // Note: Admin API returns 'seed_lots' array. We use it to list classes.
             seed_lots: @json($variety['seed_lots'] ?? [])

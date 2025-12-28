@@ -13,6 +13,7 @@ class CatalogController extends Controller
         $url = config('app.url_dev_admin');
 
         $search = request()->query('search');
+        $forceRefresh = (bool) request()->boolean('refresh');
 
         // Support ID & slug
         $commodityId        = request()->query('commodity_id');
@@ -27,17 +28,27 @@ class CatalogController extends Controller
             /* =====================================================
             | MASTER DATA (CACHED)
             ===================================================== */
-            $seedClasses = Cache::remember('seed_classes_all', 3600, function () use ($url) {
-                return Http::timeout(5)
-                    ->get($url . '/api/seed-classes')
-                    ->json('data') ?? [];
-            });
+            if ($forceRefresh) {
+                $seedClasses = Http::timeout(5)->get($url . '/api/seed-classes')->json('data') ?? [];
+                Cache::put('seed_classes_all', $seedClasses, 3600);
+            } else {
+                $seedClasses = Cache::remember('seed_classes_all', 3600, function () use ($url) {
+                    return Http::timeout(5)
+                        ->get($url . '/api/seed-classes')
+                        ->json('data') ?? [];
+                });
+            }
 
-            $commodities = Cache::remember('commodities_all', 3600, function () use ($url) {
-                return Http::timeout(5)
-                    ->get($url . '/api/commodities')
-                    ->json('data') ?? [];
-            });
+            if ($forceRefresh) {
+                $commodities = Http::timeout(5)->get($url . '/api/commodities')->json('data') ?? [];
+                Cache::put('commodities_all', $commodities, 3600);
+            } else {
+                $commodities = Cache::remember('commodities_all', 3600, function () use ($url) {
+                    return Http::timeout(5)
+                        ->get($url . '/api/commodities')
+                        ->json('data') ?? [];
+                });
+            }
 
             /* =====================================================
             | RESOLVE ACTIVE SEED CLASS
@@ -77,13 +88,19 @@ class CatalogController extends Controller
             if ($activeSeedClassId) {
                 // Scenario A: Filter by Seed Class (Use specific endpoint)
                 $cacheKey = "varieties_by_class_{$activeSeedClassId}";
-                $varieties = Cache::remember($cacheKey, 300, function () use ($url, $activeSeedClassId) {
+                if ($forceRefresh) {
                     $response = Http::timeout(5)->get($url . "/api/seed-classes/{$activeSeedClassId}/varieties");
-                    if ($response->successful()) {
-                        return $response->json('data') ?? [];
-                    }
-                    return [];
-                });
+                    $varieties = $response->successful() ? ($response->json('data') ?? []) : [];
+                    Cache::put($cacheKey, $varieties, 300);
+                } else {
+                    $varieties = Cache::remember($cacheKey, 300, function () use ($url, $activeSeedClassId) {
+                        $response = Http::timeout(5)->get($url . "/api/seed-classes/{$activeSeedClassId}/varieties");
+                        if ($response->successful()) {
+                            return $response->json('data') ?? [];
+                        }
+                        return [];
+                    });
+                }
 
                 // Normalize stock data for the view
                 // The endpoint returns 'stock_by_class' => ['class_id' => ..., 'total' => ...]
@@ -105,13 +122,32 @@ class CatalogController extends Controller
 
             } else {
                 // Scenario B: No Seed Class Filter (Fetch All)
-                $varieties = Cache::remember('varieties_all', 1800, function () use ($url) {
+                if ($forceRefresh) {
                     $response = Http::timeout(5)->get($url . '/api/varieties');
                     if ($response->successful()) {
-                        return $response->json('data') ?? [];
+                        $data = $response->json('data') ?? [];
+                        $varieties = array_map(function($item) {
+                            if (!isset($item['images'])) $item['images'] = [];
+                            return $item;
+                        }, $data);
+                        Cache::put('varieties_all', $varieties, 1800);
+                    } else {
+                        $varieties = [];
                     }
-                    return [];
-                });
+                } else {
+                    $varieties = Cache::remember('varieties_all', 1800, function () use ($url) {
+                        $response = Http::timeout(5)->get($url . '/api/varieties');
+                        if ($response->successful()) {
+                            // Tambahkan fallback images array jika kosong agar tidak error di view
+                            $data = $response->json('data') ?? [];
+                            return array_map(function($item) {
+                                if (!isset($item['images'])) $item['images'] = [];
+                                return $item;
+                            }, $data);
+                        }
+                        return [];
+                    });
+                }
                 
                 // Note: /api/varieties does NOT return seed_lots or stock breakdown.
                 // We rely on 'stock' => ['total_stock_kg' => ...]

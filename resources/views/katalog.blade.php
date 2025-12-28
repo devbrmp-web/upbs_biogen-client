@@ -3,6 +3,9 @@
 
 @section('content')
 
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
 {{-- Animasi page --}}
 @if(request()->has('commodity') || request()->has('seed_class') || request()->has('search'))
 <script>document.body.classList.add('page-animated');</script>
@@ -103,6 +106,24 @@ try{
         <!-- =======================
              GRID PRODUK
         ======================== -->
+        {{-- Debug: Jumlah varietas yang diterima: {{ count($varieties) }} --}}
+        {{-- Debug: Active Commodity: {{ $activeCommodity ?? 'None' }} --}}
+        {{-- Debug: Active Seed Class: {{ $activeSeedClass ?? 'None' }} --}}
+
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-sm text-gray-500">
+                @if(request()->has('refresh'))
+                    <span class="px-2 py-1 rounded bg-yellow-50 text-yellow-700 border border-yellow-200">Data baru diambil dari API</span>
+                @else
+                    <span class="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">Data mungkin dari cache</span>
+                @endif
+            </div>
+            <a href="/katalog{{ $activeCommodity ? '?commodity='.$activeCommodity : '' }}{{ $activeSeedClass ? ($activeCommodity ? '&' : '?').'seed_class='.$activeSeedClass : '' }}{{ ($activeCommodity || $activeSeedClass) ? '&refresh=1' : '?refresh=1' }}"
+               class="text-sm px-3 py-1.5 rounded border border-blue-600 text-blue-600 hover:bg-blue-50">
+                Refresh Data
+            </a>
+        </div>
+ 
         <div  class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
 
             @if(empty($varieties))
@@ -119,13 +140,18 @@ try{
                     $priceRaw = $variety['price_idr'] ?? 0;
                     $priceClean = (float) preg_replace('/[^\d.]/', '', $priceRaw);
 
+                    // --- START FIX URL GAMBAR ---
                     $imagePath = $variety['image_path'] ?? null;
+                    $adminUrl = rtrim(config('app.url_dev_admin'), '/');
+
                     if ($imagePath) {
+                        // Hapus prefix jika ada, lalu bangun URL lengkap
                         $cleanPath = str_replace(['public/', 'storage/'], '', $imagePath);
-                        $imageUrl = rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($cleanPath, '/');
+                        $imageUrl = $adminUrl . '/storage/' . ltrim($cleanPath, '/');
                     } else {
                         $imageUrl = 'https://placehold.co/400x300?text=No+Image';
                     }
+                    // --- END FIX URL GAMBAR ---
 
                     // Prepare Stock Data
                     // Prioritize data from Controller (stock_by_class)
@@ -148,14 +174,29 @@ try{
                     }
                 @endphp
 
-                <div class="backdrop-blur-md bg-white/30 border border-white/20 shadow-md
-                            hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden">
+                <div class="bg-white border border-gray-100 shadow-md
+                            hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden group/card">
 
                     <a href="{{ route('product.detail', $variety['slug']) }}" class="block">
 
-                        <div class="h-40 bg-gray-100 overflow-hidden">
-                            <img src="{{ $imageUrl }}"
+                        <div class="h-40 bg-gray-100 overflow-hidden relative">
+                            @php
+                                $imagesArr = $variety['images'] ?? [];
+                                $primaryImg = null;
+                                foreach ($imagesArr as $img) {
+                                    if (!empty($img['is_primary'])) { $primaryImg = $img; break; }
+                                }
+                                if ($primaryImg && !empty($primaryImg['image_url'])) {
+                                    $pathOnly = parse_url($primaryImg['image_url'], PHP_URL_PATH);
+                                    $cleanP = str_replace(['public/', 'storage/'], '', $pathOnly ?: '');
+                                    $cardImg = $adminUrl . '/storage/' . ltrim($cleanP, '/');
+                                } else {
+                                    $cardImg = $imageUrl;
+                                }
+                            @endphp
+                            <img src="{{ $cardImg }}"
                                  class="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                                 loading="lazy"
                                  onerror="this.src='https://placehold.co/400x300?text=No+Image'">
                         </div>
 
@@ -166,6 +207,9 @@ try{
 
                             <p class="text-xs text-gray-500 mt-1">
                                 {{ $variety['commodity']['name'] ?? '-' }}
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                {{ $cardImg }}
                             </p>
 
                             <p class="text-sm text-green-700 font-semibold mt-2">
@@ -304,5 +348,16 @@ document.addEventListener('DOMContentLoaded', () => {
 @endsection
 
 @push('scripts')
+<script>
+    try {
+        const TTL_15_MIN = 15 * 60 * 1000;
+        const TTL_1_HOUR = 60 * 60 * 1000;
+        if (window.UpbsCache) {
+            window.UpbsCache.set('katalog:varieties', @json($varieties));
+            window.UpbsCache.set('katalog:commodities', @json($commodities));
+            window.UpbsCache.set('katalog:seedClasses', @json($seedClasses));
+        }
+    } catch (e) {}
+    </script>
 @vite('resources/js/catalog.js')
 @endpush
