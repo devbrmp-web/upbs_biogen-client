@@ -110,17 +110,16 @@ try{
         {{-- Debug: Active Commodity: {{ $activeCommodity ?? 'None' }} --}}
         {{-- Debug: Active Seed Class: {{ $activeSeedClass ?? 'None' }} --}}
 
-        <div class="flex items-center justify-between mb-4">
-            <div class="text-sm text-gray-500">
-                @if(request()->has('refresh'))
-                    <span class="px-2 py-1 rounded bg-yellow-50 text-yellow-700 border border-yellow-200">Data baru diambil dari API</span>
-                @else
-                    <span class="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">Data mungkin dari cache</span>
-                @endif
-            </div>
-            <a href="/katalog{{ $activeCommodity ? '?commodity='.$activeCommodity : '' }}{{ $activeSeedClass ? ($activeCommodity ? '&' : '?').'seed_class='.$activeSeedClass : '' }}{{ ($activeCommodity || $activeSeedClass) ? '&refresh=1' : '?refresh=1' }}"
-               class="text-sm px-3 py-1.5 rounded border border-blue-600 text-blue-600 hover:bg-blue-50">
-                Refresh Data
+        <div class="flex items-center justify-end mb-4">
+            @php
+                $refreshUrl = '/katalog' . ($activeCommodity ? '?commodity='.$activeCommodity : '');
+                $refreshUrl .= $activeSeedClass ? (($activeCommodity ? '&' : '?').'seed_class='.$activeSeedClass) : '';
+                $refreshUrl .= ($activeCommodity || $activeSeedClass) ? '&refresh=1' : '?refresh=1';
+            @endphp
+            <a href="{{ $refreshUrl }}" id="refreshDataBtn" class="inline-flex items-center justify-center w-9 h-9 rounded-full border border-blue-600 text-blue-600 hover:bg-blue-50 transition" aria-label="Muat Ulang Data" title="Muat Ulang Data">
+                <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v6h6M20 20v-6h-6M5 19a9 9 0 0014-7M19 5a9 9 0 00-14 7" />
+                </svg>
             </a>
         </div>
  

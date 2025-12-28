@@ -11,10 +11,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 newUrl += '&commodity=' + encodeURIComponent(commodity);
             }
             
-            // Show loading state (optional visual improvement)
             document.body.classList.add('cursor-wait');
             
             window.location.href = newUrl;
+        });
+    }
+
+    const refreshBtn = document.getElementById('refreshDataBtn');
+    const refreshIcon = document.getElementById('refreshIcon');
+    if (refreshBtn && refreshIcon) {
+        refreshBtn.addEventListener('click', function() {
+            refreshIcon.style.animation = 'spin 0.8s linear infinite';
+            setTimeout(() => {
+                refreshIcon.style.animation = '';
+            }, 1200);
         });
     }
 });

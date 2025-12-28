@@ -104,9 +104,7 @@
                         <div class="swiper-slide w-20 h-20 rounded-md overflow-hidden border border-gray-200 cursor-pointer opacity-60 hover:opacity-100 transition-opacity relative">
                             <img src="{{ $finalUrl }}" class="w-full h-full object-cover" 
                                  onerror="this.onerror=null;this.src='https://placehold.co/160x160?text=Error';" />
-                            @if(!empty($img['is_primary']))
-                                <span class="absolute top-1 left-1 bg-blue-600 text-white text-[10px] px-1 rounded">Primary</span>
-                            @endif
+                            
                         </div>
                      @endforeach
                 </div>
