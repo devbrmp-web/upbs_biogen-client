@@ -58,6 +58,8 @@ function initInteraction() {
                 // Let's just use a global variable or read from DOM in addToCart
                 window.selectedClassId = c.dataset.seedClassId;
                 window.selectedClassCode = code;
+                window.selectedClassName = c.dataset.seedClassName;
+                window.selectedPrice = parseFloat(c.dataset.price) || 0;
                 
                 const valid = validateQtyInput(qtyInput, code);
                 document.getElementById('btn-add-cart').disabled = !valid;
@@ -89,11 +91,12 @@ window.addToCartAction = function(isBuyNow) {
     const item = {
         variety_id: window.varietyData.id,
         name: window.varietyData.name,
-        price: window.varietyData.base_price, // Base price, or we can fetch specific price if needed
+        price: window.selectedPrice || window.varietyData.base_price, // Use class specific price
         image: window.varietyData.image,
         quantity: parseInt(qty),
         seed_class_id: window.selectedClassId,
         seed_class_code: window.selectedClassCode,
+        seed_class_name: window.selectedClassName,
         seed_lot_id: null // Auto-resolve at checkout
     };
 

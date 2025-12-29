@@ -218,6 +218,9 @@ window.cart = {
                                     <span class="text-sm text-gray-500">
                                         ${item.seed_class_name || 'Benih'}
                                     </span>
+                                    <span class="text-sm text-gray-500">
+                                        Lot: ${item.seed_lot_id || '-'}
+                                    </span>
                                 </div>
                             </div>
                             <button class="btn-remove text-gray-400 hover:text-red-500 transition-colors">

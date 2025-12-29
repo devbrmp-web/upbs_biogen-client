@@ -236,11 +236,16 @@ function renderCheckoutCart() {
                     
                     <div class="mt-2 space-y-1 text-sm">
                         <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <span class="${badgeClass} text-xs font-bold px-2 py-0.5 rounded">
-                                    ${item.seed_class_code}
-                                </span>
-                                <span class="text-gray-600">Lot: ${item.seed_lot_id || 'Auto'}</span>
+                            <div class="flex flex-col gap-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="${badgeClass} text-xs font-bold px-2 py-0.5 rounded">
+                                        ${item.seed_class_code}
+                                    </span>
+                                    <span class="text-gray-600">
+                                        ${item.seed_class_name || 'Benih'}
+                                    </span>
+                                </div>
+                                <span class="text-xs text-gray-500">Lot: ${item.seed_lot_id || 'Auto'}</span>
                             </div>
                             <span class="font-medium text-gray-900">
                                 ${item.quantity} kg x ${formatIDR(item.price)}

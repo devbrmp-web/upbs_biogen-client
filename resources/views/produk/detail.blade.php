@@ -1,6 +1,20 @@
 @extends('layouts.app')
 
 @section('content')
+<!-- <pre class="bg-gray-100 text-xs p-4 rounded overflow-auto max-h-[400px]">
+DEBUG VARIETY:
+{{ json_encode($variety ?? null, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}
+
+DEBUG SEED CLASSES:
+{{ json_encode($seedClasses ?? null, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}
+
+DEBUG VARIETY INFO:
+{{ json_encode($varietyInfo ?? null, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}
+
+DEBUG VARIETY AUDIENCE:
+{{ json_encode($varietyAudience ?? null, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}
+</pre> -->
+
 
 <div class="page-animate-zoomIn">
 
@@ -251,7 +265,7 @@
                                     'total_stock' => $lots->where('is_sellable', true)->sum('quantity'),
                                     'min_order' => $code === 'FS' ? 5 : 1,
                                     'unit' => $first['unit'] ?? 'kg',
-                                    'price' => $first['price_per_unit_cents'] ?? null
+                                    'price' => $first['price_per_unit'] ?? null
                                 ];
                             })->filter(function($c) {
                                 return $c['id'] !== 0;
@@ -263,6 +277,8 @@
                                 <div class="seed-class-card border rounded-xl p-5 relative group hover:border-blue-300 transition bg-white cursor-pointer" 
                                      data-seed-class-id="{{ $class['id'] }}" 
                                      data-seed-class-code="{{ $class['code'] }}"
+                                     data-seed-class-name="{{ $class['name'] }}"
+                                     data-price="{{ $class['price'] ?? 0 }}"
                                      data-minimum-limit="{{ $class['min_order'] }}"
                                      onclick="selectClass('{{ $class['code'] }}')">
                                      
