@@ -1,4 +1,4 @@
-<section class="relative py-16 bg-white overflow-hidden animate-fadeIn">
+<section class="relative py-16 bg-gradient-to-b from-[#F3F9F5] to-white overflow-hidden animate-fadeIn">
     <div class="max-w-7xl mx-auto px-6 lg:px-8 relative">
 
         <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center mt-4">Komoditas</h2>

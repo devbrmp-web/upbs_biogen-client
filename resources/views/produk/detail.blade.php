@@ -154,10 +154,6 @@
 
                 <!-- Price -->
                 <div class="mt-2">
-                    <p id="display-price" class="text-lg font-semibold text-gray-900">
-                        {{ $variety['price_idr'] }}
-                        <span class="text-sm text-gray-500 font-normal">/ kg</span>
-                    </p>
                     <div class="prose prose-blue text-gray-600 mb-8 max-w-none">
                         {!! nl2br(e($variety['description'])) !!}
                     </div>
@@ -254,7 +250,8 @@
                                     'name' => $seedClass['name'] ?? ($classRef['name'] ?? $code),
                                     'total_stock' => $lots->where('is_sellable', true)->sum('quantity'),
                                     'min_order' => $code === 'FS' ? 5 : 1,
-                                    'unit' => $first['unit'] ?? 'kg'
+                                    'unit' => $first['unit'] ?? 'kg',
+                                    'price' => $first['price_per_unit_cents'] ?? null
                                 ];
                             })->filter(function($c) {
                                 return $c['id'] !== 0;
@@ -275,6 +272,15 @@
                                                 <span class="px-2 py-0.5 rounded text-xs font-bold border {{ $class['code'] == 'BS' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-purple-50 text-purple-700 border-purple-200' }}">{{ $class['code'] }}</span>
                                                 <h4 class="font-bold text-gray-900 text-lg">{{ $class['name'] }}</h4>
                                             </div>
+                                            
+                                            <p class="mb-2 font-semibold text-blue-600">
+                                                @if(!empty($class['price']))
+                                                    Rp {{ number_format($class['price'], 0, ',', '.') }} <span class="text-sm font-normal text-gray-500">per kg</span>
+                                                @else
+                                                    <span class="text-sm font-normal text-gray-400 italic">Harga belum tersedia</span>
+                                                @endif
+                                            </p>
+
                                             <p class="text-sm text-gray-500">
                                                 Total Stok: <span class="font-semibold text-gray-900">{{ $class['total_stock'] }} {{ $class['unit'] }}</span>
                                             </p>

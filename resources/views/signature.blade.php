@@ -150,15 +150,17 @@
         const imgDisplay = document.getElementById('signatureImage');
         const controls = document.getElementById('signatureControls');
 
-        const savedSignature = localStorage.getItem(storageKey);
+        // Check if signature already exists on server
+        const serverSignature = "{{ $data->signature_path ?? '' }}";
 
-        if (savedSignature) {
-            showSavedSignature(savedSignature);
+        if (serverSignature) {
+            showSavedSignature(serverSignature);
         } else {
-            const temp = localStorage.getItem('signature_temp');
-            if (temp) {
-                localStorage.setItem(storageKey, temp);
-                showSavedSignature(temp);
+            // Fallback to local storage (e.g. if saved but failed to upload previously, though we don't handle sync yet)
+            const savedSignature = localStorage.getItem(storageKey);
+            if (savedSignature) {
+                // We show it on canvas so user can re-save (upload) it
+                signaturePad.fromDataURL(savedSignature);
             }
         }
 
@@ -169,9 +171,11 @@
             canvas.height = canvas.offsetHeight * ratio;
             canvas.getContext("2d").scale(ratio, ratio);
             
-            // Reload signature if exists (because resize clears canvas)
-            if (!savedSignature) {
+            // Reload signature if exists on canvas
+            if (!signaturePad.isEmpty()) {
+                const data = signaturePad.toDataURL();
                 signaturePad.clear();
+                signaturePad.fromDataURL(data);
             }
         }
         window.addEventListener("resize", resizeCanvas);
@@ -182,34 +186,69 @@
                 alert("Silakan tanda tangan terlebih dahulu.");
                 return;
             }
+            
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = 'Menyimpan...';
+            btn.disabled = true;
+
             const dataUrl = signaturePad.toDataURL();
-            localStorage.setItem(storageKey, dataUrl);
-            showSavedSignature(dataUrl);
-            alert("Tanda tangan berhasil disimpan!");
+
+            fetch('/api/orders/' + orderCode + '/signature', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ signature: dataUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.removeItem(storageKey); // Clean up local
+                    showSavedSignature(data.url);
+                    alert("Tanda tangan berhasil disimpan!");
+                } else {
+                    alert("Gagal menyimpan: " + (data.message || 'Error unknown'));
+                }
+            })
+            .catch(err => {
+                alert("Terjadi kesalahan koneksi: " + err);
+            })
+            .finally(() => {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            });
         };
 
         window.clearSignature = function() {
-            localStorage.removeItem(storageKey);
-            signaturePad.clear();
-            
-            // Show canvas, hide image
-            canvas.classList.remove('hidden');
-            imgDisplay.classList.add('hidden');
-            controls.classList.remove('hidden');
-            
-            // Re-enable writing
-            signaturePad.on();
+            if (confirm('Hapus tanda tangan?')) {
+                // Note: We only clear the view/canvas. 
+                // To delete from server would require another API endpoint, 
+                // but requirement says "Auto-delete signature lama jika diupload ulang".
+                // So clearing here just allows user to sign again.
+                
+                signaturePad.clear();
+                
+                // Show canvas, hide image
+                canvas.classList.remove('hidden');
+                imgDisplay.classList.add('hidden');
+                controls.classList.remove('hidden');
+                
+                // Re-enable writing
+                signaturePad.on();
+            }
         };
 
-        function showSavedSignature(dataUrl) {
+        function showSavedSignature(url) {
             // Show image, hide canvas
-            imgDisplay.src = dataUrl;
+            imgDisplay.src = url;
             imgDisplay.classList.remove('hidden');
             canvas.classList.add('hidden');
             
-            // Hide save button, keep clear button but maybe style differently?
-            // Actually user might want to re-sign, so we keep controls but maybe change text
-            // For now let's keep it simple: "Hapus" allows re-signing.
+            // We keep controls visible so user can "Hapus" (re-sign)
+            // But maybe change "Simpan" to hidden? 
+            // The requirement doesn't specify locking it.
         }
     });
 </script>

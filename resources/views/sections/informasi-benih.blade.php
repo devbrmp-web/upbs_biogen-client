@@ -12,7 +12,7 @@
                 <h2 class="text-2xl md:text-3xl font-bold text-gray-900">Varietas</h2>
                 <p class="mt-1 text-sm md:text-base text-gray-600">Informasi benih unggul dari Buku Saku</p>
             </div>
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 backdrop-blur border border-white/40 shadow-sm">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white backdrop-blur border border-white/40 shadow-sm">
                 <span class="text-xs font-medium text-emerald-700">Komoditas</span>
                 <select id="vs-filter" class="text-sm bg-transparent focus:outline-none">
                     <option value="">Semua</option>

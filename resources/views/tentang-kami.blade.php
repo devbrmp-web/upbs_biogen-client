@@ -37,7 +37,7 @@
                     <div class="absolute top-12 bottom-[-2rem] left-8 -right-4 bg-black/20 rounded-3xl -z-10 transform translate-x-2 translate-y-2"></div>
 
                     <div class="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-100 aspect-[4/5] hover:scale-[1.01] transition duration-500">
-                        <img src="https://images.unsplash.com/photo-1595839085880-a972b916303d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
+                        <img src="https://biogen.brmp.pertanian.go.id/storage/assets/uploads/images/satker/thumbnail/vbASO2ymhtZ3oJjlIkLXlQhJdPOX7O7NJJbQfqaG.jpg" 
                              alt="Fasilitas BRMP Biogen" 
                              class="w-full h-full object-cover">
 

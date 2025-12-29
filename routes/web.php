@@ -4,6 +4,8 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderMailController;
+use App\Http\Controllers\Api\SignatureController;
+use App\Http\Controllers\TrackOrderController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -34,8 +36,6 @@ Route::get('/produk/{slug}', [CatalogController::class, 'productDetail'])->name(
 
 Route::view('/tentang-kami', 'tentang-kami')->name('about');
 
-use App\Http\Controllers\TrackOrderController;
-
 Route::get('/cek-pesanan', [TrackOrderController::class, 'index'])->name('cek-pesanan');
 Route::get('/pesanan/signature/{order_code}', [TrackOrderController::class, 'signature'])->name('order.signature');
 Route::get('/pesanan/{order_code}', [TrackOrderController::class, 'detail'])->name('order.detail');
@@ -49,3 +49,6 @@ Route::get('/home', function () {
 
 // Email resi sender
 Route::post('/orders/send-invoice', [OrderMailController::class, 'sendInvoice']);
+
+// Signature API
+Route::post('/api/orders/{order_code}/signature', [SignatureController::class, 'store'])->name('api.orders.signature');
