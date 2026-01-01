@@ -220,7 +220,8 @@ function renderCheckoutCart() {
     }
 
     container.innerHTML = items.map(item => {
-        const itemTotal = item.quantity * item.price;
+        const unitPrice = parseInt(item.price_per_unit) || 0;
+        const itemTotal = item.quantity * unitPrice;
         
         let badgeClass = 'bg-gray-100 text-gray-800';
         if (item.seed_class_code === 'BS') badgeClass = 'bg-yellow-100 text-yellow-800';
@@ -248,7 +249,7 @@ function renderCheckoutCart() {
                                 <span class="text-xs text-gray-500">Lot: ${item.seed_lot_id || 'Auto'}</span>
                             </div>
                             <span class="font-medium text-gray-900">
-                                ${item.quantity} kg x ${formatIDR(item.price)}
+                                ${item.quantity} kg x ${formatIDR(unitPrice)}
                             </span>
                         </div>
                         <div class="text-right font-bold text-blue-600">
@@ -266,7 +267,8 @@ function updatePaymentSummary() {
     let subtotal = 0;
 
     items.forEach(item => {
-        subtotal += (item.quantity * item.price);
+        const unitPrice = parseInt(item.price_per_unit) || 0;
+        subtotal += (item.quantity * unitPrice);
     });
 
     const serviceFee = Math.round(subtotal * 0.01);
@@ -315,13 +317,24 @@ window.processCheckout = async function() {
     try {
         const cartItems = getCart();
         const shippingMethod = document.querySelector('input[name="shipping_method"]:checked').value;
+        const invalidQty = cartItems.some(it => {
+            if (it.seed_class_code === 'FS') {
+                return !(it.quantity % 5 === 0 && it.quantity >= 5);
+            }
+            if (it.seed_class_code === 'BS') {
+                return !(it.quantity >= 1);
+            }
+            return !(it.quantity >= 1);
+        });
+        if (invalidQty) {
+            throw new Error('Jumlah item tidak memenuhi aturan kelas benih (FS kelipatan 5 kg, BS minimal 1 kg).');
+        }
 
         const payload = {
             items: cartItems.map(item => ({
                 variety_id: item.variety_id,
-                quantity: item.quantity,
-                seed_lot_id: item.seed_lot_id || null,
-                seed_class_code: item.seed_class_code
+                seed_lot_id: item.seed_lot_id,
+                quantity: item.quantity
             })),
             customer_name: name,
             customer_address: `${address}, Kec. ${district}, ${city}, ${province}, ${postal}`,
@@ -334,12 +347,13 @@ window.processCheckout = async function() {
         if (!payload.terms_accepted) {
             throw new Error('Anda harus menyetujui Syarat dan Ketentuan.');
         }
+        const missingLot = payload.items.some(it => !it.seed_lot_id);
+        if (missingLot) {
+            throw new Error('Pilih lot untuk setiap item sebelum melanjutkan.');
+        }
 
-        // 🔥 REQUEST KE BACKEND (HARUS BALIKAN snap_token)
         const response = await window.axios.post('/orders/checkout', payload);
-        console.log(response)
-        lastOrderData = response?.data?.data?.order; // 💡 simpan di sini
-        // Ambil data dari backend
+        lastOrderData = response?.data?.data?.order;
         const snapToken =
             response?.data?.snap_token ||
             response?.data?.token ||

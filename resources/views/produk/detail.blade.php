@@ -310,6 +310,30 @@ DEBUG VARIETY AUDIENCE:
                                         <button type="button" class="increase w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded hover:bg-blue-700">+</button> 
                                     </div> 
                                     <p class="qty-error text-xs text-red-600 mt-1 hidden">Jumlah untuk Foundation Seed (FS) harus kelipatan 5 kg</p>
+                                    
+                                    @php
+                                        $lotsForClass = $seedLots->filter(function($lot) use ($class) {
+                                            return !empty($lot['seed_class']) && ($lot['seed_class']['code'] ?? null) === $class['code'];
+                                        })->filter(function($lot) {
+                                            return ($lot['is_sellable'] ?? false) && (int)($lot['quantity'] ?? 0) > 0;
+                                        });
+                                    @endphp
+                                    @if($lotsForClass->count() > 0)
+                                    <div class="lot-options mt-4 space-y-2" data-seed-class-code="{{ $class['code'] }}">
+                                        @foreach($lotsForClass as $lot)
+                                            <label class="flex items-center justify-between border rounded-lg p-3 cursor-pointer hover:border-blue-300">
+                                                <div class="flex items-center gap-3">
+                                                    <input type="radio" name="lot-{{ $class['code'] }}" value="{{ $lot['id'] }}" data-price="{{ (int) ($lot['price_per_unit'] ?? 0) }}">
+                                                    <span class="text-sm text-gray-900">Lot {{ $lot['id'] }}</span>
+                                                    <span class="text-xs text-gray-500">Stok {{ (int) ($lot['quantity'] ?? 0) }} {{ $lot['unit'] ?? 'kg' }}</span>
+                                                </div>
+                                                <div class="text-sm font-semibold text-blue-600">Rp {{ number_format((int) ($lot['price_per_unit'] ?? 0), 0, ',', '.') }}</div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                    @else
+                                    <div class="text-sm text-gray-500 mt-3">Tidak ada lot tersedia untuk kelas ini.</div>
+                                    @endif
                                 </div>
                             @empty
                                 <div class="p-6 bg-gray-50 rounded-xl text-center text-gray-500 italic border border-dashed border-gray-300">Stok belum tersedia untuk varietas ini.</div>

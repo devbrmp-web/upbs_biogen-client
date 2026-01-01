@@ -120,8 +120,8 @@ window.cart = {
     },
 
     itemKey(item) {
-        const scid = item.seed_class_id != null ? String(item.seed_class_id) : String(item.seed_class_code || '');
-        return `${item.variety_id}-${scid}`;
+        const lot = item.seed_lot_id != null ? String(item.seed_lot_id) : String(item.seed_class_id ?? item.seed_class_code ?? '');
+        return `${item.variety_id}-${lot}`;
     },
 
     removeItem(itemKey) {
@@ -193,7 +193,7 @@ window.cart = {
         let totalPrice = 0;
 
         const html = this.data.items.map(item => {
-            const itemTotal = item.quantity * item.price;
+            const itemTotal = item.quantity * (parseInt(item.price_per_unit) || 0);
             totalWeight += item.quantity;
             totalPrice += itemTotal;
 
@@ -230,7 +230,7 @@ window.cart = {
                         
                         <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-3">
                             <div class="text-sm text-gray-600">
-                                Harga: ${this.formatIDR(item.price)} / kg
+                                Harga: ${this.formatIDR(parseInt(item.price_per_unit) || 0)} / kg
                             </div>
                             <div class="flex flex-col items-end gap-2">
                                 <div class="flex items-center bg-white rounded-md border border-gray-200">
@@ -268,7 +268,7 @@ window.cart = {
 
         let grand = 0;
         container.innerHTML = this.data.items.map(item => {
-            const itemTotal = item.quantity * item.price;
+            const itemTotal = item.quantity * (parseInt(item.price_per_unit) || 0);
             grand += itemTotal;
             let badgeClass = 'bg-gray-100 text-gray-800';
             if (item.seed_class_code === 'BS') badgeClass = 'bg-yellow-100 text-yellow-800';
@@ -292,7 +292,7 @@ window.cart = {
                     </button>
                   </div>
                   <div class="flex items-center justify-between bg-gray-50 p-2 rounded mt-2">
-                    <div class="text-xs text-gray-600">${this.formatIDR(item.price)} / kg</div>
+                    <div class="text-xs text-gray-600">${this.formatIDR(parseInt(item.price_per_unit) || 0)} / kg</div>
                     <div class="flex items-center gap-2">
                       <button class="btn-dec px-2 py-1 border rounded">-</button>
                       <span class="w-8 text-center text-sm">${item.quantity}</span>
