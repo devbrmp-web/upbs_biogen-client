@@ -83,7 +83,11 @@
                     </p>
                     
                     <p class="text-sm text-green-700 font-semibold mt-2">
-                        Rp {{ number_format($priceClean, 0, ',', '.') }}
+                        @if(!empty($variety['price_range_text']))
+                            {{ $variety['price_range_text'] }}
+                        @else
+                            <span class="text-gray-400">Harga belum tersedia</span>
+                        @endif
                     </p>
 
                     <p class="text-xs text-gray-500 mt-1">

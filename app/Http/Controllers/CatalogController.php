@@ -154,6 +154,55 @@ class CatalogController extends Controller
             }
 
             /* =====================================================
+            | CALCULATE PRICE RANGES (Client Side)
+            ===================================================== */
+            $varieties = array_map(function ($v) use ($url) {
+                // Hitung price range dari seed lots jika tersedia
+                $minPrice = null;
+                $maxPrice = null;
+                $hasSellableLots = false;
+                
+                // Coba ambil detail varietas untuk mendapatkan seed_lots
+                try {
+                    $response = Http::timeout(3)->get($url . '/api/varieties/' . $v['slug']);
+                    if ($response->successful()) {
+                        $detail = $response->json('data');
+                        if (!empty($detail['seed_lots']) && is_array($detail['seed_lots'])) {
+                            // Filter seed lots yang aktif dijual dan memiliki quantity > 0
+                            $sellableLots = array_filter($detail['seed_lots'], function ($lot) {
+                                return ($lot['is_sellable'] ?? false) && 
+                                       ($lot['quantity'] ?? 0) > 0 && 
+                                       ($lot['price_per_unit'] ?? 0) > 0;
+                            });
+                            
+                            if (!empty($sellableLots)) {
+                                $prices = array_column($sellableLots, 'price_per_unit');
+                                $minPrice = min($prices);
+                                $maxPrice = max($prices);
+                                $hasSellableLots = true;
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Jika gagal ambil detail, lanjutkan tanpa price range
+                }
+                
+                // Format price range
+                if ($hasSellableLots && $minPrice !== null && $maxPrice !== null) {
+                    if ($minPrice == $maxPrice) {
+                        $v['price_range_text'] = 'Rp ' . number_format($minPrice, 0, ',', '.');
+                    } else {
+                        $v['price_range_text'] = 'Rp ' . number_format($minPrice, 0, ',', '.') . 
+                                                ' - Rp ' . number_format($maxPrice, 0, ',', '.');
+                    }
+                } else {
+                    $v['price_range_text'] = null;
+                }
+                
+                return $v;
+            }, $varieties);
+
+            /* =====================================================
             | FILTER BY COMMODITY (Client Side)
             ===================================================== */
             if (!empty($activeCommoditySlug)) {
