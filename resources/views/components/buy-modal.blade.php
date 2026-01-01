@@ -1,3 +1,4 @@
+
 <!-- resources/views/components/buy-modal.blade.php -->
 <div id="buyModal" class="fixed inset-0 z-50 hidden">
   <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>

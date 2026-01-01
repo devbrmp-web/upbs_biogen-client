@@ -1,4 +1,4 @@
-<section class="relative py-16 bg-white overflow-hidden">
+<section class="relative py-16 bg-white overflow-hidden animate-fadeIn">
     <div class="max-w-7xl mx-auto px-6 lg:px-8 relative">
 
         <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center mt-4">Komoditas</h2>
@@ -18,21 +18,27 @@
                 <div
                     class="group relative min-w-[180px] flex-shrink-0 rounded-2xl border border-gray-100 bg-white shadow-md p-6 text-center hover:scale-105 transition-all duration-300 cursor-pointer">
                     
-                    <!-- Gambar Komoditas -->
                     <div class="h-24 w-24 mx-auto mb-3 flex items-center justify-center overflow-hidden rounded-full bg-gray-50">
-                        <img src="{{ $commodity['image'] ?? asset('resources/img/sample-commodity.jpg') }}"
+                        @php
+                            $imagePath = $commodity['image'] ?? null;
+                            $imageUrl = $imagePath
+                                ? rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($imagePath, '/')
+                                : 'https://placehold.co/400x300?text=No+Image';
+                        @endphp
+                        <img src="{{ $imageUrl}}"
                              alt="{{ $commodity['name'] }}"
-                             class="object-contain w-full h-full group-hover:scale-110 transition-transform duration-300">
+                             class="object-contain w-full h-full group-hover:scale-110 transition-transform duration-300"
+                             loading="lazy"
+                             onerror="this.src='https://placehold.co/96x96?text=No+Img'">
                     </div>
-
                     <!-- Nama Komoditas -->
                     <p class="font-semibold text-gray-800">{{ $commodity['name'] }}</p>
 
                     <!-- Tombol muncul saat hover -->
                     <div
                         class="absolute inset-0 bg-white/60 backdrop-blur-md rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
-                        <a href="{{ url('/katalog?commodity=' . $commodity['slug']) }}"
-                            class="bg-gray-900/70 text-white px-4 py-2 rounded-lg text-sm shadow hover:bg-gray-900/90 transition-all duration-200">
+                        <a href="{{ url('/katalog?commodity=' . strtolower($commodity['slug'])) }}"
+                            class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm shadow hover:bg-gray-800 transition-all duration-200">
                             Lihat Produk
                         </a>
                     </div>

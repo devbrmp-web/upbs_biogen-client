@@ -31,12 +31,47 @@ body {
   overflow-y: scroll;       /* scroll tetap aktif */
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fadeIn {
-  animation: fadeIn 0.25s ease-out;
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideRight { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideLeft { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes zoomIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+@keyframes blurIn { from { opacity: 0; filter: blur(6px); } to { opacity: 1; filter: blur(0); } }
+@keyframes rise { from { opacity: 0; transform: translateY(16px) scale(0.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
 
+/* Komponen kecil tetap cepat */
+.animate-fadeIn { animation: fadeIn 0.25s ease-out both; }
+
+/* Animasi halaman (>=0.5s) */
+.page-animate-fadeIn { animation: fadeIn 0.6s ease-out both; }
+.page-animate-slideUp { animation: slideUp 0.6s ease-out both; }
+.page-animate-slideRight { animation: slideRight 0.6s ease-out both; }
+.page-animate-slideLeft { animation: slideLeft 0.6s ease-out both; }
+.page-animate-zoomIn { animation: zoomIn 0.6s ease-out both; }
+.page-animate-blurIn { animation: blurIn 0.6s ease-out both; }
+.page-animate-rise { animation: rise 0.6s ease-out both; }
+.page-animate-scaleIn { animation: scaleIn 0.6s ease-out both; }
+
+/* Hanya sekali per navigasi */
+body.page-animated .page-animate-fadeIn,
+body.page-animated .page-animate-slideUp,
+body.page-animated .page-animate-slideRight,
+body.page-animated .page-animate-slideLeft,
+body.page-animated .page-animate-zoomIn,
+body.page-animated .page-animate-blurIn,
+body.page-animated .page-animate-rise,
+body.page-animated .page-animate-scaleIn { animation: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeIn,
+  .page-animate-fadeIn,
+  .page-animate-slideUp,
+  .page-animate-slideRight,
+  .page-animate-slideLeft,
+  .page-animate-zoomIn,
+  .page-animate-blurIn,
+  .page-animate-rise,
+  .page-animate-scaleIn { animation: none !important; }
+}
 

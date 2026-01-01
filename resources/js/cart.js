@@ -1,352 +1,310 @@
-// resources/js/cart.js
-// Marketplace-style cart + qty modal (delegated events, localStorage)
-// Safe to load via Vite (use once in layout)
+/**
+ * Cart Logic V3
+ * Supports Seed Hierarchy: Variety -> Class -> Lot
+ */
 
-(() => {
-  // ---------- Helpers ----------
-  const qs = s => document.querySelector(s);
-  const qsa = s => Array.from(document.querySelectorAll(s));
-  const formatIDR = n => (typeof n === 'number' ? n.toLocaleString('id-ID') : parseInt(n || 0).toLocaleString('id-ID'));
+const CART_KEY = 'upbs_cart_v2';
 
-  // ---------- DOM targets ----------
-  const buyModal = qs('#buyModal');
-  const buyModalName = qs('#buyModalName');
-  const buyModalMin = qs('#buyModalMin');
-  const buyModalPrice = qs('#buyModalPrice');
-  const buyModalTotal = qs('#buyModalTotal');
-  const buyModalNote = qs('#buyModalNote');
-  const qtyInput = qs('#qtyInput');
-  const qtyPlus = qs('#qtyPlus');
-  const qtyMinus = qs('#qtyMinus');
-  const buyModalAdd = qs('#buyModalAdd');
-  const buyModalBuyNow = qs('#buyModalBuyNow');
-  const buyModalCancel = qs('#buyModalCancel');
-  const buyModalClose = qs('#buyModalClose');
+window.cart = {
+    data: {
+        items: [],
+        last_updated: 0
+    },
 
-  const cartModal = qs('#cartModal');
-  const cartItemsWrap = qs('#cartItems');
-  const cartGrandTotalEl = qs('#cartGrandTotal');
-  const cartTotalItemEl = qs('#cartTotalItem');
-  const clearCartBtn = qs('#clearCartBtn');
-  const closeCartBtn = qs('#closeCartBtn');
-  const cartCheckoutBtn = qs('#cartCheckoutBtn');
+    init() {
+        this.load();
+        this.updateBadge();
+        if (document.getElementById('cart-list-container')) {
+            this.renderCartPage();
+        }
+        this.renderCartModal();
 
-  // ---------- FIXED BADGE ----------
-  const cartIcon = qs('#cartIcon'); // FIXED
-  let cartBadge = qs('#cartBadge'); // FIXED
+        document.body.addEventListener('click', (e) => {
+            const target = e.target;
+            if (target.id === 'closeCartBtn') {
+                document.getElementById('cartModal').classList.add('hidden');
+            }
+            if (target.id === 'clearCartBtn') {
+                if (confirm('Yakin mau menghapus semua item dari keranjang?')) {
+                    this.clearCart();
+                }
+            }
+            if (target.id === 'cartCheckoutBtn') {
+                window.location.href = '/checkout';
+            }
+            if (target.classList.contains('btn-inc')) {
+                const key = target.closest('[data-item-key]')?.dataset.itemKey;
+                if (key) this.updateQty(key, 1);
+            }
+            if (target.classList.contains('btn-dec')) {
+                const key = target.closest('[data-item-key]')?.dataset.itemKey;
+                if (key) {
+                    const item = this.data.items.find(i => this.itemKey(i) === key);
+                    if (item) {
+                        const step = item.seed_class_code === 'FS' ? 5 : 1;
+                        if (item.quantity <= step) {
+                            if (confirm('Yakin mau menghapus dari keranjang?')) {
+                                this.removeItem(key);
+                                return;
+                            } else {
+                                return;
+                            }
+                        }
+                    }
+                    this.updateQty(key, -1);
+                }
+            }
+            if (target.classList.contains('btn-remove')) {
+                const key = target.closest('[data-item-key]')?.dataset.itemKey;
+                if (key) this.removeItem(key);
+            }
+        });
 
-  if (!cartBadge && cartIcon) {
-    cartBadge = document.createElement('span');
-    cartBadge.id = 'cartBadge';
-    cartBadge.className =
-      'absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full px-1 py-[1px]';
-    cartIcon.style.position = 'relative';
-    cartIcon.appendChild(cartBadge);
-  }
+        document.body.addEventListener('input', (e) => {
+            const target = e.target;
+            if (target.classList.contains('qty-input')) {
+                const key = target.closest('[data-item-key]')?.dataset.itemKey;
+                const item = this.data.items.find(i => this.itemKey(i) === key);
+                if (!item) return;
+                let val = parseInt(target.value) || 0;
+                const step = item.seed_class_code === 'FS' ? 5 : 1;
+                let valid = item.seed_class_code === 'FS' ? (val % 5 === 0 && val >= 5) : (val >= 1);
+                const msgEl = target.closest('.cart-item')?.querySelector('.error-msg');
+                if (!valid) {
+                    if (item.seed_class_code === 'FS') {
+                        if (msgEl) { msgEl.textContent = 'Jumlah untuk Foundation Seed (FS) harus kelipatan 5 kg'; msgEl.classList.remove('hidden'); }
+                        val = Math.max(5, val - (val % 5));
+                    } else {
+                        if (msgEl) { msgEl.textContent = 'Jumlah minimal 1'; msgEl.classList.remove('hidden'); }
+                        val = Math.max(1, val);
+                    }
+                    target.value = String(val);
+                } else {
+                    if (msgEl) msgEl.classList.add('hidden');
+                }
+                item.quantity = val;
+                this.save();
+            }
+        });
 
-  // ---------- LocalStorage cart ----------
-  function getCart() {
-    try {
-      return JSON.parse(localStorage.getItem('cart')) || [];
-    } catch (e) {
-      return [];
+        // Listen for external updates (e.g. from other tabs or add-to-cart actions)
+        window.addEventListener('storage', () => {
+            this.load();
+            this.updateBadge();
+            if (document.getElementById('cart-list-container')) {
+                this.renderCartPage();
+            }
+            this.renderCartModal();
+        });
+    },
+
+    load() {
+        try {
+            const stored = localStorage.getItem(CART_KEY);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                this.data = parsed.items ? parsed : { items: [], last_updated: 0 };
+            }
+        } catch (e) {
+            this.data = { items: [], last_updated: 0 };
+        }
+    },
+
+    save() {
+        this.data.last_updated = Date.now();
+        localStorage.setItem(CART_KEY, JSON.stringify(this.data));
+        this.updateBadge();
+        if (document.getElementById('cart-list-container')) {
+            this.renderCartPage();
+        }
+    },
+
+    itemKey(item) {
+        const scid = item.seed_class_id != null ? String(item.seed_class_id) : String(item.seed_class_code || '');
+        return `${item.variety_id}-${scid}`;
+    },
+
+    removeItem(itemKey) {
+        if (!confirm('Hapus item ini?')) return;
+        this.data.items = this.data.items.filter(i => this.itemKey(i) !== itemKey);
+        this.save();
+    },
+
+    clearCart() {
+        if (!confirm('Kosongkan keranjang?')) return;
+        this.data.items = [];
+        this.save();
+    },
+
+    updateQty(itemKey, delta) {
+        const item = this.data.items.find(i => this.itemKey(i) === itemKey);
+        if (!item) return;
+        const step = item.seed_class_code === 'FS' ? 5 : 1;
+        let newQty = item.quantity + (delta * step);
+        if (item.seed_class_code === 'FS') {
+            if (newQty < step) newQty = step;
+            newQty = newQty - (newQty % step);
+        } else {
+            if (newQty < 1) newQty = 1;
+        }
+        item.quantity = newQty;
+        this.save();
+    },
+
+    updateBadge() {
+        const badge = document.getElementById('cartBadge');
+        if (badge) {
+            const count = this.data.items.length;
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'inline-block' : 'none';
+        }
+    },
+
+    formatIDR(num) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(num);
+    },
+
+    renderCartPage() {
+        const container = document.getElementById('cart-list-container');
+        const summaryCount = document.getElementById('summary-count');
+        const summaryWeight = document.getElementById('summary-weight');
+        const summaryTotal = document.getElementById('summary-total');
+        const btnCheckout = document.getElementById('btn-checkout');
+        
+        if (!container) return;
+
+        if (this.data.items.length === 0) {
+            container.innerHTML = `<div class="p-10 text-center text-gray-500">Keranjang Anda kosong.</div>`;
+            if (summaryCount) summaryCount.textContent = '0 Item';
+            if (summaryWeight) summaryWeight.textContent = '0 kg';
+            if (summaryTotal) summaryTotal.textContent = 'Rp 0';
+            if (btnCheckout) btnCheckout.disabled = true;
+            return;
+        }
+        
+        if (btnCheckout) btnCheckout.disabled = false;
+
+        let totalWeight = 0;
+        let totalPrice = 0;
+
+        const html = this.data.items.map(item => {
+            const itemTotal = item.quantity * item.price;
+            totalWeight += item.quantity;
+            totalPrice += itemTotal;
+
+            // Badge Color
+            let badgeClass = 'bg-gray-100 text-gray-800';
+            if (item.seed_class_code === 'BS') badgeClass = 'bg-yellow-100 text-yellow-800';
+            if (item.seed_class_code === 'FS') badgeClass = 'bg-purple-100 text-purple-800';
+
+            return `
+                <div class="cart-item p-6 flex gap-6 items-start border-b border-gray-100 last:border-0" data-item-key="${this.itemKey(item)}">
+                    <div class="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+                        <img src="${item.image || '/img/placeholder.jpg'}" class="w-full h-full object-cover" loading="lazy">
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between mb-2">
+                            <div>
+                                <h3 class="font-semibold text-gray-900 text-lg">${item.name}</h3>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="${badgeClass} text-xs font-bold px-2 py-0.5 rounded">
+                                        ${item.seed_class_code}
+                                    </span>
+                                    <span class="text-sm text-gray-500">
+                                        ${item.seed_class_name || 'Benih'}
+                                    </span>
+                                </div>
+                            </div>
+                            <button class="btn-remove text-gray-400 hover:text-red-500 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-3">
+                            <div class="text-sm text-gray-600">
+                                Harga: ${this.formatIDR(item.price)} / kg
+                            </div>
+                            <div class="flex flex-col items-end gap-2">
+                                <div class="flex items-center bg-white rounded-md border border-gray-200">
+                                    <button class="btn-dec px-3 py-1 text-gray-600 hover:bg-gray-50 border-r border-gray-200">-</button>
+                                    <input type="number" class="qty-input w-16 text-center text-sm font-medium text-gray-900 border-0 focus:ring-0 p-1" value="${item.quantity}" min="${item.seed_class_code === 'FS' ? 5 : 1}" step="${item.seed_class_code === 'FS' ? 5 : 1}">
+                                    <button class="btn-inc px-3 py-1 text-gray-600 hover:bg-gray-50 border-l border-gray-200">+</button>
+                                </div>
+                                <div class="error-msg text-xs text-red-600 mt-1 hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+        
+        if (summaryCount) summaryCount.textContent = `${this.data.items.length} Item`;
+        if (summaryWeight) summaryWeight.textContent = `${totalWeight} kg`;
+        if (summaryTotal) summaryTotal.textContent = this.formatIDR(totalPrice);
+    },
+    
+    renderCartModal() {
+        const container = document.getElementById('cartItems');
+        const totalItemEl = document.getElementById('cartTotalItem');
+        const grandTotalEl = document.getElementById('cartGrandTotal');
+        if (!container) return;
+
+        if (this.data.items.length === 0) {
+            container.innerHTML = '<div class="p-6 text-center text-gray-500">Keranjang kosong</div>';
+            totalItemEl.textContent = '0';
+            grandTotalEl.textContent = this.formatIDR(0);
+            return;
+        }
+
+        let grand = 0;
+        container.innerHTML = this.data.items.map(item => {
+            const itemTotal = item.quantity * item.price;
+            grand += itemTotal;
+            let badgeClass = 'bg-gray-100 text-gray-800';
+            if (item.seed_class_code === 'BS') badgeClass = 'bg-yellow-100 text-yellow-800';
+            if (item.seed_class_code === 'FS') badgeClass = 'bg-purple-100 text-purple-800';
+            return `
+              <div class="flex items-start gap-4 border-b pb-3 last:border-0" data-item-key="${this.itemKey(item)}">
+                <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                  <img src="${item.image || '/img/placeholder.jpg'}" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                <div class="flex-1">
+                  <div class="flex justify-between">
+                    <div>
+                      <h4 class="font-semibold text-gray-900 text-sm">${item.name}</h4>
+                      <div class="flex items-center gap-2 mt-1">
+                        <span class="${badgeClass} text-xs font-bold px-2 py-0.5 rounded">${item.seed_class_code}</span>
+                        <span class="text-xs text-gray-500">Lot: ${item.seed_lot_id || '-'}</span>
+                      </div>
+                    </div>
+                    <button class="btn-remove text-gray-400 hover:text-red-500" title="Hapus">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                  </div>
+                  <div class="flex items-center justify-between bg-gray-50 p-2 rounded mt-2">
+                    <div class="text-xs text-gray-600">${this.formatIDR(item.price)} / kg</div>
+                    <div class="flex items-center gap-2">
+                      <button class="btn-dec px-2 py-1 border rounded">-</button>
+                      <span class="w-8 text-center text-sm">${item.quantity}</span>
+                      <button class="btn-inc px-2 py-1 border rounded">+</button>
+                      <span class="font-bold text-gray-900">${this.formatIDR(itemTotal)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>`;
+        }).join('');
+        totalItemEl.textContent = String(this.data.items.length);
+        grandTotalEl.textContent = this.formatIDR(grand);
     }
-  }
-  function saveCart(cart) {
-    localStorage.setItem('cart', JSON.stringify(cart));
-    renderCart(); // keep UI in sync
-  }
+};
 
-  function findIndex(cart, id) {
-    return cart.findIndex(i => String(i.id) === String(id));
-  }
-
-  // ---------- Render cart ----------
-  function renderCart() {
-    const cart = getCart();
-    cartItemsWrap.innerHTML = '';
-
-    if (cart.length === 0) {
-      cartItemsWrap.innerHTML = `<p class="text-gray-600 text-center py-6">Keranjang kamu kosong 🛍️</p>`;
-      cartGrandTotalEl.textContent = 'Rp 0';
-      cartTotalItemEl.textContent = '0';
-      updateBadge();
-      return;
-    }
-
-    let grand = 0;
-    let totalItems = 0;
-
-    cart.forEach(item => {
-      const itemTotal = (item.harga || 0) * (item.qty || 0);
-      grand += itemTotal;
-      totalItems += item.qty || 0;
-
-      const node = document.createElement('div');
-      node.className = 'cart-item flex items-center bg-white/60 border border-gray-200 rounded-xl p-3';
-      node.dataset.id = item.id;
-      node.innerHTML = `
-        <div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-          <img src="${item.gambar}" class="object-cover w-full h-full">
-        </div>
-        <div class="ml-3 flex-1">
-          <p class="font-semibold text-sm text-gray-900">${escapeHtml(item.nama)}</p>
-          <p class="text-xs text-gray-600">Qty: ${item.qty} kg</p>
-          <p class="text-sm text-green-700 font-semibold">Rp ${formatIDR(itemTotal)}</p>
-        </div>
-        <div class="flex flex-col items-end gap-2 ml-2">
-          <div class="flex items-center gap-1">
-            <button class="decrease-item text-gray-600 px-2 py-1 rounded hover:bg-gray-100" data-id="${item.id}">−</button>
-            <button class="increase-item text-gray-600 px-2 py-1 rounded hover:bg-gray-100" data-id="${item.id}">+</button>
-          </div>
-          <button class="remove-item text-red-600" data-id="${item.id}" title="Hapus item">
-            <i class="fa fa-times"></i>
-          </button>
-        </div>
-      `;
-      cartItemsWrap.appendChild(node);
-    });
-
-    cartGrandTotalEl.textContent = `Rp ${formatIDR(grand)}`;
-    cartTotalItemEl.textContent = String(totalItems);
-    updateBadge();
-  }
-
-  function updateBadge() {
-    if (!cartBadge) return;
-    const cart = getCart();
-    const totalQty = cart.reduce((s, it) => s + (it.qty || 0), 0);
-    cartBadge.textContent = totalQty;
-    cartBadge.style.display = totalQty > 0 ? 'inline-block' : 'none';
-  }
-
-  // ---------- Escaping helper ----------
-  function escapeHtml(s = '') {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  // ---------- Qty Modal Logic ----------
-  let activeProduct = null;
-  let buyNowFlag = false;
-
-  function openBuyModal(product, buyNow = false) {
-    activeProduct = product;
-    buyNowFlag = !!buyNow;
-
-    const min = Number(product.minimum || 1);
-    qtyInput.value = String(min);
-    buyModalName.textContent = product.nama;
-    buyModalMin.textContent = `Minimum: ${min} kg`;
-    buyModalPrice.textContent = `Rp ${formatIDR(Number(product.harga || 0))}`;
-    updateModalTotal();
-    validateModal();
-
-    buyModalBuyNow.disabled = false;
-
-    buyModal.classList.remove('hidden');
-    qtyInput.focus();
-  }
-
-  function closeBuyModal() {
-    buyModal.classList.add('hidden');
-    activeProduct = null;
-    buyNowFlag = false;
-  }
-
-  function updateModalTotal() {
-    if (!activeProduct) return;
-    const q = Math.max(1, parseInt(qtyInput.value || 0));
-    const total = q * (Number(activeProduct.harga) || 0);
-    buyModalTotal.textContent = `Rp ${formatIDR(total)}`;
-  }
-
-  function validateModal() {
-    if (!activeProduct) return;
-    const q = Math.max(0, parseInt(qtyInput.value || 0));
-    const min = Number(activeProduct.minimum || 1);
-    if (q >= min) {
-      buyModalAdd.disabled = false;
-      buyModalBuyNow.disabled = false;
-      buyModalNote.classList.add('hidden');
-    } else {
-      buyModalAdd.disabled = true;
-      buyModalBuyNow.disabled = true;
-      buyModalNote.textContent = `Jumlah harus ≥ ${min} kg`;
-      buyModalNote.classList.remove('hidden');
-    }
-  }
-
-  // ---------- Cart operations ----------
-  function addOrIncrease(productObj, qtyToAdd = 1) {
-    const cart = getCart();
-    const idx = findIndex(cart, productObj.id);
-    if (idx > -1) {
-      cart[idx].qty = Number(cart[idx].qty || 0) + Number(qtyToAdd);
-    } else {
-      const pushItem = {
-        id: productObj.id,
-        nama: productObj.nama,
-        harga: Number(productObj.harga || 0),
-        gambar: productObj.gambar || '',
-        qty: Number(qtyToAdd || 0)
-      };
-      cart.push(pushItem);
-    }
-    saveCart(cart);
-  }
-
-  function removeItemById(id) {
-    const cart = getCart().filter(i => String(i.id) !== String(id));
-    saveCart(cart);
-  }
-
-  function changeQtyById(id, delta) {
-    const cart = getCart();
-    const idx = findIndex(cart, id);
-    if (idx === -1) return;
-    cart[idx].qty = Math.max(0, Number(cart[idx].qty || 0) + Number(delta));
-    if (cart[idx].qty <= 0) {
-      cart.splice(idx, 1);
-    }
-    saveCart(cart);
-  }
-
-  function clearCart() {
-    localStorage.removeItem('cart');
-    renderCart();
-  }
-
-  // ---------- Delegated Events ----------
-  document.addEventListener('click', (e) => {
-    const addBtn = e.target.closest('.add-to-cart');
-    if (addBtn) {
-      const product = {
-        id: addBtn.dataset.id,
-        nama: addBtn.dataset.nama,
-        harga: Number(addBtn.dataset.harga || 0),
-        gambar: addBtn.dataset.gambar || '',
-        minimum: Number(addBtn.dataset.minimum || 1)
-      };
-      openBuyModal(product, false);
-      return;
-    }
-
-    const buyNowBtn = e.target.closest('.buy-now');
-    if (buyNowBtn) {
-      const product = {
-        id: buyNowBtn.dataset.id,
-        nama: buyNowBtn.dataset.nama,
-        harga: Number(buyNowBtn.dataset.harga || 0),
-        gambar: buyNowBtn.dataset.gambar || '',
-        minimum: Number(buyNowBtn.dataset.minimum || 1)
-      };
-      openBuyModal(product, true);
-      return;
-    }
-
-    if (e.target.closest('#buyModalClose') || e.target.closest('#buyModalCancel')) {
-      closeBuyModal();
-      return;
-    }
-
-    if (e.target.closest('#qtyPlus')) {
-      qtyInput.value = String(Math.max(1, (parseInt(qtyInput.value || '0') || 0) + 1));
-      updateModalTotal();
-      validateModal();
-      return;
-    }
-
-    if (e.target.closest('#qtyMinus')) {
-      qtyInput.value = String(Math.max(1, (parseInt(qtyInput.value || '0') || 0) - 1));
-      updateModalTotal();
-      validateModal();
-      return;
-    }
-
-    if (e.target.closest('#buyModalAdd')) {
-      if (!activeProduct) return;
-      const qty = Math.max(1, parseInt(qtyInput.value || '0'));
-      addOrIncrease(activeProduct, qty);
-      closeBuyModal();
-      renderCart();
-      return;
-    }
-
-    if (e.target.closest('#buyModalBuyNow')) {
-      if (!activeProduct) return;
-      const qty = Math.max(1, parseInt(qtyInput.value || '0'));
-      addOrIncrease(activeProduct, qty);
-      closeBuyModal();
-      renderCart();
-      window.location.href = '/checkout';
-      return;
-    }
-
-    if (e.target.closest('#closeCartBtn')) {
-      cartModal.classList.add('hidden');
-      return;
-    }
-
-    if (e.target.closest('#clearCartBtn')) {
-      if (confirm('Yakin ingin menghapus semua item di keranjang?')) {
-        clearCart();
-      }
-      return;
-    }
-
-    if (e.target.closest('.remove-item')) {
-      const id = e.target.closest('.remove-item').dataset.id;
-      removeItemById(id);
-      return;
-    }
-
-    if (e.target.closest('.increase-item')) {
-      const id = e.target.closest('.increase-item').dataset.id;
-      changeQtyById(id, +1);
-      return;
-    }
-
-    if (e.target.closest('.decrease-item')) {
-      const id = e.target.closest('.decrease-item').dataset.id;
-      changeQtyById(id, -1);
-      return;
-    }
-
-    if (e.target.closest('#cartCheckoutBtn')) {
-      window.location.href = '/checkout';
-      return;
-    }
-
-    // ---------- FIXED OPEN CART ----------
-    if (e.target.closest('#cartIcon')) {  // FIXED
-      renderCart();
-      cartModal.classList.toggle('hidden');
-      return;
-    }
-  });
-
-  // ---------- Qty input events ----------
-  if (qtyInput) {
-    qtyInput.addEventListener('input', () => {
-      qtyInput.value = qtyInput.value.replace(/[^\d]/g, '') || '0';
-      if (qtyInput.value === '0') qtyInput.value = '0';
-      updateModalTotal();
-      validateModal();
-    });
-  }
-
-  // ---------- Escape key handler ----------
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      if (!buyModal.classList.contains('hidden')) closeBuyModal();
-      if (!cartModal.classList.contains('hidden')) cartModal.classList.add('hidden');
-    }
-  });
-
-  // ---------- Initialize ----------
-  renderCart();
-})();
+document.addEventListener('DOMContentLoaded', () => {
+    window.cart.init();
+});

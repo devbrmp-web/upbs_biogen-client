@@ -2,157 +2,270 @@
 @section('title', 'Katalog Produk - UPBS BRMP Biogen')
 
 @section('content')
+
+{{-- Animasi page --}}
+@if(request()->has('commodity') || request()->has('seed_class') || request()->has('search'))
+<script>document.body.classList.add('page-animated');</script>
+@else
+<script>
+try{
+    var r=document.referrer?new URL(document.referrer):null;
+    if(r&&r.pathname==='/katalog'){
+        document.body.classList.add('page-animated');
+    }
+}catch(e){}
+</script>
+@endif
+
+<div class="page-animate-rise">
 <section class="pt-28 pb-16 bg-gray-50 min-h-screen">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
 
-        <!-- Judul -->
-        <div class="text-center mb-12">
+        <!-- =======================
+             JUDUL
+        ======================== -->
+        <div id="tutorial-title" class="text-center mb-12">
             <h1 class="text-4xl font-bold text-gray-900 mb-2">Katalog Produk</h1>
-            <p class="text-gray-700 text-lg">Temukan berbagai varietas unggul hasil inovasi UPBS BRMP Biogen 🌾</p>
+            <p class="text-gray-700 text-lg">
+                Temukan berbagai varietas unggul hasil inovasi UPBS BRMP Biogen 🌾
+            </p>
         </div>
 
-       <div class="mb-10 relative">
+        <!-- =======================
+             FILTER KOMODITAS
+        ======================== -->
+        <div id="tutorial-commodity-filter" class="mb-10">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Pilih Komoditas</h2>
 
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-gray-800">Pilih Komoditas</h2>
-        <button id="filterToggle"
-            class="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 bg-white shadow-sm hover:bg-gray-100 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-600">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M3 4.5h18M6 12h12m-9 7.5h6" />
-            </svg>
-        </button>
+            <div class="flex flex-nowrap gap-4 overflow-x-auto pb-2 scrollbar-hide">
 
-        <!-- 🔽 Dropdown filter -->
-        <div id="filterDropdown"
-            class="hidden absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-            <button class="dropdown-item w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
-                data-filter="BS">BS</button>
-            <button class="dropdown-item w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
-                data-filter="FS">FS</button>
-        </div>
-    </div>
+                {{-- Tampilkan Semua --}}
+                @if (!$activeCommodity)
+                    <span class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
+                        bg-[#B4DEBD] text-black border-[#B4DEBD]
+                        cursor-not-allowed opacity-70 whitespace-nowrap">
+                        Tampilkan Semua
+                    </span>
+                @else
+                    <a href="/katalog"
+                       class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
+                       bg-[#B4DEBD]/40 text-gray-800 hover:bg-[#B4DEBD]/60 transition whitespace-nowrap">
+                        Tampilkan Semua
+                    </a>
+                @endif
 
-    <!-- 🌿 Scroll Horizontal Container -->
-    <div id="filterKategori" class="flex flex-nowrap gap-4 overflow-x-auto pb-2 scrollbar-hide">
-        
-        <!-- Tombol Tampilkan Semua -->
-        <button
-            class="kategori-btn active bg-[#B4DEBD] text-black border border-[#B4DEBD]/60 rounded-2xl shadow-md px-5 py-3 text-sm font-medium hover:bg-[#B4DEBD]/90 transition whitespace-nowrap"
-            data-kategori="all">
-            Tampilkan Semua
-        </button>
-
-                <!-- Loop Komoditas -->
+                {{-- Loop Komoditas --}}
                 @foreach ($commodities as $commodity)
-                <button
-                    class="kategori-btn bg-[#B4DEBD]/40 backdrop-blur-md border border-[#B4DEBD]/50 rounded-xl shadow-md px-5 py-3 text-sm font-medium text-gray-800 hover:bg-[#B4DEBD]/60 transition whitespace-nowrap"
-                    data-kategori="{{ strtolower($commodity['slug']) }}">
-                    {{ $commodity['name'] }}
-                </button>
+                    @php
+                        $slug = strtolower($commodity['slug']);
+                        $isActive = $activeCommodity === $slug;
+                        $seedParam = $activeSeedClass ? "&seed_class={$activeSeedClass}" : '';
+                    @endphp
+
+                    @if ($isActive)
+                        <span class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
+                            bg-[#B4DEBD] text-black border-[#B4DEBD]
+                            cursor-not-allowed opacity-70 whitespace-nowrap">
+                            {{ $commodity['name'] }}
+                        </span>
+                    @else
+                        <a href="/katalog?commodity={{ $slug }}{{ $seedParam }}"
+                           class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
+                           bg-[#B4DEBD]/40 text-gray-800 hover:bg-[#B4DEBD]/60 transition whitespace-nowrap">
+                            {{ $commodity['name'] }}
+                        </a>
+                    @endif
                 @endforeach
 
             </div>
         </div>
 
-        <!-- 🔹 Grid Produk -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            @forelse ($varieties as $variety)
+        <!-- =======================
+             FILTER SEED CLASS
+        ======================== -->
+        <div id="tutorial-seed-filter" class="mb-10">
+            <h2 class="text-lg font-semibold text-gray-800 mb-2">Filter Kelas Benih</h2>
 
+            <select
+                id="seed-class-select"
+                onchange="window.location.href='/katalog?seed_class='+this.value+'&commodity={{ $activeCommodity ?? '' }}';"
+                class="block w-full max-w-xs rounded-lg border-gray-300 shadow-sm
+                       focus:border-indigo-500 focus:ring-indigo-500
+                       sm:text-sm p-2.5 bg-white border">
+                <option value="">Semua Kelas</option>
+                @foreach ($seedClasses as $sc)
+                    <option value="{{ $sc['code'] }}" {{ ($activeSeedClass == $sc['code']) ? 'selected' : '' }}>
+                        {{ $sc['name'] }} ({{ $sc['code'] }})
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <!-- =======================
+             GRID PRODUK
+        ======================== -->
+        <div  class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+
+            @forelse ($varieties as $variety)
                 @php
                     $priceRaw = $variety['price_idr'] ?? 0;
                     $priceClean = (float) preg_replace('/[^\d.]/', '', $priceRaw);
+
+                    $imagePath = $variety['image_path'] ?? null;
+                    $imageUrl = $imagePath
+                        ? rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($imagePath, '/')
+                        : 'https://placehold.co/400x300?text=No+Image';
+
+                    $seedLots = collect($variety['seed_lots'] ?? []);
+                    $stockByClass = $seedLots
+                        ->filter(fn ($lot) =>
+                            ($lot['is_sellable'] ?? false) &&
+                            !empty($lot['seed_class']['code']) &&
+                            ($lot['quantity'] ?? 0) > 0
+                        )
+                        ->groupBy(fn ($lot) => $lot['seed_class']['code'])
+                        ->map(fn ($lots) => $lots->sum('quantity'));
                 @endphp
 
-                <div class="backdrop-blur-md bg-white/30 border border-lg border-white/20 shadow-lg overflow-hidden hover:shadow-lg transition-all duration-300 rounded-lg">
+                <div class="backdrop-blur-md bg-white/30 border border-white/20 shadow-md
+                            hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden">
 
-                    <!-- Gambar -->
-                    <div class="h-40 bg-gray-100 overflow-hidden">
-                        <img src="{{ $variety['image'] ?? asset('resources/img/sample-product.jpg') }}"
-                            alt="{{ $variety['name'] }}"
-                            class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
-                    </div>
+                    <a href="{{ route('product.detail', $variety['slug']) }}" class="block">
 
-                    <!-- Konten -->
-                    <div class="p-3">
-
-                        <h3 class="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
-                            {{ $variety['name'] }}
-                        </h3>
-
-                        <p class="text-xs text-gray-500 mt-1">
-                            {{ $variety['commodity']['name'] ?? '-' }}
-                        </p>
-
-                        <!-- Harga -->
-                        <p class="text-sm text-green-700 font-semibold mt-2">
-                            Rp {{ number_format($priceClean, 0, ',', '.') }}
-                        </p>
-
-                        <p class="text-xs text-gray-500 mt-1">
-                            Minimum: {{ $variety['minimum_limit'] ?? 0 }} kg
-                        </p>
-
-                        <!-- Tombol Aksi -->
-                        <div class="mt-3 grid grid-cols-3 gap-2">
-
-                            <!-- Tombol Beli Langsung (GET atau route detail) -->
-                            <a href="#" class="col-span-2 bg-gray-900 text-white text-center text-xs py-2 rounded-md hover:bg-black transition"
-                            class="bg-gray-900 text-white text-center text-xs py-2 rounded-md hover:bg-black transition">
-                            Beli Langsung
-                            </a>
-
-                            <!-- Tombol Keranjang -->
-                            <button 
-                                class="add-to-cart col-span-1 border border-gray-900 text-gray-900 text-xs py-2 rounded-md hover:bg-gray-900 hover:text-white transition"
-                                data-id="{{ $variety['id'] }}"
-                                data-nama="{{ $variety['name'] }}"
-                                data-harga="{{ $priceClean }}"
-                                data-gambar="{{ $variety['image'] ?? asset('resources/img/sample-product.jpg') }}"
-                                data-minimum="{{ $variety['min_buy'] ?? 1 }}"
-                            >
-                                <i class="fa fa-cart-plus"></i>
-                            </button>
-
-
+                        <div class="h-40 bg-gray-100 overflow-hidden">
+                            <img src="{{ $imageUrl }}"
+                                 class="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                                 onerror="this.src='https://placehold.co/400x300?text=No+Image'">
                         </div>
 
+                        <div class="p-3">
+                            <h3 class="font-semibold text-gray-900 text-sm line-clamp-2">
+                                {{ $variety['name'] }}
+                            </h3>
 
-                    </div>
+                            <p class="text-xs text-gray-500 mt-1">
+                                {{ $variety['commodity']['name'] ?? '-' }}
+                            </p>
+
+                            <p class="text-sm text-green-700 font-semibold mt-2">
+                                Rp {{ number_format($priceClean, 0, ',', '.') }}
+                            </p>
+
+                            <p class="text-xs text-gray-500 mt-1">
+                                Minimum: {{ $variety['minimum_limit'] ?? 0 }} kg
+                            </p>
+
+                            @if ($stockByClass->isNotEmpty())
+                                <p class="text-xs text-gray-600 mt-2 flex flex-wrap">
+                                    @foreach ($stockByClass as $code => $qty)
+                                        <span class="mr-2">
+                                            <b>{{ $code }}</b>: {{ $qty }}
+                                        </span>
+                                    @endforeach
+                                </p>
+                            @endif
+                        </div>
+                    </a>
                 </div>
-
             @empty
-                <p class="col-span-4 text-center text-gray-600">Tidak ada data varietas tersedia.</p>
+                <p class="col-span-4 text-center text-gray-600">
+                    Tidak ada data varietas tersedia.
+                </p>
             @endforelse
+
         </div>
-
-
 
     </div>
 </section>
+</div>
 
+{{-- =======================
+     TUTORIAL OVERLAY
+======================== --}}
+<div id="tutorial-overlay" class="fixed inset-0 bg-black/50 z-[9999] hidden">
+    <div id="tutorial-tooltip"
+         class="absolute bg-white rounded-xl shadow-xl p-5 max-w-xs text-sm animate-fade-in">
+        <p id="tutorial-text" class="text-gray-700 mb-4"></p>
+        <div class="flex justify-between">
+            <button id="tutorial-skip" class="text-xs text-gray-400 hover:text-gray-600">
+                Lewati
+            </button>
+            <button id="tutorial-next"
+                class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700">
+                Lanjut
+            </button>
+        </div>
+    </div>
+</div>
+
+{{-- =======================
+     SCRIPT TUTORIAL
+======================== --}}
 <script>
-    const filterToggle = document.getElementById('filterToggle');
-    const filterDropdown = document.getElementById('filterDropdown');
+document.addEventListener('DOMContentLoaded', () => {
+    const KEY = 'upbs_katalog_tutorial_seen';
+    if (localStorage.getItem(KEY)) return;
 
-    filterToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        filterDropdown.classList.toggle('hidden');
-    });
+    const steps = [
+        { el:'#tutorial-title', text:'Ini halaman katalog. Semua varietas benih tersedia ada di sini.' },
+        { el:'#tutorial-commodity-filter', text:'Gunakan filter ini untuk memilih komoditas benih.' },
+        { el:'#tutorial-seed-filter', text:'Filter kelas benih sesuai kebutuhanmu.' },
+    ];
 
-    document.addEventListener('click', (e) => {
-        if (!filterDropdown.contains(e.target) && !filterToggle.contains(e.target)) {
-            filterDropdown.classList.add('hidden');
-        }
-    });
+    let i = 0;
+    const overlay = document.getElementById('tutorial-overlay');
+    const tooltip = document.getElementById('tutorial-tooltip');
+    const text = document.getElementById('tutorial-text');
 
-    document.querySelectorAll('.dropdown-item').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const filterValue = e.target.dataset.filter;
-            alert(`Filter dipilih: ${filterValue}`);
-            filterDropdown.classList.add('hidden');
-        });
-    });
+    function showStep() {
+        const step = steps[i];
+        const el = document.querySelector(step.el);
+        if (!el) return;
+
+        el.scrollIntoView({ behavior:'smooth', block:'center' });
+
+        const r = el.getBoundingClientRect();
+        text.innerText = step.text;
+
+        tooltip.style.top = `${r.bottom + window.scrollY + 10}px`;
+        tooltip.style.left = `${r.left + window.scrollX}px`;
+
+        el.classList.add('ring-4','ring-green-400','ring-offset-4');
+        overlay.classList.remove('hidden');
+    }
+
+    function clear() {
+        document.querySelectorAll('.ring-green-400')
+            .forEach(e => e.classList.remove('ring-4','ring-green-400','ring-offset-4'));
+    }
+
+    document.getElementById('tutorial-next').onclick = () => {
+        clear();
+        i++;
+        if (i >= steps.length) {
+            localStorage.setItem(KEY,'1');
+            overlay.classList.add('hidden');
+        } else showStep();
+    };
+
+    document.getElementById('tutorial-skip').onclick = () => {
+        clear();
+        localStorage.setItem(KEY,'1');
+        overlay.classList.add('hidden');
+    };
+
+    showStep();
+});
 </script>
+
+<style>
+@keyframes fade-in {
+    from { opacity:0; transform:translateY(10px); }
+    to { opacity:1; transform:none; }
+}
+.animate-fade-in {
+    animation: fade-in .3s ease-out both;
+}
+</style>
+
 @endsection
