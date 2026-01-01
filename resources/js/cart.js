@@ -41,9 +41,10 @@ window.cart = {
                 if (key) {
                     const item = this.data.items.find(i => this.itemKey(i) === key);
                     if (item) {
-                        const step = item.seed_class_code === 'FS' ? 5 : 1;
-                        if (item.quantity <= step) {
-                            if (confirm('Yakin mau menghapus dari keranjang?')) {
+                        const minQuantity = item.seed_class_code === 'FS' ? 5 : 1;
+                        if (item.quantity <= minQuantity) {
+                            // Show trash icon functionality - remove item
+                            if (confirm('Hapus item ini dari keranjang?')) {
                                 this.removeItem(key);
                                 return;
                             } else {
@@ -84,6 +85,9 @@ window.cart = {
                 }
                 item.quantity = val;
                 this.save();
+                
+                // Update the decrease button icon after quantity change
+                this.updateDecreaseButtonIcon(key);
             }
         });
 
@@ -149,6 +153,9 @@ window.cart = {
         }
         item.quantity = newQty;
         this.save();
+        
+        // Update the decrease button icon after quantity change
+        this.updateDecreaseButtonIcon(itemKey);
     },
 
     updateBadge() {
@@ -167,6 +174,29 @@ window.cart = {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
         }).format(num);
+    },
+
+    getDecreaseButtonIcon(item) {
+        const minQuantity = item.seed_class_code === 'FS' ? 5 : 1;
+        const isAtMinimum = item.quantity <= minQuantity;
+        
+        if (isAtMinimum) {
+            // Show trash icon
+            return '<svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+        } else {
+            // Show minus icon
+            return '-';
+        }
+    },
+
+    updateDecreaseButtonIcon(itemKey) {
+        const item = this.data.items.find(i => this.itemKey(i) === itemKey);
+        if (!item) return;
+        
+        const button = document.querySelector(`button[data-item-key="${itemKey}"].btn-dec`);
+        if (button) {
+            button.innerHTML = this.getDecreaseButtonIcon(item);
+        }
     },
 
     renderCartPage() {
@@ -234,9 +264,11 @@ window.cart = {
                             </div>
                             <div class="flex flex-col items-end gap-2">
                                 <div class="flex items-center bg-white rounded-md border border-gray-200">
-                                    <button class="btn-dec px-3 py-1 text-gray-600 hover:bg-gray-50 border-r border-gray-200">-</button>
-                                    <input type="number" class="qty-input w-16 text-center text-sm font-medium text-gray-900 border-0 focus:ring-0 p-1" value="${item.quantity}" min="${item.seed_class_code === 'FS' ? 5 : 1}" step="${item.seed_class_code === 'FS' ? 5 : 1}">
-                                    <button class="btn-inc px-3 py-1 text-gray-600 hover:bg-gray-50 border-l border-gray-200">+</button>
+                                    <button class="btn-dec px-3 py-1 text-gray-600 hover:bg-gray-50 border-r border-gray-200" data-item-key="${this.itemKey(item)}">
+                                        ${this.getDecreaseButtonIcon(item)}
+                                    </button>
+                                    <input type="number" class="qty-input w-16 text-center text-sm font-medium text-gray-900 border-0 focus:ring-0 p-1" value="${item.quantity}" min="${item.seed_class_code === 'FS' ? 5 : 1}" step="${item.seed_class_code === 'FS' ? 5 : 1}" data-item-key="${this.itemKey(item)}">
+                                    <button class="btn-inc px-3 py-1 text-gray-600 hover:bg-gray-50 border-l border-gray-200" data-item-key="${this.itemKey(item)}">+</button>
                                 </div>
                                 <div class="error-msg text-xs text-red-600 mt-1 hidden"></div>
                             </div>
@@ -247,6 +279,11 @@ window.cart = {
         }).join('');
 
         container.innerHTML = html;
+        
+        // Update all decrease button icons after rendering
+        this.data.items.forEach(item => {
+            this.updateDecreaseButtonIcon(this.itemKey(item));
+        });
         
         if (summaryCount) summaryCount.textContent = `${this.data.items.length} Item`;
         if (summaryWeight) summaryWeight.textContent = `${totalWeight} kg`;
@@ -273,6 +310,13 @@ window.cart = {
             let badgeClass = 'bg-gray-100 text-gray-800';
             if (item.seed_class_code === 'BS') badgeClass = 'bg-yellow-100 text-yellow-800';
             if (item.seed_class_code === 'FS') badgeClass = 'bg-purple-100 text-purple-800';
+            
+            const minQuantity = item.seed_class_code === 'FS' ? 5 : 1;
+            const isAtMinimum = item.quantity <= minQuantity;
+            const decreaseIcon = isAtMinimum 
+                ? '<svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>'
+                : '-';
+            
             return `
               <div class="flex items-start gap-4 border-b pb-3 last:border-0" data-item-key="${this.itemKey(item)}">
                 <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
@@ -294,9 +338,9 @@ window.cart = {
                   <div class="flex items-center justify-between bg-gray-50 p-2 rounded mt-2">
                     <div class="text-xs text-gray-600">${this.formatIDR(parseInt(item.price_per_unit) || 0)} / kg</div>
                     <div class="flex items-center gap-2">
-                      <button class="btn-dec px-2 py-1 border rounded">-</button>
+                      <button class="btn-dec px-2 py-1 border rounded" data-item-key="${this.itemKey(item)}">${decreaseIcon}</button>
                       <span class="w-8 text-center text-sm">${item.quantity}</span>
-                      <button class="btn-inc px-2 py-1 border rounded">+</button>
+                      <button class="btn-inc px-2 py-1 border rounded" data-item-key="${this.itemKey(item)}">+</button>
                       <span class="font-bold text-gray-900">${this.formatIDR(itemTotal)}</span>
                     </div>
                   </div>
@@ -305,6 +349,11 @@ window.cart = {
         }).join('');
         totalItemEl.textContent = String(this.data.items.length);
         grandTotalEl.textContent = this.formatIDR(grand);
+        
+        // Update all decrease button icons after rendering modal
+        this.data.items.forEach(item => {
+            this.updateDecreaseButtonIcon(this.itemKey(item));
+        });
     }
 };
 
