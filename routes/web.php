@@ -47,5 +47,9 @@ Route::get('/home', function () {
     return view('beranda-statis');
 })->name('home.static');
 
+// Cache Management Routes (Admin only - bisa ditambahkan middleware nanti)
+Route::get('/cache/price/clear/{slug}', [CatalogController::class, 'clearPriceCache'])->name('cache.price.clear');
+Route::get('/cache/price/clear-all', [CatalogController::class, 'clearAllPriceCaches'])->name('cache.price.clear-all');
+
 // Email resi sender
 Route::post('/orders/send-invoice', [OrderMailController::class, 'sendInvoice']);

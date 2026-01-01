@@ -154,51 +154,60 @@ class CatalogController extends Controller
             }
 
             /* =====================================================
-            | CALCULATE PRICE RANGES (Client Side)
+            | CALCULATE PRICE RANGES (Client Side) with Caching
             ===================================================== */
             $varieties = array_map(function ($v) use ($url) {
-                // Hitung price range dari seed lots jika tersedia
-                $minPrice = null;
-                $maxPrice = null;
-                $hasSellableLots = false;
+                $slug = $v['slug'] ?? '';
+                if (empty($slug)) {
+                    $v['price_range_text'] = null;
+                    return $v;
+                }
                 
-                // Coba ambil detail varietas untuk mendapatkan seed_lots
-                try {
-                    $response = Http::timeout(3)->get($url . '/api/varieties/' . $v['slug']);
-                    if ($response->successful()) {
-                        $detail = $response->json('data');
-                        if (!empty($detail['seed_lots']) && is_array($detail['seed_lots'])) {
-                            // Filter seed lots yang aktif dijual dan memiliki quantity > 0
-                            $sellableLots = array_filter($detail['seed_lots'], function ($lot) {
-                                return ($lot['is_sellable'] ?? false) && 
-                                       ($lot['quantity'] ?? 0) > 0 && 
-                                       ($lot['price_per_unit'] ?? 0) > 0;
-                            });
-                            
-                            if (!empty($sellableLots)) {
-                                $prices = array_column($sellableLots, 'price_per_unit');
-                                $minPrice = min($prices);
-                                $maxPrice = max($prices);
-                                $hasSellableLots = true;
+                // Cache key untuk price range
+                $cacheKey = "variety_price_{$slug}";
+                
+                // Gunakan cache dengan TTL 60 menit (3600 detik) untuk optimal performance
+                $priceRangeText = Cache::remember($cacheKey, 3600, function () use ($url, $slug) {
+                    try {
+                        // Coba ambil detail varietas untuk mendapatkan seed_lots
+                        $response = Http::timeout(3)->get($url . '/api/varieties/' . $slug);
+                        
+                        if ($response->successful()) {
+                            $detail = $response->json('data');
+                            if (!empty($detail['seed_lots']) && is_array($detail['seed_lots'])) {
+                                // Filter seed lots yang aktif dijual dan memiliki quantity > 0
+                                $sellableLots = array_filter($detail['seed_lots'], function ($lot) {
+                                    return ($lot['is_sellable'] ?? false) && 
+                                           ($lot['quantity'] ?? 0) > 0 && 
+                                           ($lot['price_per_unit'] ?? 0) > 0;
+                                });
+                                
+                                if (!empty($sellableLots)) {
+                                    $prices = array_column($sellableLots, 'price_per_unit');
+                                    $minPrice = min($prices);
+                                    $maxPrice = max($prices);
+                                    
+                                    // Format price range
+                                    if ($minPrice == $maxPrice) {
+                                        return 'Rp ' . number_format($minPrice, 0, ',', '.');
+                                    } else {
+                                        return 'Rp ' . number_format($minPrice, 0, ',', '.') . 
+                                           ' - Rp ' . number_format($maxPrice, 0, ',', '.');
+                                    }
+                                }
                             }
                         }
+                        
+                        // Return null jika tidak ada harga yang tersedia
+                        return null;
+                        
+                    } catch (\Exception $e) {
+                        // Jika gagal ambil detail, return null
+                        return null;
                     }
-                } catch (\Exception $e) {
-                    // Jika gagal ambil detail, lanjutkan tanpa price range
-                }
+                });
                 
-                // Format price range
-                if ($hasSellableLots && $minPrice !== null && $maxPrice !== null) {
-                    if ($minPrice == $maxPrice) {
-                        $v['price_range_text'] = 'Rp ' . number_format($minPrice, 0, ',', '.');
-                    } else {
-                        $v['price_range_text'] = 'Rp ' . number_format($minPrice, 0, ',', '.') . 
-                                                ' - Rp ' . number_format($maxPrice, 0, ',', '.');
-                    }
-                } else {
-                    $v['price_range_text'] = null;
-                }
-                
+                $v['price_range_text'] = $priceRangeText;
                 return $v;
             }, $varieties);
 
@@ -402,5 +411,42 @@ class CatalogController extends Controller
         } catch (ConnectionException $e) {
             return response()->view('errors.server-busy', [], 503);
         }
+    }
+
+    /**
+     * Clear price cache for a specific variety
+     */
+    public function clearPriceCache($slug)
+    {
+        $cacheKey = "variety_price_{$slug}";
+        Cache::forget($cacheKey);
+        return response()->json(['success' => true, 'message' => 'Price cache cleared']);
+    }
+
+    /**
+     * Clear all price caches
+     */
+    public function clearAllPriceCaches()
+    {
+        // Get all cache keys that start with variety_price_
+        // Note: This is a simple implementation. For production, consider using cache tags
+        $varieties = Cache::get('varieties_all') ?? [];
+        $cleared = 0;
+        
+        foreach ($varieties as $variety) {
+            $slug = $variety['slug'] ?? '';
+            if (!empty($slug)) {
+                $cacheKey = "variety_price_{$slug}";
+                if (Cache::has($cacheKey)) {
+                    Cache::forget($cacheKey);
+                    $cleared++;
+                }
+            }
+        }
+        
+        return response()->json([
+            'success' => true, 
+            'message' => "Price cache cleared for {$cleared} varieties"
+        ]);
     }
 }
