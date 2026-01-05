@@ -21,42 +21,50 @@ window.cart = {
 
         document.body.addEventListener('click', (e) => {
             const target = e.target;
-            if (target.id === 'closeCartBtn') {
-                document.getElementById('cartModal').classList.add('hidden');
+
+            const closeCartBtn = target.closest('#closeCartBtn');
+            if (closeCartBtn) {
+                const modal = document.getElementById('cartModal');
+                if (modal) modal.classList.add('hidden');
             }
-            if (target.id === 'clearCartBtn') {
+
+            const clearCartBtn = target.closest('#clearCartBtn');
+            if (clearCartBtn) {
                 if (confirm('Yakin mau menghapus semua item dari keranjang?')) {
                     this.clearCart();
                 }
             }
-            if (target.id === 'cartCheckoutBtn') {
+
+            const checkoutBtn = target.closest('#cartCheckoutBtn');
+            if (checkoutBtn) {
                 window.location.href = '/checkout';
             }
-            if (target.classList.contains('btn-inc')) {
-                const key = target.closest('[data-item-key]')?.dataset.itemKey;
+
+            const incBtn = target.closest('.btn-inc');
+            if (incBtn) {
+                const key = incBtn.closest('[data-item-key]')?.dataset.itemKey;
                 if (key) this.updateQty(key, 1);
             }
-            if (target.classList.contains('btn-dec')) {
-                const key = target.closest('[data-item-key]')?.dataset.itemKey;
+
+            const decBtn = target.closest('.btn-dec');
+            if (decBtn) {
+                const key = decBtn.closest('[data-item-key]')?.dataset.itemKey;
                 if (key) {
                     const item = this.data.items.find(i => this.itemKey(i) === key);
                     if (item) {
                         const minQuantity = item.seed_class_code === 'FS' ? 5 : 1;
                         if (item.quantity <= minQuantity) {
-                            // Show trash icon functionality - remove item
-                            if (confirm('Hapus item ini dari keranjang?')) {
-                                this.removeItem(key);
-                                return;
-                            } else {
-                                return;
-                            }
+                            this.removeItem(key);
+                            return;
                         }
                     }
                     this.updateQty(key, -1);
                 }
             }
-            if (target.classList.contains('btn-remove')) {
-                const key = target.closest('[data-item-key]')?.dataset.itemKey;
+
+            const removeBtn = target.closest('.btn-remove');
+            if (removeBtn) {
+                const key = removeBtn.closest('[data-item-key]')?.dataset.itemKey;
                 if (key) this.removeItem(key);
             }
         });
@@ -129,7 +137,7 @@ window.cart = {
     },
 
     removeItem(itemKey) {
-        if (!confirm('Hapus item ini?')) return;
+        if (!confirm('Hapus item ini dari keranjang?')) return;
         this.data.items = this.data.items.filter(i => this.itemKey(i) !== itemKey);
         this.save();
     },
@@ -253,8 +261,10 @@ window.cart = {
                                     </span>
                                 </div>
                             </div>
-                            <button class="btn-remove text-gray-400 hover:text-red-500 transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            <button class="btn-remove text-gray-400 hover:text-red-500 transition-colors" title="Hapus item">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
                             </button>
                         </div>
                         
@@ -331,8 +341,10 @@ window.cart = {
                         <span class="text-xs text-gray-500">Lot: ${item.seed_lot_id || '-'}</span>
                       </div>
                     </div>
-                    <button class="btn-remove text-gray-400 hover:text-red-500" title="Hapus">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <button class="btn-remove text-gray-400 hover:text-red-500" title="Hapus item">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
                     </button>
                   </div>
                   <div class="flex items-center justify-between bg-gray-50 p-2 rounded mt-2">
