@@ -73,7 +73,7 @@
       <tbody>
 @foreach(($order['items'] ?? []) as $it)
 <tr>
-    <td>{{ $it['resolved_variety_name'] }}</td>
+    <td>{{ $it['resolved_variety_name'] ?? 'Item' }}</td>
     <td class="qty">{{ (int)($it['quantity'] ?? 0) }}</td>
     <td class="price">
         Rp {{ number_format((int)($it['unit_price'] ?? 0), 0, ',', '.') }}

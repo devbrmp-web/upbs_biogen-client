@@ -3,7 +3,7 @@
 @section('title', 'Keranjang Belanja • UPBS BRMP Biogen')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-18 page-animate-slideRight">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-28 page-animate-slideRight">
     <h1 class="text-3xl font-bold text-gray-900 mb-8">Keranjang Belanja</h1>
 
     <div class="flex flex-col lg:flex-row gap-8">

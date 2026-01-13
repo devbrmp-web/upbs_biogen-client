@@ -16,7 +16,7 @@
     {{-- Navbar --}}
     @include('layouts.navbar')
     {{-- Konten Halaman --}}
-    <main class="no-overscroll flex-grow">
+    <main class="no-overscroll flex-grow w-full relative z-0">
       @yield('content')
       @include('components.cart-modal')
       @include('components.checkout-popup')
@@ -26,5 +26,7 @@
 
     {{-- Footer --}}
     @include('layouts.footer')
+    
+    @stack('scripts')
   </body>
 </html>

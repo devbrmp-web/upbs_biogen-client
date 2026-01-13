@@ -4,7 +4,7 @@
     <div class="w-10 h-10 overflow-hidden rounded-full flex items-center justify-center bg-white/50">
       <img src="{{ Vite::asset('resources/img/logo.png') }}" alt="Logo" class="object-contain w-8 h-8">
     </div>
-    <span class="font-semibold text-gray-900 text-lg hidden sm:block">UPBS BRMP</span>
+    <span class="font-semibold text-gray-900 text-lg hidden sm:block">UPBS BRMP BIOGEN</span>
   </div>
 
   <!-- 🌿 Menu Tengah (desktop) -->
@@ -23,7 +23,7 @@
     </li>
     <li>
       <a href="{{ route('about') }}" 
-         class="hover:text-indigo-600 transition">
+         class="{{ request()->routeIs('about') ? 'text-indigo-600 font-semibold' : 'hover:text-indigo-600' }} transition">
          Tentang Kami
       </a>
     </li>
@@ -41,7 +41,7 @@
      <a href="{{ route('cart.show') }}">
       <div id="cartIcon" class="relative cursor-pointer" >
         <i class="fa fa-shopping-cart text-gray-800 text-xl hover:text-indigo-600 transition"></i>
-        <span id="cartBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full px-[5px] py-[1px]">3</span>
+        <span id="cartBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full px-[5px] py-[1px]" style="display:none">0</span>
       </div>
     </a>
     <!-- 🍔 Menu mobile -->
@@ -55,7 +55,7 @@
 
   <!-- 📱 Dropdown Mobile -->
   <div id="mobileMenu"
-       class="hidden absolute top-full right-0 mt-3 w-56 bg-white/99 backdrop-blur-xl  rounded-2xl p-4 md:hidden">
+       class="hidden absolute top-full right-0 mt-3 w-56 bg-white/95 backdrop-blur-xl  rounded-2xl p-4 md:hidden">
     <ul class="space-y-3 text-gray-800 font-medium">
       <li>
         <a href="{{ route('home') }}" 
@@ -93,5 +93,31 @@
   </div>
 </nav>
 <script>
- 
+  (function(){
+    function readCartCount() {
+      try {
+        const raw = localStorage.getItem('upbs_cart_v2');
+        if (!raw) return 0;
+        const obj = JSON.parse(raw);
+        const items = Array.isArray(obj?.items) ? obj.items : [];
+        return items.length;
+      } catch { return 0; }
+    }
+    function renderCartBadge() {
+      const el = document.getElementById('cartBadge');
+      if (!el) return;
+      const count = readCartCount();
+      if (count > 0) {
+        el.textContent = count;
+        el.style.display = 'inline';
+      } else {
+        el.style.display = 'none';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', renderCartBadge);
+    window.addEventListener('cart-updated', renderCartBadge);
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'upbs_cart_v2') renderCartBadge();
+    });
+  })();
 </script>

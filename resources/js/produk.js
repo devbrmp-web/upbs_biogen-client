@@ -46,22 +46,32 @@ function initInteraction() {
                 c.classList.remove('border-gray-200');
                 
                 // Update hidden inputs
-                document.getElementById('selected-lot-id').value = ''; // Not used in this mode (auto-resolve)
-                // We need to store the CLASS ID and QUANTITY
-                // But existing hidden inputs are: selected-lot-id, selected-qty.
-                // We might need to change addToCart logic to use class id.
+                document.getElementById('selected-lot-id').value = '';
                 
                 const qtyInput = c.querySelector('.quantity');
                 document.getElementById('selected-qty').value = qtyInput.value;
                 
-                // We store class ID in a data attribute or new hidden input?
-                // Let's just use a global variable or read from DOM in addToCart
                 window.selectedClassId = c.dataset.seedClassId;
                 window.selectedClassCode = code;
+                window.selectedClassName = c.dataset.seedClassName;
+                window.selectedPrice = parseFloat(c.dataset.price) || 0;
+                
+                const lotGroup = document.querySelector(`.lot-options[data-seed-class-code="${code}"]`);
+                if (lotGroup) {
+                    const radios = lotGroup.querySelectorAll('input[type="radio"]');
+                    if (radios.length > 0) {
+                        const first = radios[0];
+                        first.checked = true;
+                        window.selectedLotId = parseInt(first.value);
+                        window.selectedPrice = parseFloat(first.dataset.price) || window.selectedPrice;
+                        document.getElementById('selected-lot-id').value = String(window.selectedLotId);
+                    }
+                }
                 
                 const valid = validateQtyInput(qtyInput, code);
-                document.getElementById('btn-add-cart').disabled = !valid;
-                document.getElementById('btn-buy-now').disabled = !valid;
+                const hasLot = !!window.selectedLotId;
+                document.getElementById('btn-add-cart').disabled = !(valid && hasLot);
+                document.getElementById('btn-buy-now').disabled = !(valid && hasLot);
             } else {
                 c.classList.remove('border-blue-500', 'ring-2', 'ring-blue-200');
                 c.classList.add('border-gray-200');
@@ -77,10 +87,34 @@ function updateSelection(card) {
     }
 }
 
+document.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t && t.matches('.lot-options input[type="radio"]')) {
+        const val = parseInt(t.value);
+        const price = parseFloat(t.dataset.price) || 0;
+        window.selectedLotId = val;
+        window.selectedPrice = price;
+        document.getElementById('selected-lot-id').value = String(val);
+        const card = t.closest('.seed-class-card');
+        const code = card?.dataset.seedClassCode;
+        const qtyInput = card?.querySelector('.quantity');
+        if (qtyInput) {
+            const valid = validateQtyInput(qtyInput, code);
+            const hasLot = !!window.selectedLotId;
+            document.getElementById('btn-add-cart').disabled = !(valid && hasLot);
+            document.getElementById('btn-buy-now').disabled = !(valid && hasLot);
+        }
+    }
+});
+
 // Override or Implement addToCartAction
 window.addToCartAction = function(isBuyNow) {
     if (!window.selectedClassId) {
         alert('Silakan pilih kelas benih terlebih dahulu.');
+        return;
+    }
+    if (!window.selectedLotId) {
+        alert('Silakan pilih lot yang tersedia untuk kelas benih tersebut.');
         return;
     }
 
@@ -89,12 +123,13 @@ window.addToCartAction = function(isBuyNow) {
     const item = {
         variety_id: window.varietyData.id,
         name: window.varietyData.name,
-        price: window.varietyData.base_price, // Base price, or we can fetch specific price if needed
+        price_per_unit: parseInt(window.selectedPrice || window.varietyData.base_price) || 0,
         image: window.varietyData.image,
         quantity: parseInt(qty),
         seed_class_id: window.selectedClassId,
         seed_class_code: window.selectedClassCode,
-        seed_lot_id: null // Auto-resolve at checkout
+        seed_class_name: window.selectedClassName,
+        seed_lot_id: window.selectedLotId
     };
 
     let cart = [];
@@ -103,8 +138,7 @@ window.addToCartAction = function(isBuyNow) {
         if (stored) cart = JSON.parse(stored).items || [];
     } catch (e) {}
 
-    // Check if same variety+class exists
-    const existing = cart.find(c => c.variety_id == item.variety_id && c.seed_class_id == item.seed_class_id);
+    const existing = cart.find(c => c.variety_id == item.variety_id && c.seed_lot_id == item.seed_lot_id);
     if (existing) {
         existing.quantity += item.quantity;
     } else {

@@ -6,9 +6,10 @@
         <div class="absolute inset-0 bg-gradient-to-r from-[#B4DEBD] via-[#B4DEBD]/70 to-transparent z-10"></div>
 
         <!-- 🌾 Gambar padi, tampil hanya di layar besar -->
-         <img src="{{ asset('img/herolp.jpeg') }}"
+         <img src="{{ Vite::asset('resources/img/herolp.jpeg') }}"
             alt="Hero Padi"
-            class="hidden md:block absolute inset-0 w-full h-full object-cover object-right lg:object-right-top opacity-90">
+            class="hidden md:block absolute inset-0 w-full h-full object-cover object-right lg:object-right-top opacity-90"
+            onerror="this.src='https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=1920&auto=format&fit=crop'">
 
     </div>
 

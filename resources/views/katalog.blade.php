@@ -3,6 +3,9 @@
 
 @section('content')
 
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
 {{-- Animasi page --}}
 @if(request()->has('commodity') || request()->has('seed_class') || request()->has('search'))
 <script>document.body.classList.add('page-animated');</script>
@@ -41,14 +44,15 @@ try{
 
                 {{-- Tampilkan Semua --}}
                 @if (!$activeCommodity)
-                    <span class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
+                    <a href="/katalog{{ $activeSeedClass ? '?seed_class='.$activeSeedClass : '' }}"
+                       class="commodity-filter-link px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
                         bg-[#B4DEBD] text-black border-[#B4DEBD]
-                        cursor-not-allowed opacity-70 whitespace-nowrap">
+                        cursor-not-allowed opacity-70 whitespace-nowrap pointer-events-none">
                         Tampilkan Semua
-                    </span>
+                    </a>
                 @else
-                    <a href="/katalog"
-                       class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
+                    <a href="/katalog{{ $activeSeedClass ? '?seed_class='.$activeSeedClass : '' }}"
+                       class="commodity-filter-link px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
                        bg-[#B4DEBD]/40 text-gray-800 hover:bg-[#B4DEBD]/60 transition whitespace-nowrap">
                         Tampilkan Semua
                     </a>
@@ -63,14 +67,15 @@ try{
                     @endphp
 
                     @if ($isActive)
-                        <span class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
+                        <a href="/katalog?commodity={{ $slug }}{{ $seedParam }}"
+                           class="commodity-filter-link px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
                             bg-[#B4DEBD] text-black border-[#B4DEBD]
-                            cursor-not-allowed opacity-70 whitespace-nowrap">
+                            cursor-not-allowed opacity-70 whitespace-nowrap pointer-events-none">
                             {{ $commodity['name'] }}
-                        </span>
+                        </a>
                     @else
                         <a href="/katalog?commodity={{ $slug }}{{ $seedParam }}"
-                           class="px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
+                           class="commodity-filter-link px-5 py-3 rounded-2xl text-sm font-medium border shadow-md
                            bg-[#B4DEBD]/40 text-gray-800 hover:bg-[#B4DEBD]/60 transition whitespace-nowrap">
                             {{ $commodity['name'] }}
                         </a>
@@ -88,7 +93,6 @@ try{
 
             <select
                 id="seed-class-select"
-                onchange="window.location.href='/katalog?seed_class='+this.value+'&commodity={{ $activeCommodity ?? '' }}';"
                 class="block w-full max-w-xs rounded-lg border-gray-300 shadow-sm
                        focus:border-indigo-500 focus:ring-indigo-500
                        sm:text-sm p-2.5 bg-white border">
@@ -104,76 +108,24 @@ try{
         <!-- =======================
              GRID PRODUK
         ======================== -->
-        <div  class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        {{-- Debug: Jumlah varietas yang diterima: {{ count($varieties) }} --}}
+        {{-- Debug: Active Commodity: {{ $activeCommodity ?? 'None' }} --}}
+        {{-- Debug: Active Seed Class: {{ $activeSeedClass ?? 'None' }} --}}
 
-            @forelse ($varieties as $variety)
-                @php
-                    $priceRaw = $variety['price_idr'] ?? 0;
-                    $priceClean = (float) preg_replace('/[^\d.]/', '', $priceRaw);
-
-                    $imagePath = $variety['image_path'] ?? null;
-                    $imageUrl = $imagePath
-                        ? rtrim(config('app.url_dev_admin'), '/') . '/storage/' . ltrim($imagePath, '/')
-                        : 'https://placehold.co/400x300?text=No+Image';
-
-                    $seedLots = collect($variety['seed_lots'] ?? []);
-                    $stockByClass = $seedLots
-                        ->filter(fn ($lot) =>
-                            ($lot['is_sellable'] ?? false) &&
-                            !empty($lot['seed_class']['code']) &&
-                            ($lot['quantity'] ?? 0) > 0
-                        )
-                        ->groupBy(fn ($lot) => $lot['seed_class']['code'])
-                        ->map(fn ($lots) => $lots->sum('quantity'));
-                @endphp
-
-                <div class="backdrop-blur-md bg-white/30 border border-white/20 shadow-md
-                            hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden">
-
-                    <a href="{{ route('product.detail', $variety['slug']) }}" class="block">
-
-                        <div class="h-40 bg-gray-100 overflow-hidden">
-                            <img src="{{ $imageUrl }}"
-                                 class="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-                                 onerror="this.src='https://placehold.co/400x300?text=No+Image'">
-                        </div>
-
-                        <div class="p-3">
-                            <h3 class="font-semibold text-gray-900 text-sm line-clamp-2">
-                                {{ $variety['name'] }}
-                            </h3>
-
-                            <p class="text-xs text-gray-500 mt-1">
-                                {{ $variety['commodity']['name'] ?? '-' }}
-                            </p>
-
-                            <p class="text-sm text-green-700 font-semibold mt-2">
-                                Rp {{ number_format($priceClean, 0, ',', '.') }}
-                            </p>
-
-                            <p class="text-xs text-gray-500 mt-1">
-                                Minimum: {{ $variety['minimum_limit'] ?? 0 }} kg
-                            </p>
-
-                            @if ($stockByClass->isNotEmpty())
-                                <p class="text-xs text-gray-600 mt-2 flex flex-wrap">
-                                    @foreach ($stockByClass as $code => $qty)
-                                        <span class="mr-2">
-                                            <b>{{ $code }}</b>: {{ $qty }}
-                                        </span>
-                                    @endforeach
-                                </p>
-                            @endif
-                        </div>
-                    </a>
-                </div>
-            @empty
-                <p class="col-span-4 text-center text-gray-600">
-                    Tidak ada data varietas tersedia.
-                </p>
-            @endforelse
-
+        <div class="flex items-center justify-end mb-4">
+            @php
+                $refreshUrl = '/katalog' . ($activeCommodity ? '?commodity='.$activeCommodity : '');
+                $refreshUrl .= $activeSeedClass ? (($activeCommodity ? '&' : '?').'seed_class='.$activeSeedClass) : '';
+                $refreshUrl .= ($activeCommodity || $activeSeedClass) ? '&refresh=1' : '?refresh=1';
+            @endphp
+            <a href="{{ $refreshUrl }}" id="refreshDataBtn" class="inline-flex items-center justify-center w-9 h-9 rounded-full border border-blue-600 text-blue-600 hover:bg-blue-50 transition" aria-label="Muat Ulang Data" title="Muat Ulang Data">
+                <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v6h6M20 20v-6h-6M5 19a9 9 0 0014-7M19 5a9 9 0 00-14 7" />
+                </svg>
+            </a>
         </div>
+ 
+        @include('partials.katalog-grid')
 
     </div>
 </section>
@@ -269,3 +221,18 @@ document.addEventListener('DOMContentLoaded', () => {
 </style>
 
 @endsection
+
+@push('scripts')
+<script>
+    try {
+        const TTL_15_MIN = 15 * 60 * 1000;
+        const TTL_1_HOUR = 60 * 60 * 1000;
+        if (window.UpbsCache) {
+            window.UpbsCache.set('katalog:varieties', @json($varieties));
+            window.UpbsCache.set('katalog:commodities', @json($commodities));
+            window.UpbsCache.set('katalog:seedClasses', @json($seedClasses));
+        }
+    } catch (e) {}
+    </script>
+@vite('resources/js/catalog.js')
+@endpush

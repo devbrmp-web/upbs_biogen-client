@@ -16,4 +16,14 @@
     </div>
   </div>
 </section>
+<script>
+  (function(){
+    var code = "{{ $order_code }}";
+    if (!code) return;
+    var temp = localStorage.getItem('signature_temp');
+    if (temp) {
+      localStorage.setItem('signature_' + code, temp);
+    }
+  })();
+</script>
 @endsection

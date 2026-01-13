@@ -12,6 +12,36 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePaymentSummary();
     loadReceiverData(); // Load from cookies
 
+    const resumeOrderCode = new URLSearchParams(window.location.search).get('resume_order');
+    if (resumeOrderCode) {
+        const btn = document.getElementById('btn-pay');
+        const loadingEl = document.getElementById('loading-state');
+        const errorEl = document.getElementById('checkout-error');
+
+        if (errorEl) errorEl.classList.add('hidden');
+        if (btn) btn.classList.add('hidden');
+        if (loadingEl) loadingEl.classList.remove('hidden');
+
+        resumePendingPayment(resumeOrderCode)
+            .catch((e) => {
+                let msg = 'Terjadi kesalahan.';
+                if (e?.response?.data?.message) {
+                    msg = e.response.data.message;
+                } else if (e?.message) {
+                    msg = e.message;
+                }
+                if (errorEl) {
+                    errorEl.textContent = msg;
+                    errorEl.classList.remove('hidden');
+                }
+            })
+            .finally(() => {
+                if (loadingEl) loadingEl.classList.add('hidden');
+                if (btn) btn.classList.remove('hidden');
+            });
+        return;
+    }
+
     const cart = getCart();
     if (cart.length === 0) {
         document.getElementById('checkout-cart-items').innerHTML = `
@@ -32,6 +62,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+async function resumePendingPayment(orderCode) {
+    const resp = await window.axios.post('/orders/payment/snap-token', {
+        order_code: orderCode,
+    });
+
+    const snapToken = resp?.data?.data?.snap_token;
+    if (!snapToken) {
+        throw new Error(resp?.data?.message || 'Gagal mendapatkan token pembayaran.');
+    }
+
+    openSnapPopup(snapToken, orderCode);
+}
+
+function openSnapPopup(snapToken, orderCode) {
+    const btn = document.getElementById('btn-pay');
+    const loadingEl = document.getElementById('loading-state');
+
+    window.snap.pay(snapToken, {
+        onSuccess: function(result) {
+            console.log(result);
+
+            const syncOrderId = (lastOrderData?.order_code || orderCode);
+            if (syncOrderId) {
+                window.axios.post('/orders/payment/sync', {
+                    order_id: syncOrderId,
+                }).catch(() => {});
+            }
+
+            localStorage.removeItem(CART_KEY);
+            window.location.href = '/cek-pesanan?search=' + (lastOrderData?.order_code || orderCode || '') + '&method=order_code';
+        },
+        onPending: function(result) {
+            console.log(result);
+            window.location.href = '/pesanan/' + encodeURIComponent(orderCode);
+        },
+        onError: function(result) {
+            console.log(result);
+            window.location.href = '/payment/error?order_code=' + encodeURIComponent(orderCode);
+        },
+        onClose: function() {
+            alert("Anda menutup pop-up pembayaran.");
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('hidden');
+            }
+            if (loadingEl) loadingEl.classList.add('hidden');
+        }
+    });
+}
 
 function saveReceiverData() {
     const data = {
@@ -140,7 +220,8 @@ function renderCheckoutCart() {
     }
 
     container.innerHTML = items.map(item => {
-        const itemTotal = item.quantity * item.price;
+        const unitPrice = parseInt(item.price_per_unit) || 0;
+        const itemTotal = item.quantity * unitPrice;
         
         let badgeClass = 'bg-gray-100 text-gray-800';
         if (item.seed_class_code === 'BS') badgeClass = 'bg-yellow-100 text-yellow-800';
@@ -156,14 +237,19 @@ function renderCheckoutCart() {
                     
                     <div class="mt-2 space-y-1 text-sm">
                         <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <span class="${badgeClass} text-xs font-bold px-2 py-0.5 rounded">
-                                    ${item.seed_class_code}
-                                </span>
-                                <span class="text-gray-600">Lot: ${item.seed_lot_id || 'Auto'}</span>
+                            <div class="flex flex-col gap-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="${badgeClass} text-xs font-bold px-2 py-0.5 rounded">
+                                        ${item.seed_class_code}
+                                    </span>
+                                    <span class="text-gray-600">
+                                        ${item.seed_class_name || 'Benih'}
+                                    </span>
+                                </div>
+                                <span class="text-xs text-gray-500">Lot: ${item.seed_lot_id || 'Auto'}</span>
                             </div>
                             <span class="font-medium text-gray-900">
-                                ${item.quantity} kg x ${formatIDR(item.price)}
+                                ${item.quantity} kg x ${formatIDR(unitPrice)}
                             </span>
                         </div>
                         <div class="text-right font-bold text-blue-600">
@@ -181,14 +267,18 @@ function updatePaymentSummary() {
     let subtotal = 0;
 
     items.forEach(item => {
-        subtotal += (item.quantity * item.price);
+        const unitPrice = parseInt(item.price_per_unit) || 0;
+        subtotal += (item.quantity * unitPrice);
     });
 
     const serviceFee = Math.round(subtotal * 0.01);
-    const total = subtotal + serviceFee;
+    const appFee = 4000;
+    const total = subtotal + serviceFee + appFee;
 
     document.getElementById('summary-subtotal').textContent = formatIDR(subtotal);
     document.getElementById('summary-service-fee').textContent = formatIDR(serviceFee);
+    const appFeeEl = document.getElementById('summary-app-fee');
+    if (appFeeEl) appFeeEl.textContent = formatIDR(appFee);
     document.getElementById('summary-total').textContent = formatIDR(total);
 }
 
@@ -227,13 +317,24 @@ window.processCheckout = async function() {
     try {
         const cartItems = getCart();
         const shippingMethod = document.querySelector('input[name="shipping_method"]:checked').value;
+        const invalidQty = cartItems.some(it => {
+            if (it.seed_class_code === 'FS') {
+                return !(it.quantity % 5 === 0 && it.quantity >= 5);
+            }
+            if (it.seed_class_code === 'BS') {
+                return !(it.quantity >= 1);
+            }
+            return !(it.quantity >= 1);
+        });
+        if (invalidQty) {
+            throw new Error('Jumlah item tidak memenuhi aturan kelas benih (FS kelipatan 5 kg, BS minimal 1 kg).');
+        }
 
         const payload = {
             items: cartItems.map(item => ({
                 variety_id: item.variety_id,
-                quantity: item.quantity,
-                seed_lot_id: item.seed_lot_id || null,
-                seed_class_code: item.seed_class_code
+                seed_lot_id: item.seed_lot_id,
+                quantity: item.quantity
             })),
             customer_name: name,
             customer_address: `${address}, Kec. ${district}, ${city}, ${province}, ${postal}`,
@@ -246,12 +347,13 @@ window.processCheckout = async function() {
         if (!payload.terms_accepted) {
             throw new Error('Anda harus menyetujui Syarat dan Ketentuan.');
         }
+        const missingLot = payload.items.some(it => !it.seed_lot_id);
+        if (missingLot) {
+            throw new Error('Pilih lot untuk setiap item sebelum melanjutkan.');
+        }
 
-        // 🔥 REQUEST KE BACKEND (HARUS BALIKAN snap_token)
         const response = await window.axios.post('/orders/checkout', payload);
-        console.log(response)
-        lastOrderData = response?.data?.data?.order; // 💡 simpan di sini
-        // Ambil data dari backend
+        lastOrderData = response?.data?.data?.order;
         const snapToken =
             response?.data?.snap_token ||
             response?.data?.token ||
@@ -265,58 +367,7 @@ window.processCheckout = async function() {
             throw new Error('Gagal mendapatkan token pembayaran.');
         }
 
-        // 🔥 JALANKAN SNAP POPUP
-        window.snap.pay(snapToken, {
-            onSuccess: function(result) {
-                console.log(result);
-                if (lastOrderData) {
-
-                    // Simpan ke localStorage
-                    try {
-                        let arr = JSON.parse(localStorage.getItem("lastOrderData") || "[]");
-                        if (!Array.isArray(arr)) arr = [];
-
-                        arr.push(lastOrderData);
-                        localStorage.setItem("lastOrderData", JSON.stringify(arr));
-                    } catch (e) {
-                        console.error("failed to store local history", e);
-                    }
-
-                    // Simpan juga ke cookie (untuk fallback)
-                    const d = new Date();
-                    d.setTime(d.getTime() + (7 * 24 * 60 * 60 * 1000));
-                    const expires = "expires=" + d.toUTCString();
-                    document.cookie =
-                        "upbs_last_order=" +
-                        JSON.stringify(lastOrderData) +
-                        ";" +
-                        expires +
-                        ";path=/;SameSite=Lax";
-                }
-
-
-                localStorage.removeItem(CART_KEY);
-                window.location.href = '/cek-pesanan?search=' + (lastOrderData?.order_code || '') + '&method=order_code';
-            },
-            //     localStorage.removeItem(CART_KEY);
-            //     // window.location.href = '/orders/success?order=' + orderCode;
-            //     window.location.href = '/cart';
-            // },
-            onPending: function(result) {
-                console.log(result);
-                window.location.href = '/orders/pending?order=' + orderCode;
-            },
-            onError: function(result) {
-                console.log(result);
-                window.location.href = '/orders/error';
-            },
-            onClose: function() {
-                alert("Anda menutup pop-up pembayaran.");
-                btn.disabled = false;
-                btn.classList.remove('hidden');
-                loadingEl.classList.add('hidden');
-            }
-        });
+        openSnapPopup(snapToken, orderCode);
 
     } catch (error) {
         console.error(error);

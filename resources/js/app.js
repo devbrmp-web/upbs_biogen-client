@@ -2,6 +2,7 @@ import './bootstrap';
 import './categoryScroll.js';
 import './cart.js';
 import './render-cart.js';
+import './services/cache.js';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 // Animasi halaman: jalankan sekali per navigasi
@@ -67,9 +68,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 cartModal.classList.remove('flex');
             }
         });
-    }
+  }
 });
 
+// Service Worker registration (image caching)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 // Dev toggle: hide katalog query string after navigation based on env
 document.addEventListener('DOMContentLoaded', () => {
   const hide = (import.meta.env.VITE_HIDE_FILTER_QUERY === 'true') || (import.meta.env.VITE_HIDE_FILTER_QUERY === '1');
