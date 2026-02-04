@@ -136,6 +136,82 @@ class TrackOrderController extends Controller
         }
     }
 
+    /**
+     * Display payment instruction page for manual transfer
+     */
+    public function instruction(string $orderCode)
+    {
+        $baseUrl = config('app.url_dev_admin');
+
+        try {
+            $res = Http::timeout(8)->get(
+                "$baseUrl/api/orders/" . urlencode($orderCode) . "/payment-info"
+            );
+
+            if (!$res->successful()) {
+                abort(404, 'Order tidak ditemukan');
+            }
+
+            $data = $res->json('data') ?? [];
+
+            return view('orders.instruction', [
+                'order' => (object) $data,
+            ]);
+
+        } catch (\Throwable $e) {
+            abort(404, 'Gagal memuat data pesanan');
+        }
+    }
+
+    /**
+     * Upload payment proof and proxy to admin API
+     */
+    public function uploadProof(Request $request, string $orderCode)
+    {
+        $request->validate([
+            'payment_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ]);
+
+        $baseUrl = config('app.url_dev_admin');
+
+        try {
+            $res = Http::timeout(30)
+                ->attach(
+                    'payment_proof',
+                    file_get_contents($request->file('payment_proof')->getRealPath()),
+                    $request->file('payment_proof')->getClientOriginalName()
+                )
+                ->post("$baseUrl/api/orders/" . urlencode($orderCode) . "/confirm-payment");
+
+            $json = $res->json();
+
+            // Log for debugging
+            \Log::info('Payment proof upload response', [
+                'order_code' => $orderCode,
+                'status_code' => $res->status(),
+                'response' => $json,
+            ]);
+
+            // Check both HTTP status and JSON success field
+            if ($res->successful() && ($json['success'] ?? false)) {
+                return redirect()
+                    ->route('order.detail', ['order_code' => $orderCode])
+                    ->with('success', $json['message'] ?? 'Bukti pembayaran berhasil diunggah. Menunggu verifikasi admin.');
+            }
+
+            $errorMsg = $json['message'] ?? 'Gagal mengunggah bukti pembayaran.';
+            return back()->with('error', $errorMsg);
+
+        } catch (\Throwable $e) {
+            \Log::error('Payment proof upload exception', [
+                'order_code' => $orderCode,
+                'error' => $e->getMessage(),
+            ]);
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+
 
 
     // ======================================================
@@ -254,10 +330,20 @@ class TrackOrderController extends Controller
             // ==============================
             // PAID CHECK
             // ==============================
-            $isPaid = in_array($order['status'] ?? null, [
-                'paid', 'completed', 'picked_up', 'shipped'
-            ]);
+            // Status-status yang dianggap sudah lunas (atau dalam proses verifikasi)
+            // pending_verification dimasukkan agar user bisa lihat "Receipt" dengan status "Menunggu Verifikasi"
+            $paidStatuses = [
+                'paid', 
+                'processing', 
+                'pickup_ready', 
+                'completed', 
+                'shipped',
+                'picked_up',
+                'pending_verification' // NEW: Allow receipt view for pending verification
+            ];
+            $isPaid = in_array($order['status'] ?? null, $paidStatuses);
 
+            // Fallback: jika payment status adalah paid, anggap lunas juga
             if (!$isPaid && $payment) {
                 $isPaid = ($payment['status'] ?? null) === 'paid';
             }
@@ -273,6 +359,32 @@ class TrackOrderController extends Controller
 
         } catch (\Throwable $e) {
             abort(404);
+        }
+    }
+
+    /**
+     * API Proxy: Get fresh order data from admin API for JavaScript AJAX calls.
+     * This is used by the history component to refresh stale localStorage data.
+     */
+    public function getOrderJson(string $orderCode)
+    {
+        $baseUrl = config('app.url_dev_admin');
+
+        try {
+            $res = Http::timeout(5)->get(
+                "$baseUrl/api/orders/" . urlencode($orderCode)
+            );
+
+            if (!$res->successful()) {
+                return response()->json(['error' => 'Order not found'], 404);
+            }
+
+            $data = $res->json('data') ?? [];
+
+            return response()->json(['data' => $data]);
+
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Failed to fetch order'], 500);
         }
     }
 }

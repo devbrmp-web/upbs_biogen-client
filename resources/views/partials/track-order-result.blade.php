@@ -9,6 +9,7 @@
                 'completed' => 'bg-green-100 text-green-700',
                 'paid' => 'bg-green-100 text-green-700',
                 'awaiting_payment' => 'bg-yellow-100 text-yellow-700',
+                'pending_verification' => 'bg-orange-100 text-orange-700', // Added
                 'processing' => 'bg-blue-100 text-blue-700',
                 'delivery_coordination' => 'bg-blue-100 text-blue-700',
                 'shipped' => 'bg-blue-100 text-blue-700',
@@ -18,6 +19,7 @@
 
             $statusLabelMap = [
                 'awaiting_payment' => 'Menunggu Pembayaran',
+                'pending_verification' => 'Menunggu Verifikasi', // Added
                 'paid' => 'Lunas',
                 'processing' => 'Diproses',
                 'pickup_ready' => 'Siap Diambil',
@@ -26,7 +28,7 @@
                 'shipped' => 'Dikirim',
                 'delivery_coordination' => 'Koordinasi Pengiriman'
             ];
-            $statusLabel = $statusLabelMap[$order->status] ?? $order->status;
+            $statusLabel = $statusLabelMap[$order->status] ?? ucwords(str_replace('_', ' ', $order->status));
         @endphp
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="flex items-center gap-4">

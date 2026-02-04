@@ -4,8 +4,33 @@
  */
 let lastOrderData = [];
 const CART_KEY = 'upbs_cart_v2';
+const HISTORY_KEY = 'lastOrderData'; // Key used by track-order page for history
 
 const COOKIE_NAME = 'upbs_receiver_data';
+
+/**
+ * Save order to localStorage history for "Cek Pesanan" page
+ */
+function saveOrderToHistory(orderData) {
+    if (!orderData || !orderData.order_code) return;
+    
+    try {
+        let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+        
+        // Remove existing entry with same order_code (avoid duplicates)
+        history = history.filter(o => o.order_code !== orderData.order_code);
+        
+        // Add new order at the end
+        history.push(orderData);
+        
+        // Save back to localStorage
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        
+        console.log('Order saved to history:', orderData.order_code);
+    } catch (e) {
+        console.error('Failed to save order to history:', e);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     renderCheckoutCart();
@@ -354,20 +379,32 @@ window.processCheckout = async function() {
 
         const response = await window.axios.post('/orders/checkout', payload);
         lastOrderData = response?.data?.data?.order;
-        const snapToken =
-            response?.data?.snap_token ||
-            response?.data?.token ||
-            response?.data?.data?.snap_token;
+        
+        const paymentMethod = response?.data?.data?.payment_method || 'manual';
+        const orderCode = response?.data?.data?.order_code;
 
-        const orderCode =
-            response?.data?.order_code ||
-            response?.data?.data?.order_code;
-
-        if (!snapToken) {
-            throw new Error('Gagal mendapatkan token pembayaran.');
+        if (!orderCode) {
+            throw new Error('Gagal membuat pesanan.');
         }
 
-        openSnapPopup(snapToken, orderCode);
+        // Clear cart on successful order creation
+        localStorage.removeItem(CART_KEY);
+
+        // Save order to history for "Cek Pesanan" page
+        saveOrderToHistory(lastOrderData);
+
+        if (paymentMethod === 'midtrans') {
+            // Midtrans payment flow
+            const snapToken = response?.data?.data?.snap_token;
+            if (!snapToken) {
+                throw new Error('Gagal mendapatkan token pembayaran.');
+            }
+            openSnapPopup(snapToken, orderCode);
+        } else {
+            // Manual Transfer - redirect to instruction page
+            window.location.href = '/pesanan/' + encodeURIComponent(orderCode) + '/instruksi';
+        }
+
 
     } catch (error) {
         console.error(error);
@@ -387,6 +424,7 @@ window.processCheckout = async function() {
         loadingEl.classList.add('hidden');
     }
 };
+
 
 
 // Validasi stok sesuai hierarki 

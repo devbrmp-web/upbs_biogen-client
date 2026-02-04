@@ -52,12 +52,58 @@
         <div>{{ $order['customer_phone'] ?? '-' }}</div>
       </div>
       <div class="block">
+        @php
+            // ============================================
+            // STATUS LABEL LOGIC (3 states)
+            // ============================================
+            // 1. Lunas: paid, processing, pickup_ready, completed, shipped
+            // 2. Menunggu Verifikasi: pending_verification
+            // 3. Belum Dibayar: awaiting_payment, or other
+            
+            $paidStatuses = ['paid', 'processing', 'pickup_ready', 'completed', 'shipped'];
+            $currentStatus = $order['status'] ?? '';
+            
+            if (in_array($currentStatus, $paidStatuses)) {
+                $statusLabel = 'Telah Dibayar';
+                $statusBgColor = '#d1fae5';  // green-100
+                $statusTextColor = '#065f46'; // green-800
+            } elseif ($currentStatus === 'pending_verification') {
+                $statusLabel = 'Menunggu Verifikasi';
+                $statusBgColor = '#ffedd5';  // orange-100
+                $statusTextColor = '#c2410c'; // orange-700
+            } else {
+                $statusLabel = 'Belum Dibayar';
+                $statusBgColor = '#fef3c7';  // amber-100
+                $statusTextColor = '#92400e'; // amber-700
+            }
+            
+            // Get payment method - prioritize payment record, fallback to order
+            $paymentMethod = $payment['payment_method'] ?? $order['payment_type'] ?? 'Bank Transfer';
+            if (empty($paymentMethod) || $paymentMethod === '-') {
+                $paymentMethod = 'Bank Transfer';
+            }
+            
+            // Get transaction ID - use order_code as fallback for manual payments
+            $transactionId = $payment['transaction_id'] ?? $order['transaction_id'] ?? $order['order_code'] ?? '-';
+            
+            // Get paid_at date
+            $paidAt = $payment['paid_at'] ?? $order['paid_at'] ?? $order['settlement_time'] ?? null;
+            if ($paidAt && is_string($paidAt)) {
+                try {
+                    $paidAt = \Carbon\Carbon::parse($paidAt)->format('d F Y, H:i');
+                } catch (\Exception $e) {
+                    // Keep as string if parsing fails
+                }
+            }
+        @endphp
         <div class="label">Payment</div>
-        <div>Metode: {{ ucwords(str_replace('_',' ',($payment['payment_method'] ?? $order['payment_type'] ?? '-'))) }}</div>
-        <div>ID Transaksi: {{ $payment['transaction_id'] ?? $order['transaction_id'] ?? '-' }}</div>
-        <div>Tanggal Bayar: {{ $payment['paid_at'] ?? $order['settlement_time'] ?? '-' }}</div>
-        <div>PNBP: {{ $payment['pnbp_receipt_no'] ?? '-' }}</div>
-        <div style="margin-top:16px" class="badge">Telah Dibayar</div>
+        <div>Metode: {{ ucwords(str_replace('_', ' ', $paymentMethod)) }}</div>
+        <div>ID Transaksi: {{ $transactionId }}</div>
+        <div>Tanggal Bayar: {{ $paidAt ?: '-' }}</div>
+        <div>PNBP: {{ $payment['pnbp_receipt_no'] ?? $order['pnbp_receipt_no'] ?? '-' }}</div>
+        <div style="margin-top:16px;background:{{ $statusBgColor }};color:{{ $statusTextColor }}" class="badge">
+            {{ $statusLabel }}
+        </div>
       </div>
     </div>
 

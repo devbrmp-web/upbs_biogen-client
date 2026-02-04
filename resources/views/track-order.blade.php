@@ -135,47 +135,72 @@ document.addEventListener("DOMContentLoaded", function () {
         formCol.classList.remove("lg:col-span-3");
         formCol.classList.add("lg:col-span-1");
 
-        data.slice().reverse().forEach((o, idxRev) => {
-            const originalIndex = data.length - 1 - idxRev;
-            const card = document.createElement("div");
-            card.className = "bg-white p-4 pl-10 rounded-xl shadow relative flex flex-col md:flex-row md:items-center md:justify-between gap-4";
-            
-            const statusClass = (o.status === 'completed' || o.status === 'paid') ? 'bg-green-100 text-green-700'
-                : (o.status === 'awaiting_payment') ? 'bg-yellow-100 text-yellow-700'
-                : (o.status === 'cancelled') ? 'bg-red-100 text-red-700'
-                : (o.status === 'processing' || o.status === 'pickup_ready') ? 'bg-blue-100 text-blue-700'
-                : 'bg-gray-100 text-gray-800';
+        // Fetch fresh status for each order and update localStorage
+        const refreshPromises = data.map(async (order, index) => {
+            try {
+                const response = await fetch(`/api/orders/${order.order_code}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.data && result.data.status) {
+                        data[index].status = result.data.status;
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not refresh status for', order.order_code);
+            }
+        });
 
-            const statusMap = {
-                'awaiting_payment': 'Menunggu Pembayaran',
-                'paid': 'Lunas',
-                'processing': 'Diproses',
-                'pickup_ready': 'Siap Diambil',
-                'completed': 'Selesai',
-                'cancelled': 'Dibatalkan',
-                'shipped': 'Dikirim',
-                'delivery_coordination': 'Koordinasi Pengiriman'
-            };
-            const statusLabel = statusMap[o.status] || o.status;
+        // Wait for all refreshes, then render
+        Promise.all(refreshPromises).then(() => {
+            setData(data); // Save updated statuses to localStorage
 
-            card.innerHTML = `
-                <button class="absolute top-3 left-3 text-red-600 font-extrabold text-xl hover:scale-110 transition remove-history" data-index="${originalIndex}">✕</button>
-                <div class="flex items-center gap-4">
-                    <div>
-                        <p class="text-xs text-gray-600">Kode Pesanan</p>
-                        <p class="font-semibold text-lg">${o.order_code}</p>
+            data.slice().reverse().forEach((o, idxRev) => {
+                const originalIndex = data.length - 1 - idxRev;
+                const card = document.createElement("div");
+                card.className = "bg-white p-4 pl-10 rounded-xl shadow relative flex flex-col md:flex-row md:items-center md:justify-between gap-4";
+                
+                const statusClass = (o.status === 'completed' || o.status === 'paid') ? 'bg-green-100 text-green-700'
+                    : (o.status === 'awaiting_payment') ? 'bg-yellow-100 text-yellow-700'
+                    : (o.status === 'pending_verification') ? 'bg-orange-100 text-orange-700'
+                    : (o.status === 'cancelled') ? 'bg-red-100 text-red-700'
+                    : (o.status === 'processing' || o.status === 'pickup_ready') ? 'bg-blue-100 text-blue-700'
+                    : 'bg-gray-100 text-gray-800';
+
+                const statusMap = {
+                    'awaiting_payment': 'Menunggu Pembayaran',
+                    'pending_verification': 'Menunggu Verifikasi',
+                    'paid': 'Lunas',
+                    'processing': 'Diproses',
+                    'pickup_ready': 'Siap Diambil',
+                    'completed': 'Selesai',
+                    'cancelled': 'Dibatalkan',
+                    'shipped': 'Dikirim',
+                    'delivery_coordination': 'Koordinasi Pengiriman'
+                };
+
+                const statusLabel = statusMap[o.status] || o.status;
+
+                card.innerHTML = `
+                    <button class="absolute top-3 left-3 text-red-600 font-extrabold text-xl hover:scale-110 transition remove-history" data-index="${originalIndex}">✕</button>
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <p class="text-xs text-gray-600">Kode Pesanan</p>
+                            <p class="font-semibold text-lg">${o.order_code}</p>
+                        </div>
+                        <span class="px-3 py-1 text-xs rounded-full ${statusClass}">${statusLabel}</span>
                     </div>
-                    <span class="px-3 py-1 text-xs rounded-full ${statusClass}">${statusLabel}</span>
-                </div>
-                <div class="flex items-center gap-6">
-                    <span class="text-sm"><b>${o.items?.length ?? 0}</b> item</span>
-                    <span class="text-sm">Total <b>${formatCurrency(o.total_amount)}</b></span>
-                </div>
-                <div>
-                    <a href="/pesanan/${o.order_code}" class="inline-block bg-green-600 text-white px-3 py-1 rounded-lg text-sm">Lihat Detail</a>
-                </div>
-            `;
-            historyList.appendChild(card);
+                    <div class="flex items-center gap-6">
+                        <span class="text-sm"><b>${o.items?.length ?? 0}</b> item</span>
+                        <span class="text-sm">Total <b>${formatCurrency(o.total_amount)}</b></span>
+                    </div>
+                    <div>
+                        <a href="/pesanan/${o.order_code}" class="inline-block bg-green-600 text-white px-3 py-1 rounded-lg text-sm">Lihat Detail</a>
+                    </div>
+                `;
+                historyList.appendChild(card);
+            });
         });
     }
 

@@ -14,6 +14,7 @@
         'completed' => 'bg-green-100 text-green-700',
         'paid' => 'bg-green-100 text-green-700',
         'awaiting_payment' => 'bg-yellow-100 text-yellow-700',
+        'pending_verification' => 'bg-orange-100 text-orange-700',
         'processing' => 'bg-blue-100 text-blue-700',
         'delivery_coordination' => 'bg-blue-100 text-blue-700',
         'shipped' => 'bg-blue-100 text-blue-700',
@@ -22,21 +23,22 @@
       $statusClass = $statusMap[$data->status ?? ''] ?? 'bg-gray-100 text-gray-800';
     @endphp
 
-    <div class="bg-white p-6 rounded-xl shadow">
+    <div class="bg-white p-6 rounded-xl shadow relative z-10">
       <div class="flex flex-wrap justify-between items-start gap-4">
         <div>
           <h2 class="text-xl font-semibold">Order #{{ $data->order_code ?? '-' }}</h2>
           <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm {{ $statusClass }}">{{ $data->status ?? '-' }}</div>
         </div>
-        <div class="flex gap-2">
-          <a href="/cek-pesanan" class="px-3 py-2 rounded-lg border border-gray-200">Kembali</a>
+        <div class="flex gap-2 relative z-20">
+          <a href="/cek-pesanan" class="px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">Kembali</a>
           @if(($data->status ?? '') === 'awaiting_payment')
-            <a href="/checkout?resume_order={{ $data->order_code }}" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Bayar</a>
+            <a href="/pesanan/{{ $data->order_code }}/instruksi" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">Bayar</a>
           @endif
-          <button id="btn-print" class="px-3 py-2 rounded-lg bg-gray-900 text-white" data-order-code="{{ $data->order_code }}" data-order-status="{{ $data->status }}">Cetak</button>
+          <button id="btn-print" class="px-3 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors cursor-pointer" data-order-code="{{ $data->order_code }}" data-order-status="{{ $data->status }}">Cetak</button>
         </div>
       </div>
     </div>
+
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
       <div class="bg-white rounded-xl shadow p-6">
@@ -101,7 +103,7 @@
                   Pembayaran berhasil. Silakan cetak resi/kuitansi Anda dan kirimkan ke Admin melalui WhatsApp untuk koordinasi pengiriman.
                 </p>
                 <div class="flex gap-2">
-                  <a href="/order/{{ $data->order_code }}/receipt" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+                  <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
                     📄 Cetak Resi
                   </a>
                   <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya telah menyelesaikan pembayaran untuk pesanan #'.$data->order_code.'. Berikut saya lampirkan bukti resi untuk koordinasi pengiriman lebih lanjut. Terima kasih!') }}" 
@@ -202,7 +204,7 @@
                   Pembayaran berhasil. Silakan cetak kuitansi Anda dan bawa saat pengambilan benih di kantor UPBS BRMP Biogen.
                 </p>
                 <div class="flex gap-2">
-                  <a href="/order/{{ $data->order_code }}/receipt" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+                  <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
                     📄 Cetak Kuitansi
                   </a>
                   <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya telah menyelesaikan pembayaran untuk pesanan #'.$data->order_code.'. Saya ingin mengkoordinasikan waktu pengambilan benih. Terima kasih!') }}" 
@@ -253,7 +255,7 @@
                   Pesanan Anda sudah siap diambil. Silakan datang ke kantor UPBS BRMP Biogen pada jam operasional dengan menunjukkan bukti kuitansi.
                 </p>
                 <div class="flex gap-2">
-                  <a href="/order/{{ $data->order_code }}/receipt" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+                  <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
                     📄 Lihat Kuitansi
                   </a>
                   <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin konfirmasi kedatangan untuk pengambilan pesanan #'.$data->order_code.'. Terima kasih!') }}" 

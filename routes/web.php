@@ -39,10 +39,13 @@ use App\Http\Controllers\TrackOrderController;
 Route::get('/cek-pesanan', [TrackOrderController::class, 'index'])->name('cek-pesanan');
 Route::get('/pesanan/signature/{order_code}', [TrackOrderController::class, 'signature'])->name('order.signature');
 Route::get('/pesanan/{order_code}', [TrackOrderController::class, 'detail'])->name('order.detail');
-Route::get('/pesanan/{order_code}/cetak', [TrackOrderController::class, 'print'])->name('order.print');
+Route::get('/pesanan/{order_code}/instruksi', [TrackOrderController::class, 'instruction'])->name('order.instruction');
+Route::post('/pesanan/{order_code}/upload-bukti', [TrackOrderController::class, 'uploadProof'])->name('order.upload-proof');
+Route::get('/pesanan/{order_code}/receipt', [TrackOrderController::class, 'print'])->name('order.print');
 Route::get('/tutorial', function () {
     return view('tutorial-buy');
 })->name('tutorial');
+
 Route::get('/home', function () {
     return view('beranda-statis');
 })->name('home.static');
@@ -53,3 +56,6 @@ Route::get('/cache/price/clear-all', [CatalogController::class, 'clearAllPriceCa
 
 // Email resi sender
 Route::post('/orders/send-invoice', [OrderMailController::class, 'sendInvoice']);
+
+// API Proxy Routes (for JavaScript AJAX calls)
+Route::get('/api/orders/{order_code}', [TrackOrderController::class, 'getOrderJson'])->name('api.order.show');
