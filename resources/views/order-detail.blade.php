@@ -32,7 +32,7 @@
         <div class="flex gap-2 relative z-20">
           <a href="/cek-pesanan" class="px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">Kembali</a>
           @if(($data->status ?? '') === 'awaiting_payment')
-            <a href="/pesanan/{{ $data->order_code }}/instruksi" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">Bayar</a>
+            <a href="/pesanan/{{ $data->order_code }}/payment" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">Bayar</a>
           @endif
           <button id="btn-print" class="px-3 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors cursor-pointer" data-order-code="{{ $data->order_code }}" data-order-status="{{ $data->status }}">Cetak</button>
         </div>

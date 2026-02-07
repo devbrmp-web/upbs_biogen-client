@@ -169,7 +169,7 @@ class TrackOrderController extends Controller
     public function uploadProof(Request $request, string $orderCode)
     {
         $request->validate([
-            'payment_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'payment_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240', // 10MB max
         ]);
 
         $baseUrl = config('app.url_dev_admin');

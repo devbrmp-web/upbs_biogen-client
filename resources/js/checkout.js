@@ -402,7 +402,7 @@ window.processCheckout = async function() {
             openSnapPopup(snapToken, orderCode);
         } else {
             // Manual Transfer - redirect to instruction page
-            window.location.href = '/pesanan/' + encodeURIComponent(orderCode) + '/instruksi';
+            window.location.href = '/pesanan/' + encodeURIComponent(orderCode) + '/payment';
         }
 
 

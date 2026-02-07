@@ -39,7 +39,7 @@ use App\Http\Controllers\TrackOrderController;
 Route::get('/cek-pesanan', [TrackOrderController::class, 'index'])->name('cek-pesanan');
 Route::get('/pesanan/signature/{order_code}', [TrackOrderController::class, 'signature'])->name('order.signature');
 Route::get('/pesanan/{order_code}', [TrackOrderController::class, 'detail'])->name('order.detail');
-Route::get('/pesanan/{order_code}/instruksi', [TrackOrderController::class, 'instruction'])->name('order.instruction');
+Route::get('/pesanan/{order_code}/payment', [TrackOrderController::class, 'instruction'])->name('order.payment');
 Route::post('/pesanan/{order_code}/upload-bukti', [TrackOrderController::class, 'uploadProof'])->name('order.upload-proof');
 Route::get('/pesanan/{order_code}/receipt', [TrackOrderController::class, 'print'])->name('order.print');
 Route::get('/tutorial', function () {

@@ -131,7 +131,7 @@
               class="space-y-4">
             @csrf
             
-            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors" 
+            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-all duration-200" 
                  id="dropzone">
                 <input type="file" 
                        name="payment_proof" 
@@ -144,7 +144,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                     </svg>
                     <p class="text-gray-600 mb-1">Klik untuk pilih file atau drag & drop</p>
-                    <p class="text-sm text-gray-500">JPG, PNG, atau PDF (maks. 5MB)</p>
+                    <p class="text-sm text-gray-500">JPG, PNG, atau PDF (maks. 10MB)</p>
                 </label>
                 <p id="file-name" class="mt-2 text-sm text-blue-600 font-medium hidden"></p>
             </div>
@@ -191,15 +191,95 @@ function copyToClipboard(text) {
 }
 
 // File input preview
-document.getElementById('payment_proof').addEventListener('change', function(e) {
-    const fileName = e.target.files[0]?.name;
-    const fileNameEl = document.getElementById('file-name');
-    if (fileName) {
-        fileNameEl.textContent = fileName;
-        fileNameEl.classList.remove('hidden');
-    } else {
-        fileNameEl.classList.add('hidden');
+const fileInput = document.getElementById('payment_proof');
+const dropzone = document.getElementById('dropzone');
+const fileNameEl = document.getElementById('file-name');
+
+if (fileInput && dropzone) {
+    // Click handler - already works via label
+    fileInput.addEventListener('change', function(e) {
+        updateFilePreview(e.target.files[0]);
+    });
+
+    // ========================================
+    // DRAG AND DROP HANDLERS
+    // ========================================
+    
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
     }
-});
+
+    // Highlight dropzone on dragover
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropzone.classList.remove('border-gray-300');
+        dropzone.classList.add('border-blue-500', 'bg-blue-50', 'scale-[1.02]');
+    }
+
+    function unhighlight(e) {
+        dropzone.classList.remove('border-blue-500', 'bg-blue-50', 'scale-[1.02]');
+        dropzone.classList.add('border-gray-300');
+    }
+
+    // Handle dropped files
+    dropzone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+
+        if (files.length > 0) {
+            const file = files[0];
+            
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+            if (!validTypes.includes(file.type)) {
+                alert('Format file tidak didukung. Gunakan JPG, PNG, atau PDF.');
+                return;
+            }
+
+            // Validate file size (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Ukuran file terlalu besar. Maksimal 10MB.');
+                return;
+            }
+
+            // Transfer file to hidden input
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+
+            // Update preview
+            updateFilePreview(file);
+        }
+    }
+
+    function updateFilePreview(file) {
+        if (file && fileNameEl) {
+            fileNameEl.textContent = '📎 ' + file.name;
+            fileNameEl.classList.remove('hidden');
+            
+            // Add success styling to dropzone
+            dropzone.classList.remove('border-gray-300');
+            dropzone.classList.add('border-green-400', 'bg-green-50');
+        } else if (fileNameEl) {
+            fileNameEl.classList.add('hidden');
+        }
+    }
+}
 </script>
 @endsection
