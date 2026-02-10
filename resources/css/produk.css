@@ -1,0 +1,6 @@
+.seed-class-card {
+    position: relative;
+}
+.seed-class-card:hover .quantity-controls {
+    display: flex;
+}
