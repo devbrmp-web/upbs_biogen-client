@@ -1,0 +1,116 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+body {
+  -webkit-overflow-scrolling: auto !important;
+}
+
+
+/* 🚫 Sembunyikan scrollbar tanpa menonaktifkan scroll */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+/* Untuk Firefox */
+html {
+  scrollbar-width: none; /* sembunyikan scrollbar */
+}
+
+/* Pastikan tetap bisa scroll */
+body {
+  -ms-overflow-style: none; /* IE dan Edge */
+  overflow-y: scroll;       /* scroll tetap aktif */
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideRight { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideLeft { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes zoomIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+@keyframes blurIn { from { opacity: 0; filter: blur(6px); } to { opacity: 1; filter: blur(0); } }
+@keyframes rise { from { opacity: 0; transform: translateY(16px) scale(0.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+
+/* Komponen kecil tetap cepat */
+.animate-fadeIn { animation: fadeIn 0.25s ease-out both; }
+
+/* Animasi halaman (>=0.5s) */
+.page-animate-fadeIn { animation: fadeIn 0.6s ease-out both; }
+.page-animate-slideUp { animation: slideUp 0.6s ease-out both; }
+.page-animate-slideRight { animation: slideRight 0.6s ease-out both; }
+.page-animate-slideLeft { animation: slideLeft 0.6s ease-out both; }
+.page-animate-zoomIn { animation: zoomIn 0.6s ease-out both; }
+.page-animate-blurIn { animation: blurIn 0.6s ease-out both; }
+.page-animate-rise { animation: rise 0.6s ease-out both; }
+.page-animate-scaleIn { animation: scaleIn 0.6s ease-out both; }
+
+/* Hanya sekali per navigasi */
+body.page-animated .page-animate-fadeIn,
+body.page-animated .page-animate-slideUp,
+body.page-animated .page-animate-slideRight,
+body.page-animated .page-animate-slideLeft,
+body.page-animated .page-animate-zoomIn,
+body.page-animated .page-animate-blurIn,
+body.page-animated .page-animate-rise,
+body.page-animated .page-animate-scaleIn { animation: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeIn,
+  .page-animate-fadeIn,
+  .page-animate-slideUp,
+  .page-animate-slideRight,
+  .page-animate-slideLeft,
+  .page-animate-zoomIn,
+  .page-animate-blurIn,
+  .page-animate-rise,
+  .page-animate-scaleIn { animation: none !important; }
+}
+
+.main-swiper .swiper-slide {
+  filter: grayscale(70%);
+  opacity: 0.7;
+  transition: filter .25s ease, opacity .25s ease, transform .25s ease;
+}
+.main-swiper .swiper-slide-active {
+  filter: grayscale(0%);
+  opacity: 1;
+  transform: scale(1.005);
+}
+.thumbs-swiper .swiper-slide {
+  filter: grayscale(80%);
+  opacity: 0.6;
+  transition: filter .25s ease, opacity .25s ease, box-shadow .25s ease, border-color .25s ease;
+  border: 1px solid #e5e7eb;
+}
+.thumbs-swiper .swiper-slide-thumb-active {
+  filter: grayscale(0%);
+  opacity: 1;
+  border-color: #374151;
+  box-shadow: 0 0 0 2px rgba(55,65,81,.3) inset;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.immersive-bg {
+  background: radial-gradient(1200px 600px at 10% 10%, rgba(16,185,129,.08), transparent 60%),
+              radial-gradient(1000px 500px at 90% 90%, rgba(59,130,246,.08), transparent 55%);
+}
+
+.glass-card {
+  background: rgba(255,255,255,.6);
+  backdrop-filter: saturate(180%) blur(10px);
+  -webkit-backdrop-filter: saturate(180%) blur(10px);
+  border: 1px solid rgba(255,255,255,.3);
+}
