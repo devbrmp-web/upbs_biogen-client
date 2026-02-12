@@ -3,116 +3,245 @@
 @section('title', 'Detail Pesanan • UPBS BRMP Biogen')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-6 lg:px-8 py-10 mt-16 page-animate-rise">
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-10 mt-20 page-animate-rise relative z-10">
+
+    {{-- Decorative Background Elements --}}
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-emerald-400/20 rounded-full blur-3xl -z-10 opacity-40 pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl -z-10 opacity-30 pointer-events-none"></div>
+
   @if(empty($data))
-    <div class="bg-white p-6 rounded-xl shadow">
-      <p class="text-red-600">Pesanan tidak ditemukan.</p>
+    <div class="bg-white/60 backdrop-blur-xl border border-red-200/50 shadow-xl rounded-3xl p-10 text-center max-w-2xl mx-auto">
+        <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+            <i class="fa-solid fa-circle-exclamation text-red-500 text-3xl"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-slate-800 mb-2">Pesanan Tidak Ditemukan</h3>
+        <p class="text-slate-600 mb-8">Maaf, data pesanan yang Anda cari tidak tersedia. Silakan periksa kembali kode pesanan Anda.</p>
+        <a href="/cek-pesanan" class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
+            <i class="fa-solid fa-arrow-left"></i> Kembali ke Pencarian
+        </a>
     </div>
   @else
     @php
       $statusMap = [
-        'completed' => 'bg-green-100 text-green-700',
-        'paid' => 'bg-green-100 text-green-700',
-        'awaiting_payment' => 'bg-yellow-100 text-yellow-700',
-        'pending_verification' => 'bg-orange-100 text-orange-700',
-        'processing' => 'bg-blue-100 text-blue-700',
-        'delivery_coordination' => 'bg-blue-100 text-blue-700',
-        'shipped' => 'bg-blue-100 text-blue-700',
-        'pickup_ready' => 'bg-blue-100 text-blue-700'
+        'completed' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+        'paid' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+        'awaiting_payment' => 'bg-amber-100 text-amber-700 border-amber-200',
+        'pending_verification' => 'bg-orange-100 text-orange-700 border-orange-200',
+        'processing' => 'bg-blue-100 text-blue-700 border-blue-200',
+        'delivery_coordination' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
+        'shipped' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
+        'pickup_ready' => 'bg-cyan-100 text-cyan-700 border-cyan-200',
+        'cancelled' => 'bg-red-100 text-red-700 border-red-200',
       ];
-      $statusClass = $statusMap[$data->status ?? ''] ?? 'bg-gray-100 text-gray-800';
+      $statusClass = $statusMap[$data->status ?? ''] ?? 'bg-slate-100 text-slate-800 border-slate-200';
     @endphp
 
-    <div class="bg-white p-6 rounded-xl shadow relative z-10">
-      <div class="flex flex-wrap justify-between items-start gap-4">
+    {{-- Header Section --}}
+    <div class="bg-white/70 backdrop-blur-xl border border-white/50 shadow-xl rounded-3xl p-6 md:p-8 relative z-10 mb-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h2 class="text-xl font-semibold">Order #{{ $data->order_code ?? '-' }}</h2>
-          <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm {{ $statusClass }}">{{ $data->status ?? '-' }}</div>
+          <div class="flex items-center gap-4 mb-2">
+              <h2 class="text-3xl font-bold text-slate-800 tracking-tight">Order #{{ $data->order_code ?? '-' }}</h2>
+              <span class="px-4 py-1.5 rounded-full text-sm font-bold border {{ $statusClass }} uppercase tracking-wide shadow-sm">
+                {{ str_replace('_', ' ', $data->status ?? '-') }}
+              </span>
+          </div>
+          <p class="text-slate-500 font-medium flex items-center gap-2">
+            <i class="fa-regular fa-clock"></i>
+            Dibuat pada {{ isset($data->created_at) ? \Carbon\Carbon::parse($data->created_at)->format('d M Y, H:i') : '-' }} WIB
+          </p>
         </div>
-        <div class="flex gap-2 relative z-20">
-          <a href="/cek-pesanan" class="px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">Kembali</a>
+
+        <div class="flex flex-wrap gap-3 w-full md:w-auto">
+          <a href="/cek-pesanan" 
+             class="flex-1 md:flex-none justify-center px-5 py-3 rounded-xl border border-slate-200 bg-white/60 hover:bg-white text-slate-600 font-bold transition-all shadow-sm hover:shadow-md flex items-center gap-2 group">
+             <i class="fa-solid fa-arrow-left text-sm group-hover:-translate-x-1 transition-transform"></i> Kembali
+          </a>
+          
           @if(($data->status ?? '') === 'awaiting_payment')
-            <a href="/pesanan/{{ $data->order_code }}/payment" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">Bayar</a>
+            <a href="/pesanan/{{ $data->order_code }}/payment" 
+               class="flex-1 md:flex-none justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold shadow-lg shadow-blue-600/20 transition-all transform hover:-translate-y-1 hover:shadow-xl flex items-center gap-2">
+               <i class="fa-regular fa-credit-card"></i> Bayar Sekarang
+            </a>
           @endif
-          <button id="btn-print" class="px-3 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors cursor-pointer" data-order-code="{{ $data->order_code }}" data-order-status="{{ $data->status }}">Cetak</button>
+          
+          <button id="btn-print" 
+                  class="flex-1 md:flex-none justify-center px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold shadow-lg transition-all transform hover:-translate-y-1 hover:shadow-xl flex items-center gap-2" 
+                  data-order-code="{{ $data->order_code }}" 
+                  data-order-status="{{ $data->status }}">
+              <i class="fa-solid fa-print"></i> Cetak
+          </button>
         </div>
       </div>
     </div>
 
+    {{-- Item Pesanan --}}
+    <div class="bg-white/70 backdrop-blur-xl border border-white/50 shadow-xl rounded-3xl p-6 md:p-8 mb-8 relative z-10">
+        <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-3 border-b border-slate-200/60 pb-4 text-lg">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg shadow-sm">
+                <i class="fa-solid fa-basket-shopping"></i>
+            </div>
+            Item Pesanan
+        </h3>
+        
+        <div class="space-y-4">
+            @if(!empty($data->items) && is_array($data->items))
+                @foreach($data->items as $item)
+                <div class="flex flex-col sm:flex-row items-center gap-4 p-4 bg-white/50 rounded-2xl border border-white/60 hover:bg-white/80 transition-colors">
+                    {{-- Product Icon/Image Placeholder --}}
+                    <div class="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                        <i class="fa-solid fa-seedling text-2xl"></i>
+                    </div>
+                    
+                    {{-- Item Details --}}
+                    <div class="flex-1 text-center sm:text-left">
+                        <h4 class="font-bold text-slate-800 text-lg">{{ $item['resolved_variety_name'] ?? 'Varietas Tidak Diketahui' }}</h4>
+                        <p class="text-sm text-slate-500">{{ $item['product_name'] ?? 'Benih' }}</p>
+                    </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-      <div class="bg-white rounded-xl shadow p-6">
-        <h3 class="font-semibold mb-4">Data Pelanggan</h3>
-        <div class="space-y-2 text-sm">
-          <div><span class="text-gray-600">Nama</span><div class="font-medium">{{ $data->customer_name ?? '-' }}</div></div>
-          <div><span class="text-gray-600">Nomor HP</span><div>{{ $data->customer_phone ?? '-' }}</div></div>
-          <div><span class="text-gray-600">Alamat</span><div>{{ $data->customer_address ?? '-' }}</div></div>
+                    {{-- Quantity & Price --}}
+                    <div class="flex flex-col items-center sm:items-end gap-1">
+                        <span class="text-slate-600 font-medium bg-slate-100 px-3 py-1 rounded-lg text-sm">
+                            {{ $item['quantity'] }} x Rp {{ number_format((int)($item['price'] ?? 0), 0, ',', '.') }}
+                        </span>
+                        <span class="font-bold text-emerald-600 text-lg">
+                            Rp {{ number_format((int)($item['subtotal'] ?? 0), 0, ',', '.') }}
+                        </span>
+                    </div>
+                </div>
+                @endforeach
+            @else
+                <div class="text-center py-8 text-slate-500">
+                    <i class="fa-regular fa-folder-open text-4xl mb-3 opacity-50"></i>
+                    <p>Data item tidak tersedia.</p>
+                </div>
+            @endif
         </div>
-      </div>
+    </div>
 
-      <div class="bg-white rounded-xl shadow p-6">
-        <h3 class="font-semibold mb-4">Ringkasan Pembayaran</h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between"><span class="text-gray-600">Subtotal</span><span class="font-medium">Rp {{ number_format((int)($data->subtotal ?? 0), 0, ',', '.') }}</span></div>
-          <div class="flex justify-between"><span class="text-gray-600">Total</span><span class="font-semibold text-blue-700">Rp {{ number_format((int)($data->total_amount ?? 0), 0, ',', '.') }}</span></div>
-          <div class="mt-2 text-xs text-gray-500">Status pembayaran mengikuti pembaruan dari gateway.</div>
+    {{-- Grid Info --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      {{-- Informasi Pengiriman (Combined with Recipient Name) --}}
+      <div class="bg-white/70 backdrop-blur-xl border border-white/50 shadow-xl rounded-3xl p-6 md:p-8 hover:shadow-2xl hover:shadow-emerald-900/5 transition-all duration-300">
+        <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-3 border-b border-slate-200/60 pb-4 text-lg">
+            <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-lg shadow-sm">
+                <i class="fa-solid fa-truck-fast"></i>
+            </div>
+            Informasi Pengiriman
+        </h3>
+
+        {{-- Recipient Name (Moved from Data Pelanggan) --}}
+        <div class="mb-6 pb-6 border-b border-dashed border-slate-200">
+            <div class="group">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Nama Penerima</span>
+                <div class="font-semibold text-slate-800 bg-white/60 px-4 py-3 rounded-xl border border-white/60 shadow-sm flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm">
+                        <i class="fa-regular fa-user"></i>
+                    </div>
+                    {{ $data->customer_name ?? '-' }}
+                </div>
+            </div>
         </div>
-      </div>
 
-      <div class="bg-white rounded-xl shadow p-6">
-        <h3 class="font-semibold mb-4">Informasi Pengiriman</h3>
         @if(($data->shipping_method ?? '') === 'pickup')
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                <p class="font-bold text-blue-800 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+            <div class="bg-blue-50/80 border border-blue-200 rounded-2xl p-5 shadow-sm">
+                <p class="font-bold text-blue-800 flex items-center gap-2 mb-3 text-lg">
+                    <i class="fa-solid fa-store"></i>
                     Ambil di Tempat (Pickup)
                 </p>
-                <div class="mt-2 text-sm text-blue-900">
-                    <p class="font-medium">Lokasi Pengambilan:</p>
+                <div class="text-sm text-blue-900 space-y-2 ml-7">
+                    <p class="font-bold">Lokasi Pengambilan:</p>
                     <p>Kantor UPBS BRMP Biogen</p>
                     <p>Jl. Tentara Pelajar No. 3A, Bogor</p>
-                    <p class="mt-1 text-xs opacity-75">Tunjukkan kode order saat pengambilan.</p>
+                    <p class="mt-3 text-xs opacity-90 bg-white/50 p-2.5 rounded-lg border border-blue-100 inline-block font-medium">
+                        <i class="fa-solid fa-ticket mr-1"></i> Tunjukkan kode order saat pengambilan.
+                    </p>
                 </div>
             </div>
         @else
-            <div class="space-y-2 text-sm">
-              <div><span class="text-gray-600">Kurir</span><div class="font-medium">{{ $data->courier_name ?? '-' }}</div></div>
-              <div><span class="text-gray-600">Layanan</span><div class="font-medium">{{ $data->courier_service ?? '-' }}</div></div>
-              <div><span class="text-gray-600">Tracking</span><div class="font-mono">{{ $data->tracking_number ?? '-' }}</div></div>
-              <div><span class="text-gray-600">Status</span><div>{{ $data->shipment_status ?? '-' }}</div></div>
+            <div class="space-y-5">
+              <div class="group">
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Kurir</span>
+                  <div class="font-semibold text-slate-800 bg-white/60 px-4 py-3 rounded-xl border border-white/60 shadow-sm">{{ $data->courier_name ?? '-' }}</div>
+              </div>
+              <div class="group">
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Layanan</span>
+                  <div class="font-semibold text-slate-800 bg-white/60 px-4 py-3 rounded-xl border border-white/60 shadow-sm">{{ $data->courier_service ?? '-' }}</div>
+              </div>
+              <div class="group">
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Nomor Resi (Tracking)</span>
+                  <div class="font-mono font-bold text-slate-800 bg-white/60 px-4 py-3 rounded-xl border border-white/60 shadow-sm flex justify-between items-center group-hover:border-indigo-200 transition-colors">
+                      {{ $data->tracking_number ?? '-' }}
+                      @if($data->tracking_number)
+                        <button onclick="navigator.clipboard.writeText('{{ $data->tracking_number }}')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-400 hover:text-emerald-600 transition-all flex items-center justify-center" title="Salin Resi">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                      @endif
+                  </div>
+              </div>
+              <div class="group">
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Status Pengiriman</span>
+                  <div class="font-semibold text-slate-800 bg-white/60 px-4 py-3 rounded-xl border border-white/60 shadow-sm">{{ $data->shipment_status ?? '-' }}</div>
+              </div>
             </div>
         @endif
+      </div>
+
+      {{-- Ringkasan Pembayaran --}}
+      <div class="bg-white/70 backdrop-blur-xl border border-white/50 shadow-xl rounded-3xl p-6 md:p-8 hover:shadow-2xl hover:shadow-emerald-900/5 transition-all duration-300">
+        <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-3 border-b border-slate-200/60 pb-4 text-lg">
+            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg shadow-sm">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            Ringkasan Pembayaran
+        </h3>
+        <div class="space-y-4">
+          <div class="flex justify-between items-center p-3 rounded-xl bg-slate-50/50 border border-slate-100">
+              <span class="text-slate-600 font-medium">Subtotal</span>
+              <span class="font-bold text-slate-800">Rp {{ number_format((int)($data->subtotal ?? 0), 0, ',', '.') }}</span>
+          </div>
+          
+          <div class="border-t border-dashed border-slate-300 my-2"></div>
+          
+          <div class="flex justify-between items-center bg-emerald-50 p-4 rounded-xl border border-emerald-100 shadow-sm">
+              <span class="text-slate-700 font-bold">Total</span>
+              <span class="font-extrabold text-emerald-700 text-xl">Rp {{ number_format((int)($data->total_amount ?? 0), 0, ',', '.') }}</span>
+          </div>
+          
+          <div class="mt-4 flex items-start gap-3 text-xs text-slate-500 bg-white/60 p-4 rounded-xl border border-slate-100 leading-relaxed">
+              <i class="fa-solid fa-circle-info mt-0.5 text-slate-400 text-sm"></i>
+              <span>Status pembayaran akan diperbarui secara otomatis setelah verifikasi dari gateway pembayaran selesai.</span>
+          </div>
+        </div>
       </div>
     </div>
 
     {{-- Dynamic Status Information Card --}}
-    <div class="bg-white rounded-xl shadow p-6 mt-6">
-      <h3 class="font-semibold mb-4">Informasi Status Pesanan</h3>
+    <div class="mt-10">
       
       @if(($data->shipping_method ?? '') === 'delivery')
         {{-- DELIVERY METHOD --}}
         @if(($data->status ?? '') === 'paid')
-          <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-            <div class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <div>
-                <h4 class="font-semibold text-green-800 mb-2">Pembayaran Berhasil</h4>
-                <p class="text-green-700 text-sm mb-3">
-                  Pembayaran berhasil. Silakan cetak resi/kuitansi Anda dan kirimkan ke Admin melalui WhatsApp untuk koordinasi pengiriman.
+          <div class="bg-gradient-to-br from-green-50 to-emerald-50/50 backdrop-blur-md border border-green-200 rounded-3xl p-8 shadow-sm">
+            <div class="flex flex-col md:flex-row items-start gap-6">
+              <div class="w-16 h-16 rounded-2xl bg-white text-green-600 flex items-center justify-center shrink-0 shadow-md border border-green-100">
+                  <i class="fa-solid fa-check text-2xl"></i>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-xl font-bold text-green-800 mb-3">Pembayaran Berhasil</h4>
+                <p class="text-green-800/80 text-base mb-6 leading-relaxed max-w-3xl">
+                  Terima kasih! Pembayaran Anda telah kami terima. Silakan cetak resi/kuitansi Anda dan kirimkan ke Admin melalui WhatsApp untuk mempercepat proses koordinasi pengiriman.
                 </p>
-                <div class="flex gap-2">
-                  <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
-                    📄 Cetak Resi
+                <div class="flex flex-wrap gap-4">
+                  <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" 
+                     class="px-6 py-3 bg-white text-green-700 border border-green-200 rounded-xl text-sm font-bold hover:bg-green-50 transition-all shadow-sm hover:shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Cetak Resi
                   </a>
                   <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya telah menyelesaikan pembayaran untuk pesanan #'.$data->order_code.'. Berikut saya lampirkan bukti resi untuk koordinasi pengiriman lebih lanjut. Terima kasih!') }}" 
                      target="_blank" 
-                     class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767 1.157-1.05 1.388-.283.232-.567.174-.86-.066-.297-.24-1.247-.918-2.37-1.904-1.123-.985-1.878-2.19-2.095-2.567-.217-.377-.02-.58.13-.768.11-.13.297-.347.446-.52.15-.174.248-.297.297-.471.05-.174.025-.323-.05-.471-.075-.148-.67-1.61-.917-2.206-.242-.58-.487-.5-.67-.51-.18-.01-.388-.02-.597-.02-.21 0-.45.02-.67.06-.22.04-.43.1-.597.21-.17.11-.32.28-.45.52-.13.24-.5 1.02-.5 1.02s.13.28.32.67c.19.39.42.86.42.86s-.1.15-.25.37c-.15.22-.28.4-.35.52-.07.12-.18.3-.35.58-.17.28-.02.53.13.72.15.19 1.4 1.63 1.4 1.63s.32.42.67.67c.35.25.86.58 1.37.91.51.33 1.02.65 1.02.65s.28.1.67.25c.39.15.86.32 1.37.5.51.18 1.02.35 1.02.35s.42.08.86.17c.44.09.91.17 1.37.25.46.08.92.15 1.37.21.45.06.88.11 1.27.15.39.04.72.06.97.08.25.02.42.03.42.03l.11-.03c.07-.01.16-.03.27-.06.11-.03.24-.07.39-.13.15-.06.32-.14.51-.25.19-.11.4-.25.63-.42.23-.17.48-.37.75-.6.27-.23.56-.5.87-.81.31-.31.63-.67.97-1.06.34-.39.69-.82 1.06-1.28.37-.46.75-.96 1.14-1.5.39-.54.79-1.12 1.2-1.74.41-.62.82-1.28 1.23-1.97.41-.69.81-1.42 1.19-2.18.38-.76.74-1.56 1.07-2.4.33-.84.63-1.72.88-2.64.25-.92.45-1.88.58-2.88.13-.99.19-2.02.19-3.08 0-1.06-.06-2.09-.19-3.08-.13-1-.33-1.96-.58-2.88-.25-.92-.55-1.8-.88-2.64-.33-.84-.69-1.64-1.07-2.4-.38-.76-.78-1.49-1.19-2.18-.41-.69-.82-1.35-1.23-1.97-.41-.62-.81-1.2-1.2-1.74-.39-.54-.77-1.04-1.14-1.5-.37-.46-.72-.89-1.06-1.28-.34-.39-.66-.75-.97-1.06-.31-.31-.6-.58-.87-.81-.27-.23-.52-.43-.75-.6-.23-.17-.44-.31-.63-.42-.19-.11-.36-.19-.51-.25-.15-.06-.28-.1-.39-.13-.11-.03-.2-.05-.27-.06l-.42-.03z"/>
-                    </svg>
-                    WhatsApp Admin
+                     class="px-6 py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-lg hover:shadow-xl shadow-green-600/20 flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp Admin
                   </a>
                 </div>
               </div>
@@ -120,69 +249,60 @@
           </div>
           
         @elseif(($data->status ?? '') === 'processing')
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <div class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <div>
-                <h4 class="font-semibold text-blue-800 mb-2">Sedang Disiapkan</h4>
-                <p class="text-blue-700 text-sm mb-3">
-                  Pesanan Anda sedang disiapkan oleh staf UPBS. Mohon tunggu informasi selanjutnya.
+          <div class="bg-gradient-to-br from-blue-50 to-indigo-50/50 backdrop-blur-md border border-blue-200 rounded-3xl p-8 shadow-sm">
+            <div class="flex flex-col md:flex-row items-start gap-6">
+              <div class="w-16 h-16 rounded-2xl bg-white text-blue-600 flex items-center justify-center shrink-0 shadow-md border border-blue-100">
+                  <i class="fa-solid fa-box-open text-2xl"></i>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-xl font-bold text-blue-800 mb-3">Pesanan Sedang Disiapkan</h4>
+                <p class="text-blue-800/80 text-base mb-6 leading-relaxed max-w-3xl">
+                  Pesanan Anda sedang dalam proses penyiapan oleh tim UPBS. Kami memastikan kualitas terbaik untuk Anda. Mohon tunggu informasi selanjutnya.
                 </p>
                 <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin menanyakan progres persiapan pesanan #'.$data->order_code.'. Terima kasih!') }}" 
                    target="_blank" 
-                   class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767 1.157-1.05 1.388-.283.232-.567.174-.86-.066-.297-.24-1.247-.918-2.37-1.904-1.123-.985-1.878-2.19-2.095-2.567-.217-.377-.02-.58.13-.768.11-.13.297-.347.446-.52.15-.174.248-.297.297-.471.05-.174.025-.323-.05-.471-.075-.148-.67-1.61-.917-2.206-.242-.58-.487-.5-.67-.51-.18-.01-.388-.02-.597-.02-.21 0-.45.02-.67.06-.22.04-.43.1-.597.21-.17.11-.32.28-.45.52-.13.24-.5 1.02-.5 1.02s.13.28.32.67c.19.39.42.86.42.86s-.1.15-.25.37c-.15.22-.28.4-.35.52-.07.12-.18.3-.35.58-.17.28-.02.53.13.72.15.19 1.4 1.63 1.4 1.63s.32.42.67.67c.35.25.86.58 1.37.91.51.33 1.02.65 1.02.65s.28.1.67.25c.39.15.86.32 1.37.5.51.18 1.02.35 1.02.35s.42.08.86.17c.44.09.91.17 1.37.25.46.08.92.15 1.37.21.45.06.88.11 1.27.15.39.04.72.06.97.08.25.02.42.03.42.03l.11-.03c.07-.01.16-.03.27-.06.11-.03.24-.07.39-.13.15-.06.32-.14.51-.25.19-.11.4-.25.63-.42.23-.17.48-.37.75-.6.27-.23.56-.5.87-.81.31-.31.63-.67.97-1.06.34-.39.69-.82 1.06-1.28.37-.46.75-.96 1.14-1.5.39-.54.79-1.12 1.2-1.74.41-.62.82-1.28 1.23-1.97.41-.69.81-1.42 1.19-2.18.38-.76.74-1.56 1.07-2.4.33-.84.63-1.72.88-2.64.25-.92.45-1.88.58-2.88.13-.99.19-2.02.19-3.08 0-1.06-.06-2.09-.19-3.08-.13-1-.33-1.96-.58-2.88-.25-.92-.55-1.8-.88-2.64-.33-.84-.69-1.64-1.07-2.4-.38-.76-.78-1.49-1.19-2.18-.41-.69-.82-1.35-1.23-1.97-.41-.62-.81-1.2-1.2-1.74-.39-.54-.77-1.04-1.14-1.5-.37-.46-.72-.89-1.06-1.28-.34-.39-.66-.75-.97-1.06-.31-.31-.6-.58-.87-.81-.27-.23-.52-.43-.75-.6-.23-.17-.44-.31-.63-.42-.19-.11-.36-.19-.51-.25-.15-.06-.28-.1-.39-.13-.11-.03-.2-.05-.27-.06l-.42-.03z"/>
-                  </svg>
-                  WhatsApp Admin
+                   class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl shadow-blue-600/20">
+                  <i class="fa-brands fa-whatsapp text-lg"></i> Tanya Progres via WA
                 </a>
               </div>
             </div>
           </div>
           
         @elseif(($data->status ?? '') === 'shipped')
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <div class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <div>
-                <h4 class="font-semibold text-blue-800 mb-2">Dalam Pengiriman</h4>
-                <p class="text-blue-700 text-sm mb-3">
-                  Pesanan Anda sedang dalam perjalanan. Silakan hubungi WhatsApp berikut untuk informasi lebih lanjut.
+          <div class="bg-gradient-to-br from-indigo-50 to-purple-50/50 backdrop-blur-md border border-indigo-200 rounded-3xl p-8 shadow-sm">
+            <div class="flex flex-col md:flex-row items-start gap-6">
+              <div class="w-16 h-16 rounded-2xl bg-white text-indigo-600 flex items-center justify-center shrink-0 shadow-md border border-indigo-100">
+                  <i class="fa-solid fa-truck-fast text-2xl"></i>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-xl font-bold text-indigo-800 mb-3">Pesanan Dalam Pengiriman</h4>
+                <p class="text-indigo-800/80 text-base mb-6 leading-relaxed max-w-3xl">
+                  Kabar baik! Pesanan Anda sedang dalam perjalanan menuju alamat tujuan. Anda dapat melacak posisi paket menggunakan nomor resi yang tersedia.
                 </p>
                 <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin menanyakan status pengiriman pesanan #'.$data->order_code.'. Terima kasih!') }}" 
                    target="_blank" 
-                   class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767 1.157-1.05 1.388-.283.232-.567.174-.86-.066-.297-.24-1.247-.918-2.37-1.904-1.123-.985-1.878-2.19-2.095-2.567-.217-.377-.02-.58.13-.768.11-.13.297-.347.446-.52.15-.174.248-.297.297-.471.05-.174.025-.323-.05-.471-.075-.148-.67-1.61-.917-2.206-.242-.58-.487-.5-.67-.51-.18-.01-.388-.02-.597-.02-.21 0-.45.02-.67.06-.22.04-.43.1-.597.21-.17.11-.32.28-.45.52-.13.24-.5 1.02-.5 1.02s.13.28.32.67c.19.39.42.86.42.86s-.1.15-.25.37c-.15.22-.28.4-.35.52-.07.12-.18.3-.35.58-.17.28-.02.53.13.72.15.19 1.4 1.63 1.4 1.63s.32.42.67.67c.35.25.86.58 1.37.91.51.33 1.02.65 1.02.65s.28.1.67.25c.39.15.86.32 1.37.5.51.18 1.02.35 1.02.35s.42.08.86.17c.44.09.91.17 1.37.25.46.08.92.15 1.37.21.45.06.88.11 1.27.15.39.04.72.06.97.08.25.02.42.03.42.03l.11-.03c.07-.01.16-.03.27-.06.11-.03.24-.07.39-.13.15-.06.32-.14.51-.25.19-.11.4-.25.63-.42.23-.17.48-.37.75-.6.27-.23.56-.5.87-.81.31-.31.63-.67.97-1.06.34-.39.69-.82 1.06-1.28.37-.46.75-.96 1.14-1.5.39-.54.79-1.12 1.2-1.74.41-.62.82-1.28 1.23-1.97.41-.69.81-1.42 1.19-2.18.38-.76.74-1.56 1.07-2.4.33-.84.63-1.72.88-2.64.25-.92.45-1.88.58-2.88.13-.99.19-2.02.19-3.08 0-1.06-.06-2.09-.19-3.08-.13-1-.33-1.96-.58-2.88-.25-.92-.55-1.8-.88-2.64-.33-.84-.69-1.64-1.07-2.4-.38-.76-.78-1.49-1.19-2.18-.41-.69-.82-1.35-1.23-1.97-.41-.62-.81-1.2-1.2-1.74-.39-.54-.77-1.04-1.14-1.5-.37-.46-.72-.89-1.06-1.28-.34-.39-.66-.75-.97-1.06-.31-.31-.6-.58-.87-.81-.27-.23-.52-.43-.75-.6-.23-.17-.44-.31-.63-.42-.19-.11-.36-.19-.51-.25-.15-.06-.28-.1-.39-.13-.11-.03-.2-.05-.27-.06l-.42-.03z"/>
-                  </svg>
-                  WhatsApp Admin
+                   class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl shadow-indigo-600/20">
+                  <i class="fa-brands fa-whatsapp text-lg"></i> Hubungi Admin
                 </a>
               </div>
             </div>
           </div>
           
         @elseif(($data->status ?? '') === 'completed')
-          <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-            <div class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              <div>
-                <h4 class="font-semibold text-green-800 mb-2">Pesanan Siap Dikirim</h4>
-                <p class="text-green-700 text-sm mb-3">
-                  Pesanan siap dikirim. Silakan hubungi WhatsApp berikut untuk meminta nomor resi pengiriman dari ekspedisi.
+          <div class="bg-gradient-to-br from-emerald-50 to-teal-50/50 backdrop-blur-md border border-emerald-200 rounded-3xl p-8 shadow-sm">
+            <div class="flex flex-col md:flex-row items-start gap-6">
+              <div class="w-16 h-16 rounded-2xl bg-white text-emerald-600 flex items-center justify-center shrink-0 shadow-md border border-emerald-100">
+                  <i class="fa-solid fa-check-double text-2xl"></i>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-xl font-bold text-emerald-800 mb-3">Pesanan Selesai</h4>
+                <p class="text-emerald-800/80 text-base mb-6 leading-relaxed max-w-3xl">
+                  Pesanan telah selesai. Terima kasih telah berbelanja di UPBS BRMP Biogen. Jika Anda membutuhkan bantuan lebih lanjut, jangan ragu untuk menghubungi kami.
                 </p>
-                <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, pesanan #'.$data->order_code.' saya sudah siap dikirim. Saya ingin meminta nomor resi pengiriman dari ekspedisi. Terima kasih!') }}" 
+                <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, pesanan #'.$data->order_code.' saya sudah selesai. Terima kasih!') }}" 
                    target="_blank" 
-                   class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767 1.157-1.05 1.388-.283.232-.567.174-.86-.066-.297-.24-1.247-.918-2.37-1.904-1.123-.985-1.878-2.19-2.095-2.567-.217-.377-.02-.58.13-.768.11-.13.297-.347.446-.52.15-.174.248-.297.297-.471.05-.174.025-.323-.05-.471-.075-.148-.67-1.61-.917-2.206-.242-.58-.487-.5-.67-.51-.18-.01-.388-.02-.597-.02-.21 0-.45.02-.67.06-.22.04-.43.1-.597.21-.17.11-.32.28-.45.52-.13.24-.5 1.02-.5 1.02s.13.28.32.67c.19.39.42.86.42.86s-.1.15-.25.37c-.15.22-.28.4-.35.52-.07.12-.18.3-.35.58-.17.28-.02.53.13.72.15.19 1.4 1.63 1.4 1.63s.32.42.67.67c.35.25.86.58 1.37.91.51.33 1.02.65 1.02.65s.28.1.67.25c.39.15.86.32 1.37.5.51.18 1.02.35 1.02.35s.42.08.86.17c.44.09.91.17 1.37.25.46.08.92.15 1.37.21.45.06.88.11 1.27.15.39.04.72.06.97.08.25.02.42.03.42.03l.11-.03c.07-.01.16-.03.27-.06.11-.03.24-.07.39-.13.15-.06.32-.14.51-.25.19-.11.4-.25.63-.42.23-.17.48-.37.75-.6.27-.23.56-.5.87-.81.31-.31.63-.67.97-1.06.34-.39.69-.82 1.06-1.28.37-.46.75-.96 1.14-1.5.39-.54.79-1.12 1.2-1.74.41-.62.82-1.28 1.23-1.97.41-.69.81-1.42 1.19-2.18.38-.76.74-1.56 1.07-2.4.33-.84.63-1.72.88-2.64.25-.92.45-1.88.58-2.88.13-.99.19-2.02.19-3.08 0-1.06-.06-2.09-.19-3.08-.13-1-.33-1.96-.58-2.88-.25-.92-.55-1.8-.88-2.64-.33-.84-.69-1.64-1.07-2.4-.38-.76-.78-1.49-1.19-2.18-.41-.69-.82-1.35-1.23-1.97-.41-.62-.81-1.2-1.2-1.74-.39-.54-.77-1.04-1.14-1.5-.37-.46-.72-.89-1.06-1.28-.34-.39-.66-.75-.97-1.06-.31-.31-.6-.58-.87-.81-.27-.23-.52-.43-.75-.6-.23-.17-.44-.31-.63-.42-.19-.11-.36-.19-.51-.25-.15-.06-.28-.1-.39-.13-.11-.03-.2-.05-.27-.06l-.42-.03z"/>
-                  </svg>
-                  WhatsApp Admin
+                   class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-lg hover:shadow-xl shadow-emerald-600/20">
+                  <i class="fa-brands fa-whatsapp text-lg"></i> Kirim Testimoni
                 </a>
               </div>
             </div>
@@ -193,154 +313,46 @@
       @elseif(($data->shipping_method ?? '') === 'pickup')
         {{-- PICKUP METHOD --}}
         @if(($data->status ?? '') === 'paid')
-          <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-            <div class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <div>
-                <h4 class="font-semibold text-green-800 mb-2">Pembayaran Berhasil</h4>
-                <p class="text-green-700 text-sm mb-3">
-                  Pembayaran berhasil. Silakan cetak kuitansi Anda dan bawa saat pengambilan benih di kantor UPBS BRMP Biogen.
-                </p>
-                <div class="flex gap-2">
-                  <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
-                    📄 Cetak Kuitansi
-                  </a>
-                  <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya telah menyelesaikan pembayaran untuk pesanan #'.$data->order_code.'. Saya ingin mengkoordinasikan waktu pengambilan benih. Terima kasih!') }}" 
-                     target="_blank" 
-                     class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767 1.157-1.05 1.388-.283.232-.567.174-.86-.066-.297-.24-1.247-.918-2.37-1.904-1.123-.985-1.878-2.19-2.095-2.567-.217-.377-.02-.58.13-.768.11-.13.297-.347.446-.52.15-.174.248-.297.297-.471.05-.174.025-.323-.05-.471-.075-.148-.67-1.61-.917-2.206-.242-.58-.487-.5-.67-.51-.18-.01-.388-.02-.597-.02-.21 0-.45.02-.67.06-.22.04-.43.1-.597.21-.17.11-.32.28-.45.52-.13.24-.5 1.02-.5 1.02s.13.28.32.67c.19.39.42.86.42.86s-.1.15-.25.37c-.15.22-.28.4-.35.52-.07.12-.18.3-.35.58-.17.28-.02.53.13.72.15.19 1.4 1.63 1.4 1.63s.32.42.67.67c.35.25.86.58 1.37.91.51.33 1.02.65 1.02.65s.28.1.67.25c.39.15.86.32 1.37.5.51.18 1.02.35 1.02.35s.42.08.86.17c.44.09.91.17 1.37.25.46.08.92.15 1.37.21.45.06.88.11 1.27.15.39.04.72.06.97.08.25.02.42.03.42.03l.11-.03c.07-.01.16-.03.27-.06.11-.03.24-.07.39-.13.15-.06.32-.14.51-.25.19-.11.4-.25.63-.42.23-.17.48-.37.75-.6.27-.23.56-.5.87-.81.31-.31.63-.67.97-1.06.34-.39.69-.82 1.06-1.28.37-.46.75-.96 1.14-1.5.39-.54.79-1.12 1.2-1.74.41-.62.82-1.28 1.23-1.97.41-.69.81-1.42 1.19-2.18.38-.76.74-1.56 1.07-2.4.33-.84.63-1.72.88-2.64.25-.92.45-1.88.58-2.88.13-.99.19-2.02.19-3.08 0-1.06-.06-2.09-.19-3.08-.13-1-.33-1.96-.58-2.88-.25-.92-.55-1.8-.88-2.64-.33-.84-.69-1.64-1.07-2.4-.38-.76-.78-1.49-1.19-2.18-.41-.69-.82-1.35-1.23-1.97-.41-.62-.81-1.2-1.2-1.74-.39-.54-.77-1.04-1.14-1.5-.37-.46-.72-.89-1.06-1.28-.34-.39-.66-.75-.97-1.06-.31-.31-.6-.58-.87-.81-.27-.23-.52-.43-.75-.6-.23-.17-.44-.31-.63-.42-.19-.11-.36-.19-.51-.25-.15-.06-.28-.1-.39-.13-.11-.03-.2-.05-.27-.06l-.42-.03z"/>
-                    </svg>
-                    WhatsApp Admin
-                  </a>
-                </div>
+          <div class="bg-gradient-to-br from-green-50 to-emerald-50/50 backdrop-blur-md border border-green-200 rounded-3xl p-8 shadow-sm">
+            <div class="flex flex-col md:flex-row items-start gap-6">
+              <div class="w-16 h-16 rounded-2xl bg-white text-green-600 flex items-center justify-center shrink-0 shadow-md border border-green-100">
+                  <i class="fa-solid fa-store text-2xl"></i>
+              </div>
+              <div class="flex-1">
+                 <h4 class="text-xl font-bold text-green-800 mb-3">Siap untuk Pengambilan</h4>
+                 <p class="text-green-800/80 text-base mb-6 leading-relaxed max-w-3xl">
+                    Pembayaran diterima. Silakan datang ke kantor UPBS BRMP Biogen untuk mengambil pesanan Anda. Jangan lupa membawa bukti pesanan ini.
+                 </p>
+                 <a href="https://maps.google.com/?q=Jl.+Tentara+Pelajar+No.+3A,+Bogor" target="_blank"
+                    class="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-lg hover:shadow-xl shadow-green-600/20">
+                    <i class="fa-solid fa-map-location-dot"></i> Lihat Lokasi
+                 </a>
               </div>
             </div>
           </div>
-          
-        @elseif(($data->status ?? '') === 'processing')
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <div class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <div>
-                <h4 class="font-semibold text-blue-800 mb-2">Sedang Dalam Proses</h4>
-                <p class="text-blue-700 text-sm mb-3">
-                  Benih Anda sedang dalam proses pengemasan/penyiapan oleh tim gudang kami.
-                </p>
-                <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin menanyakan progres penyiapan pesanan #'.$data->order_code.'. Terima kasih!') }}" 
-                   target="_blank" 
-                   class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767 1.157-1.05 1.388-.283.232-.567.174-.86-.066-.297-.24-1.247-.918-2.37-1.904-1.123-.985-1.878-2.19-2.095-2.567-.217-.377-.02-.58.13-.768.11-.13.297-.347.446-.52.15-.174.248-.297.297-.471.05-.174.025-.323-.05-.471-.075-.148-.67-1.61-.917-2.206-.242-.58-.487-.5-.67-.51-.18-.01-.388-.02-.597-.02-.21 0-.45.02-.67.06-.22.04-.43.1-.597.21-.17.11-.32.28-.45.52-.13.24-.5 1.02-.5 1.02s.13.28.32.67c.19.39.42.86.42.86s-.1.15-.25.37c-.15.22-.28.4-.35.52-.07.12-.18.3-.35.58-.17.28-.02.53.13.72.15.19 1.4 1.63 1.4 1.63s.32.42.67.67c.35.25.86.58 1.37.91.51.33 1.02.65 1.02.65s.28.1.67.25c.39.15.86.32 1.37.5.51.18 1.02.35 1.02.35s.42.08.86.17c.44.09.91.17 1.37.25.46.08.92.15 1.37.21.45.06.88.11 1.27.15.39.04.72.06.97.08.25.02.42.03.42.03l.11-.03c.07-.01.16-.03.27-.06.11-.03.24-.07.39-.13.15-.06.32-.14.51-.25.19-.11.4-.25.63-.42.23-.17.48-.37.75-.6.27-.23.56-.5.87-.81.31-.31.63-.67.97-1.06.34-.39.69-.82 1.06-1.28.37-.46.75-.96 1.14-1.5.39-.54.79-1.12 1.2-1.74.41-.62.82-1.28 1.23-1.97.41-.69.81-1.42 1.19-2.18.38-.76.74-1.56 1.07-2.4.33-.84.63-1.72.88-2.64.25-.92.45-1.88.58-2.88.13-.99.19-2.02.19-3.08 0-1.06-.06-2.09-.19-3.08-.13-1-.33-1.96-.58-2.88-.25-.92-.55-1.8-.88-2.64-.33-.84-.69-1.64-1.07-2.4-.38-.76-.78-1.49-1.19-2.18-.41-.69-.82-1.35-1.23-1.97-.41-.62-.81-1.2-1.2-1.74-.39-.54-.77-1.04-1.14-1.5-.37-.46-.72-.89-1.06-1.28-.34-.39-.66-.75-.97-1.06-.31-.31-.6-.58-.87-.81-.27-.23-.52-.43-.75-.6-.23-.17-.44-.31-.63-.42-.19-.11-.36-.19-.51-.25-.15-.06-.28-.1-.39-.13-.11-.03-.2-.05-.27-.06l-.42-.03z"/>
-                  </svg>
-                  WhatsApp Admin
-                </a>
-              </div>
-            </div>
-          </div>
-          
-        @elseif(($data->status ?? '') === 'pickup_ready')
-          <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-            <div class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              <div>
-                <h4 class="font-semibold text-green-800 mb-2">Siap Diambil</h4>
-                <p class="text-green-700 text-sm mb-3">
-                  Pesanan Anda sudah siap diambil. Silakan datang ke kantor UPBS BRMP Biogen pada jam operasional dengan menunjukkan bukti kuitansi.
-                </p>
-                <div class="flex gap-2">
-                  <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
-                    📄 Lihat Kuitansi
-                  </a>
-                  <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin konfirmasi kedatangan untuk pengambilan pesanan #'.$data->order_code.'. Terima kasih!') }}" 
-                     target="_blank" 
-                     class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767 1.157-1.05 1.388-.283.232-.567.174-.86-.066-.297-.24-1.247-.918-2.37-1.904-1.123-.985-1.878-2.19-2.095-2.567-.217-.377-.02-.58.13-.768.11-.13.297-.347.446-.52.15-.174.248-.297.297-.471.05-.174.025-.323-.05-.471-.075-.148-.67-1.61-.917-2.206-.242-.58-.487-.5-.67-.51-.18-.01-.388-.02-.597-.02-.21 0-.45.02-.67.06-.22.04-.43.1-.597.21-.17.11-.32.28-.45.52-.13.24-.5 1.02-.5 1.02s.13.28.32.67c.19.39.42.86.42.86s-.1.15-.25.37c-.15.22-.28.4-.35.52-.07.12-.18.3-.35.58-.17.28-.02.53.13.72.15.19 1.4 1.63 1.4 1.63s.32.42.67.67c.35.25.86.58 1.37.91.51.33 1.02.65 1.02.65s.28.1.67.25c.39.15.86.32 1.37.5.51.18 1.02.35 1.02.35s.42.08.86.17c.44.09.91.17 1.37.25.46.08.92.15 1.37.21.45.06.88.11 1.27.15.39.04.72.06.97.08.25.02.42.03.42.03l.11-.03c.07-.01.16-.03.27-.06.11-.03.24-.07.39-.13.15-.06.32-.14.51-.25.19-.11.4-.25.63-.42.23-.17.48-.37.75-.6.27-.23.56-.5.87-.81.31-.31.63-.67.97-1.06.34-.39.69-.82 1.06-1.28.37-.46.75-.96 1.14-1.5.39-.54.79-1.12 1.2-1.74.41-.62.82-1.28 1.23-1.97.41-.69.81-1.42 1.19-2.18.38-.76.74-1.56 1.07-2.4.33-.84.63-1.72.88-2.64.25-.92.45-1.88.58-2.88.13-.99.19-2.02.19-3.08 0-1.06-.06-2.09-.19-3.08-.13-1-.33-1.96-.58-2.88-.25-.92-.55-1.8-.88-2.64-.33-.84-.69-1.64-1.07-2.4-.38-.76-.78-1.49-1.19-2.18-.41-.69-.82-1.35-1.23-1.97-.41-.62-.81-1.2-1.2-1.74-.39-.54-.77-1.04-1.14-1.5-.37-.46-.72-.89-1.06-1.28-.34-.39-.66-.75-.97-1.06-.31-.31-.6-.58-.87-.81-.27-.23-.52-.43-.75-.6-.23-.17-.44-.31-.63-.42-.19-.11-.36-.19-.51-.25-.15-.06-.28-.1-.39-.13-.11-.03-.2-.05-.27-.06l-.42-.03z"/>
-                    </svg>
-                    WhatsApp Admin
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-          
         @endif
-        
-      @else
-        {{-- DEFAULT MESSAGE FOR OTHER STATUSES --}}
-        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <p class="text-gray-600 text-sm">
-            Status pesanan: <span class="font-medium">{{ $data->status ?? '-' }}</span>
-          </p>
-        </div>
       @endif
+
     </div>
 
-    <div class="bg-white rounded-xl shadow p-6 mt-6">
-      <h3 class="font-semibold mb-4">Item Pesanan</h3>
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="text-left px-4 py-2">Produk</th>
-              <th class="text-center px-4 py-2">Jumlah</th>
-              <th class="text-right px-4 py-2">Harga Satuan</th>
-              <th class="text-right px-4 py-2">Total</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y">
-          @foreach(($data->items ?? []) as $it)
-          <tr>
-            <td class="px-4 py-2">
-              <div class="font-medium">
-                {{ $it['resolved_variety_name'] ?? 'Varietas Tidak Diketahui' }}
-              </div>
-              <div class="text-xs text-gray-600">
-                Kelas {{ $it['seed_class_code'] ?? '-' }}
-                • Lot {{ $it['seed_lot_id'] ?? '-' }}
-              </div>
-            </td>
-
-            <td class="text-center px-4 py-2">
-              {{ (int)($it['quantity'] ?? 0) }} kg
-            </td>
-
-            <td class="text-right px-4 py-2">
-              Rp {{ number_format((int)($it['unit_price'] ?? 0), 0, ',', '.') }}
-            </td>
-
-            <td class="text-right px-4 py-2 font-semibold">
-              Rp {{ number_format(
-                ((int)($it['unit_price'] ?? 0)) * ((int)($it['quantity'] ?? 0)),
-                0, ',', '.'
-              ) }}
-            </td>
-          </tr>
-          @endforeach
-          </tbody>
-
-          <tfoot class="bg-gray-50">
-            <tr>
-              <th colspan="3" class="text-right px-4 py-2">Subtotal</th>
-              <th class="text-right px-4 py-2">Rp {{ number_format((int)($data->subtotal ?? 0), 0, ',', '.') }}</th>
-            </tr>
-            <tr>
-              <th colspan="3" class="text-right px-4 py-2">Total</th>
-              <th class="text-right px-4 py-2">Rp {{ number_format((int)($data->total_amount ?? 0), 0, ',', '.') }}</th>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </div>
   @endif
 </div>
 
-@vite('resources/js/print.js')
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnPrint = document.getElementById('btn-print');
+        if (btnPrint) {
+            btnPrint.addEventListener('click', function() {
+                const orderCode = this.getAttribute('data-order-code');
+                if (orderCode) {
+                    // Gunakan route yang sesuai dengan web.php: /pesanan/{code}/receipt
+                    const url = `/pesanan/${orderCode}/receipt`;
+                    window.open(url, '_blank');
+                }
+            });
+        }
+    });
+</script>
+@endpush
 @endsection

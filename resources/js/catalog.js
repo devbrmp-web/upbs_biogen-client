@@ -49,6 +49,66 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 1. Force Refresh on Browser Reload
+    try {
+        const navEntries = performance.getEntriesByType("navigation");
+        if (navEntries.length > 0 && navEntries[0].type === 'reload') {
+            console.log('Page reloaded, forcing data refresh...');
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('refresh', '1');
+            fetchCatalog(currentUrl.toString(), false);
+        }
+    } catch (e) {
+        console.warn('Navigation Timing API not supported');
+    }
+
+    // 2. Auto Refresh every 5 minutes
+    const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+    
+    // Function to update indicator text
+    function updateIndicator(text, pulse = false) {
+        const indicator = document.getElementById('autoRefreshIndicator');
+        if (indicator) {
+            indicator.textContent = text;
+            if (pulse) indicator.classList.add('animate-pulse', 'text-blue-600');
+            else indicator.classList.remove('animate-pulse', 'text-blue-600');
+        }
+    }
+
+    // Countdown Timer Logic
+    let nextRefreshTime = Date.now() + AUTO_REFRESH_INTERVAL;
+    
+    setInterval(() => {
+        const now = Date.now();
+        const diff = nextRefreshTime - now;
+        
+        if (diff <= 0) {
+            // Time to refresh
+            nextRefreshTime = now + AUTO_REFRESH_INTERVAL;
+            
+            updateIndicator('Updating...', true);
+            
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('refresh', '1');
+            
+            fetchCatalog(currentUrl.toString(), false).then(() => {
+                updateIndicator('Updated just now');
+                setTimeout(() => {
+                    // Reset visual timer
+                }, 2000);
+            });
+        } else {
+            // Update countdown text if needed, e.g. "Auto refresh in 4m"
+            // For now we just keep static text or simple status
+            const minutes = Math.ceil(diff / 60000);
+            const indicator = document.getElementById('autoRefreshIndicator');
+            if (indicator && !indicator.textContent.includes('Updating') && !indicator.textContent.includes('just now')) {
+                 indicator.textContent = `Auto refresh: ${minutes}m`;
+            }
+        }
+    }, 1000); // Check every second for countdown update
+
+
     // Handle Seed Class Change
     if (seedSelect) {
         seedSelect.addEventListener('change', function() {
@@ -92,31 +152,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Handle Refresh Button
+    // Handle Manual Refresh Button (if still exists, or hidden trigger)
     const refreshBtn = document.getElementById('refreshDataBtn');
-    const refreshIcon = document.getElementById('refreshIcon');
-    if (refreshBtn && refreshIcon) {
+    if (refreshBtn) {
         refreshBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            
-            // Add spin animation
-            if (!document.getElementById('spin-style')) {
-                const style = document.createElement('style');
-                style.id = 'spin-style';
-                style.innerHTML = `
-                    @keyframes spin {
-                        from { transform: rotate(0deg); }
-                        to { transform: rotate(360deg); }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-            refreshIcon.style.animation = 'spin 0.8s linear infinite';
-
+            updateIndicator('Updating...', true);
             fetchCatalog(this.href).then(() => {
-                setTimeout(() => {
-                    refreshIcon.style.animation = '';
-                }, 500);
+                updateIndicator('Updated just now');
+                nextRefreshTime = Date.now() + AUTO_REFRESH_INTERVAL; // Reset timer
             });
         });
     }

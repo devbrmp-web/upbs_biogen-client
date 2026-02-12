@@ -11,7 +11,7 @@ class TrackOrderController extends Controller
     public function index(Request $request)
     {
         $method = $request->query('method', 'tracking');
-        $value  = $request->query('search');
+        $value  = trim($request->query('search')); // Trim input whitespace
         $order  = null;
 
         if (!$value) {
@@ -45,8 +45,11 @@ class TrackOrderController extends Controller
                 }
             }
 
-            // 2. Fallback: Jika gagal dan bukan pencarian via HP, coba direct GET /api/orders/{code}
-            if (!$order && $method !== 'phone') {
+            // 2. Fallback: Jika gagal, coba direct GET /api/orders/{code}
+            // Kita lakukan ini jika $order belum ditemukan. 
+            // Kita hapus batasan method !== 'phone' agar jika user salah input atau sistem salah deteksi, kita tetap mencoba cari by code.
+            // API admin biasanya akan return 404 jika value bukan kode valid, jadi aman.
+            if (!$order) {
                  $fallbackEndpoint = "$baseUrl/api/orders/" . urlencode($value);
                  $fallbackResponse = Http::timeout(8)->get($fallbackEndpoint);
                  
