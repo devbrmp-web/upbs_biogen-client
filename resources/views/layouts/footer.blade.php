@@ -14,6 +14,7 @@
                         <img src="{{ Vite::asset('resources/img/logo.png') }}" alt="UPBS BRMP Biogen" class="relative h-12 w-auto object-contain drop-shadow-sm transform transition hover:scale-105 duration-300">
                     </div>
                     <div class="flex flex-col">
+                        
                         <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-600">UPBS BRMP</span>
                         <span class="text-xs font-semibold tracking-wider text-emerald-600 uppercase">Biogen</span>
                     </div>

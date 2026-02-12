@@ -15,6 +15,7 @@ class VarietyInfoService
     }
 
     protected static function readAll(): array
+    
     {
         return Cache::remember('variety_info_all_v4', 3600, function () {
             try {
