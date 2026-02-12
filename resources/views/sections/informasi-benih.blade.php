@@ -7,10 +7,10 @@
 <section class="relative py-24 overflow-hidden bg-[#f0f9ff]">
     {{-- Animated Background Blobs --}}
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-300/40 rounded-full blur-[120px] mix-blend-multiply animate-blob"></div>
-        <div class="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-blue-300/40 rounded-full blur-[120px] mix-blend-multiply animate-blob animation-delay-2000"></div>
-        <div class="absolute bottom-[-20%] left-[20%] w-[600px] h-[600px] bg-teal-300/40 rounded-full blur-[120px] mix-blend-multiply animate-blob animation-delay-4000"></div>
-        <div class="absolute bottom-[-10%] right-[10%] w-[500px] h-[500px] bg-lime-300/40 rounded-full blur-[100px] mix-blend-multiply animate-blob"></div>
+        <div class="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-300/30 rounded-full blur-[80px] mix-blend-multiply"></div>
+        <div class="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-blue-300/30 rounded-full blur-[80px] mix-blend-multiply"></div>
+        <div class="absolute bottom-[-20%] left-[20%] w-[600px] h-[600px] bg-teal-300/30 rounded-full blur-[80px] mix-blend-multiply"></div>
+        <div class="absolute bottom-[-10%] right-[10%] w-[500px] h-[500px] bg-lime-300/30 rounded-full blur-[80px] mix-blend-multiply"></div>
     </div>
 
     {{-- Texture Overlay --}}
@@ -27,7 +27,7 @@
                 <h2 class="text-4xl md:text-5xl font-black text-slate-800 tracking-tight leading-tight mb-4">
                     Buku Saku <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Varietas</span>
                 </h2>
-                <p class="text-lg text-slate-600 leading-relaxed bg-white/30 backdrop-blur-sm rounded-2xl p-4 border border-white/40 shadow-sm inline-block">
+                <p class="text-lg text-slate-600 leading-relaxed bg-white/80 rounded-2xl p-4 border border-white/40 shadow-sm inline-block">
                     Kumpulan informasi lengkap karakteristik benih unggul hasil riset UPBS BRMP Biogen untuk produktivitas pertanian masa depan.
                 </p>
             </div>
@@ -35,7 +35,7 @@
             {{-- Filter Glass --}}
             <div class="relative z-10 group min-w-[250px]">
                 <div class="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
-                <div class="relative flex items-center bg-white/70 backdrop-blur-xl border border-white/60 rounded-xl p-1.5 shadow-lg shadow-emerald-900/5">
+                <div class="relative flex items-center bg-white border border-white/60 rounded-xl p-1.5 shadow-lg shadow-emerald-900/5">
                     <div class="pl-4 pr-3 text-emerald-600">
                         <i class="fa-solid fa-filter"></i>
                     </div>
@@ -118,7 +118,7 @@
                     {{-- Card Glow Effect --}}
                     <div class="absolute -inset-0.5 bg-gradient-to-b from-white/80 to-transparent rounded-[2rem] blur-sm opacity-0 group-hover:opacity-100 transition duration-500"></div>
                     
-                    <div class="relative flex flex-col h-full bg-white/60 backdrop-blur-md border {{ $theme['border'] }} rounded-[2rem] p-6 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:shadow-emerald-900/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+                    <div class="relative flex flex-col h-full bg-white border {{ $theme['border'] }} rounded-[2rem] p-6 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:shadow-emerald-900/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
                         
                         {{-- Top Decoration --}}
                         <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl {{ $theme['gradient'] }} rounded-bl-[4rem] opacity-50 -z-10 transition-transform group-hover:scale-110"></div>
@@ -172,7 +172,7 @@
                                 ];
                             @endphp
                             @foreach($stats as $stat)
-                                <div class="bg-white/50 border border-white/60 rounded-xl p-2.5 backdrop-blur-sm hover:bg-white/80 transition-colors">
+                                <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5 hover:bg-white transition-colors">
                                     <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-0.5 flex items-center gap-1">
                                         <i class="fa-solid {{ $stat['icon'] }} opacity-50"></i> {{ $stat['label'] }}
                                     </p>
