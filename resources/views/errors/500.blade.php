@@ -1,4 +1,4 @@
-@extends('layouts.app')
+
 
 @section('title', 'Kesalahan Server - UPBS BRMP Biogen')
 
