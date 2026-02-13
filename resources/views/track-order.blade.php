@@ -138,47 +138,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // 1. Render History
     function renderHistory() {
         const data = getData();
-        historyList.innerHTML = "";
         
-        if (data.length === 0) {
-            historySection.classList.add("hidden");
-            // Only hide result col if there is no search result either
-            if (!resultContainer.innerHTML.trim()) {
-                 resultCol.classList.add("hidden");
-                 formCol.classList.remove("lg:col-span-1");
-                 formCol.classList.add("lg:col-span-3");
-            }
-            return;
-        }
-
-        historySection.classList.remove("hidden");
-        resultCol.classList.remove("hidden");
-        formCol.classList.remove("lg:col-span-3");
-        formCol.classList.add("lg:col-span-1");
-
-        // Fetch fresh status for each order and update localStorage
-        const refreshPromises = data.map(async (order, index) => {
-            try {
-                const response = await fetch(`/api/orders/${order.order_code}`, {
-                    headers: { 'Accept': 'application/json' }
-                });
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.data && result.data.status) {
-                        data[index].status = result.data.status;
-                    }
-                }
-            } catch (e) {
-                console.warn('Could not refresh status for', order.order_code);
-            }
-        });
-
-        // Wait for all refreshes, then render
-        Promise.all(refreshPromises).then(() => {
-            setData(data); // Save updated statuses to localStorage
-
-            data.slice().reverse().forEach((o, idxRev) => {
-                const originalIndex = data.length - 1 - idxRev;
+        // Helper: Render Cards
+        const renderCards = (items) => {
+            historyList.innerHTML = "";
+            items.slice().reverse().forEach((o, idxRev) => {
+                const originalIndex = items.length - 1 - idxRev;
                 const card = document.createElement("div");
                 card.className = "bg-white/60 backdrop-blur-xl border border-white/40 shadow-sm rounded-2xl p-6 pl-10 hover:shadow-emerald-900/5 transition-all relative flex flex-col md:flex-row md:items-center md:justify-between gap-4 group";
                 
@@ -241,8 +206,71 @@ document.addEventListener("DOMContentLoaded", function () {
                 `;
                 historyList.appendChild(card);
             });
+        };
+
+        if (data.length === 0) {
+            historySection.classList.add("hidden");
+            // Only hide result col if there is no search result either
+            if (!resultContainer.innerHTML.trim()) {
+                 resultCol.classList.add("hidden");
+                 formCol.classList.remove("lg:col-span-1");
+                 formCol.classList.add("lg:col-span-3");
+            }
+            return;
+        }
+
+        historySection.classList.remove("hidden");
+        resultCol.classList.remove("hidden");
+        formCol.classList.remove("lg:col-span-3");
+        formCol.classList.add("lg:col-span-1");
+
+        // Initial render with existing data
+        renderCards(data);
+
+        // Fetch fresh status for each order and update localStorage
+        const refreshPromises = data.map(async (order, index) => {
+            try {
+                const response = await fetch(`/api/orders/${order.order_code}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.data) {
+                        // Update status
+                        if (result.data.status) {
+                            data[index].status = result.data.status;
+                        }
+                        // Update total amount if missing or updated
+                        if (result.data.total_amount !== undefined) {
+                            data[index].total_amount = result.data.total_amount;
+                        }
+                        // Update items count if available
+                        if (result.data.items) {
+                            data[index].items = result.data.items;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not refresh status for', order.order_code);
+            }
+        });
+
+        // Wait for all refreshes, then render again
+        Promise.all(refreshPromises).then(() => {
+            setData(data); // Save updated statuses to localStorage
+            renderCards(data);
         });
     }
+
+    // Handle existing PHP-rendered order for history (on page load)
+    @if(isset($order) && $order)
+        const currentOrder = @json($order);
+        let list = getData();
+        if (!list.find(x => x.order_code === currentOrder.order_code)) {
+            list.push(currentOrder);
+            setData(list);
+        }
+    @endif
 
     // Initial Render
     renderHistory();
@@ -251,13 +279,6 @@ document.addEventListener("DOMContentLoaded", function () {
         resultCol.classList.remove("hidden");
         formCol.classList.remove("lg:col-span-3");
         formCol.classList.add("lg:col-span-1");
-        
-        // Also save to history if PHP passed it
-        // We can check if there's a script block that did it, or just rely on the AJAX flow from now on.
-        // The existing blade had a script block to save orderJson. I will keep it implicitly by checking the PHP variable $order in blade if needed, 
-        // but since I'm rewriting the file, I'll rely on the user to use the form for new searches, 
-        // OR I can parse the PHP order if present.
-        // For now, let's just let the PHP render happen.
     }
 
     // 2. Handle Form Submit (AJAX)
@@ -356,17 +377,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
-    // Handle existing PHP-rendered order for history (on page load)
-    @if(isset($order) && $order)
-        const currentOrder = @json($order);
-        let list = getData();
-        if (!list.find(x => x.order_code === currentOrder.order_code)) {
-            list.push(currentOrder);
-            setData(list);
-            renderHistory();
-        }
-    @endif
 });
 </script>
 @endsection

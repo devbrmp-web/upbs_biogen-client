@@ -87,22 +87,27 @@
             $transactionId = $payment['transaction_id'] ?? $order['transaction_id'] ?? $order['order_code'] ?? '-';
             
             // Get paid_at date
-            $rawDate = $order['paid_at'] ?? $order['settlement_time'] ?? $order['created_at'] ?? now();
-            try {
-                $paidAt = \Carbon\Carbon::parse($rawDate)
-                    ->setTimezone('Asia/Jakarta')
-                    ->locale('id')
-                    ->translatedFormat('d F Y, H:i') . ' WIB';
-            } catch (\Exception $e) {
+            $rawDate = $order['paid_at'] ?? $order['settlement_time'] ?? $order['created_at'] ?? null;
+            
+            if ($rawDate) {
+                try {
+                    $paidAt = \Carbon\Carbon::parse($rawDate)
+                        ->setTimezone('Asia/Jakarta')
+                        ->locale('id')
+                        ->translatedFormat('d F Y, H:i') . ' WIB';
+                } catch (\Exception $e) {
+                    $paidAt = '-';
+                }
+            } else {
                 $paidAt = '-';
             }
         @endphp
         <div class="label">Payment</div>
         <div>Metode: {{ ucwords(str_replace('_', ' ', $paymentMethod)) }}</div>
         <div>ID Transaksi: {{ $transactionId }}</div>
-        <div>Tanggal Bayar: {{ $paidAt ?: '-' }}</div>
+        <div>Tanggal Bayar: {{ $paidAt }}</div>
         <div>PNBP: {{ $payment['pnbp_receipt_no'] ?? $order['pnbp_receipt_no'] ?? '-' }}</div>
-        <div style="margin-top:16px;background:{{ $statusBgColor }};color:{{ $statusTextColor }}" class="badge">
+        <div style="margin-top:16px;background:{{ $statusBgColor }};color:{{ $statusTextColor }};" class="badge">
             {{ $statusLabel }}
         </div>
       </div>
