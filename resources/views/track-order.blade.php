@@ -194,7 +194,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         </div>
                         <div class="flex flex-col">
                             <span class="text-[10px] text-slate-400 uppercase font-bold">Total</span>
-                            <span class="font-semibold text-emerald-700">${formatCurrency(o.total_amount)}</span>
+                            @php
+                                // JavaScript logic will handle this, but for initial render we need a placeholder or logic if possible.
+                                // Since we are in JS string literal, we use JS logic.
+                            @endphp
+                            <span class="font-semibold text-emerald-700">${formatCurrency(calculateTotal(o))}</span>
                         </div>
                     </div>
 
@@ -240,10 +244,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (result.data.status) {
                             data[index].status = result.data.status;
                         }
-                        // Update total amount if missing or updated
-                        if (result.data.total_amount !== undefined) {
-                            data[index].total_amount = result.data.total_amount;
-                        }
+                        // Update financial data
+                        if (result.data.subtotal !== undefined) data[index].subtotal = result.data.subtotal;
+                        if (result.data.shipping_cost !== undefined) data[index].shipping_cost = result.data.shipping_cost;
+                        if (result.data.total_amount !== undefined) data[index].total_amount = result.data.total_amount;
+                        
                         // Update items count if available
                         if (result.data.items) {
                             data[index].items = result.data.items;
@@ -260,6 +265,22 @@ document.addEventListener("DOMContentLoaded", function () {
             setData(data); // Save updated statuses to localStorage
             renderCards(data);
         });
+    }
+
+    // Helper: Calculate Total (consistent with order-detail logic)
+    function calculateTotal(order) {
+        // If we have specific components, calculate manually to match order-detail
+        // Logic: Subtotal + ServiceFee(1%) + AppFee(4000) + Shipping
+        if (order.subtotal !== undefined) {
+            const subtotal = parseInt(order.subtotal || 0);
+            const serviceFee = Math.floor(subtotal * 0.01);
+            const appFee = 4000;
+            const shippingCost = parseInt(order.shipping_cost || 0);
+            return subtotal + serviceFee + appFee + shippingCost;
+        }
+        
+        // Fallback to stored total_amount if subtotal is missing
+        return order.total_amount;
     }
 
     // Handle existing PHP-rendered order for history (on page load)
