@@ -61,6 +61,40 @@
                 <p class="text-sm text-red-500 mt-2">
                     Batas waktu: {{ \Carbon\Carbon::parse($order->payment_deadline)->format('d M Y, H:i') }} WIB
                 </p>
+                <div id="payment-countdown" class="mt-2 text-lg font-bold text-red-600 bg-red-50 inline-block px-3 py-1 rounded-lg border border-red-100">
+                    Loading...
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Ensure correct timezone parsing
+                        const deadlineStr = "{{ \Carbon\Carbon::parse($order->payment_deadline)->toIso8601String() }}";
+                        const deadline = new Date(deadlineStr).getTime();
+                        
+                        function updateTimer() {
+                            const now = new Date().getTime();
+                            const distance = deadline - now;
+                            
+                            if (distance < 0) {
+                                clearInterval(timer);
+                                document.getElementById("payment-countdown").innerHTML = "Waktu Habis!";
+                                // Reload page to trigger server-side check (and Shadow Cache Restoration if deleted)
+                                window.location.reload();
+                                return;
+                            }
+                            
+                            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                            
+                            document.getElementById("payment-countdown").innerHTML = 
+                                `<i class="fa-regular fa-clock mr-1"></i> ${hours}j ${minutes}m ${seconds}d`;
+                        }
+
+                        const timer = setInterval(updateTimer, 1000);
+                        updateTimer(); // Initial call
+                    });
+                </script>
             @endif
         </div>
     </div>

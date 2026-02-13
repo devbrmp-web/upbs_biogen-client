@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class CheckoutController extends Controller
 {
@@ -27,6 +28,15 @@ class CheckoutController extends Controller
             $response = Http::timeout(15)->post($url.'/api/orders/checkout', $request->all());
 
             if ($response->successful()) {
+                // Backup cart data for Shadow Cache Restoration
+                $data = $response->json();
+                $orderCode = $data['data']['order']['order_code'] ?? null;
+                
+                if ($orderCode && $request->has('items')) {
+                    // Backup for 70 minutes (assuming order timeout is 60m)
+                    Cache::put('backup_cart_' . $orderCode, $request->input('items'), now()->addMinutes(70));
+                }
+
                 return response()->json($response->json());
             }
 
