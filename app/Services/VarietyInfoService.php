@@ -16,24 +16,35 @@ class VarietyInfoService
 
     protected static function readAll(): array
     {
-        return Cache::remember('variety_info_all', 3600, function () {
+        return Cache::remember('variety_info_all_v4', 3600, function () {
             try {
                 if (!Storage::disk('public')->exists('buku_saku.txt')) {
                     return [];
                 }
                 $path = Storage::disk('public')->path('buku_saku.txt');
-                $file = new \SplFileObject($path);
-                $file->setFlags(\SplFileObject::READ_CSV | \SplFileObject::SKIP_EMPTY | \SplFileObject::DROP_NEW_LINE);
-                $file->setCsvControl(',', '"', '\\');
-
+                
+                // Read file content manually to handle line endings better
+                $content = file_get_contents($path);
+                $lines = preg_split('/\r\n|\r|\n/', $content);
+                
                 $rows = [];
                 $header = null;
-                foreach ($file as $row) {
-                    if ($row === [null] || $row === false) continue;
+                
+                foreach ($lines as $line) {
+                    if (trim($line) === '') continue;
+                    
+                    $row = str_getcsv($line, ',', '"', '\\');
+                    
                     if ($header === null) {
                         $header = array_map(fn($h) => strtolower(trim((string) $h)), $row);
                         continue;
                     }
+                    
+                    if (count($row) !== count($header)) {
+                        // Try to handle malformed lines if necessary, or skip
+                        continue;
+                    }
+
                     $data = [];
                     foreach ($header as $i => $key) {
                         $data[$key] = isset($row[$i]) ? trim((string) $row[$i]) : '';
@@ -55,23 +66,39 @@ class VarietyInfoService
             $nama = $r['nama_varietas'] ?? '';
             $asal = $r['asal'] ?? '';
             if ($nama === '' || $asal === '') continue;
+            
             $umur = $r['umur_tanaman_hari'] ?? '';
             $umurFmt = $umur !== '' && is_numeric($umur) ? ((int) $umur) . ' hari' : ($umur !== '' ? $umur : '-');
+            
+            // Smart fallbacks for non-padi commodities
             $hasil = $r['rata_rata_hasil'] ?? '';
+            if ($hasil === '' || $hasil === '-') {
+                $hasil = $r['potensi_hasil'] ?? '-';
+            }
+
             $tekstur = $r['tekstur_nasi'] ?? '';
+            if ($tekstur === '' || $tekstur === '-') {
+                $tekstur = $r['golongan'] ?? '-';
+            }
+
             $ketHama = $r['ketahanan_hama'] ?? '';
             $ketPeny = $r['ketahanan_penyakit'] ?? '';
             $ketahanan = trim(implode(' • ', array_filter([$ketHama, $ketPeny])));
+            
             $items[] = [
                 'komoditas' => $r['komoditas'] ?? '',
                 'nama_varietas' => $nama,
                 'asal' => $asal,
                 'umur_tanaman_hari' => $umurFmt,
-                'rata_rata_hasil' => $hasil !== '' ? $hasil : '-',
-                'tekstur_nasi' => $tekstur !== '' ? $tekstur : '-',
+                'rata_rata_hasil' => $hasil,
+                'potensi_hasil' => $r['potensi_hasil'] ?? '-', // Keep original for blade
+                'tekstur_nasi' => $tekstur,
+                'golongan' => $r['golongan'] ?? '-', // Keep original
                 'ketahanan_hama' => $ketHama,
                 'ketahanan_penyakit' => $ketPeny,
                 'deskripsi' => $r['deskripsi'] ?? $r['keterangan'] ?? 'Informasi detail mengenai varietas ini belum tersedia secara lengkap dalam database.',
+                'keunggulan' => $r['keunggulan'] ?? '',
+                'tanggal_keputusan' => $r['tanggal_keputusan'] ?? '',
             ];
             if (count($items) >= $limit) break;
         }

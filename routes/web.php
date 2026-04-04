@@ -33,6 +33,10 @@ Route::get('/search', [CatalogController::class, 'search'])->name('search');
 Route::get('/produk/{slug}', [CatalogController::class, 'productDetail'])->name('product.detail');
 
 Route::view('/tentang-kami', 'tentang-kami')->name('about');
+Route::view('/kontak', 'kontak')->name('contact');
+Route::view('/faq', 'faq')->name('faq');
+Route::view('/kebijakan-privasi', 'kebijakan-privasi')->name('privacy');
+Route::view('/syarat-ketentuan', 'syarat-ketentuan')->name('terms');
 
 use App\Http\Controllers\TrackOrderController;
 
