@@ -12,6 +12,7 @@
 
     <div class="relative z-10 max-w-6xl mx-auto">
         <div class="text-center mb-16">
+            
             <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 mb-4">
                 Hubungi Kami
             </h1>

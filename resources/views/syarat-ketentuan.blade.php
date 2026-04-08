@@ -17,6 +17,7 @@
             <p>Pemesanan benih sumber tunduk pada ketersediaan stok. Kami berhak membatalkan pesanan jika stok tidak tersedia atau terjadi kesalahan sistem.</p>
 
             <h3>3. Pembayaran</h3>
+            
             <p>Pembayaran dilakukan melalui saluran resmi PNBP yang tersedia. Bukti pembayaran harus valid dan dapat diverifikasi.</p>
 
             <h3>4. Pengiriman</h3>

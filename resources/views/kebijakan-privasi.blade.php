@@ -11,6 +11,7 @@
             <p>Terakhir diperbarui: {{ date('d F Y') }}</p>
 
             <h3>1. Pendahuluan</h3>
+            
             <p>Kami di UPBS BRMP Biogen berkomitmen untuk melindungi privasi Anda. Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi informasi pribadi Anda saat menggunakan layanan kami.</p>
 
             <h3>2. Informasi yang Kami Kumpulkan</h3>
