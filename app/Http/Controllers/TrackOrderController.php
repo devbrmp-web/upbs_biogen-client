@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class TrackOrderController extends Controller
 {
@@ -152,6 +153,17 @@ class TrackOrderController extends Controller
             );
 
             if (!$res->successful()) {
+                // Shadow Cache Restoration Logic
+                if (Cache::has('backup_cart_' . $orderCode)) {
+                    $items = Cache::get('backup_cart_' . $orderCode);
+                    Cache::forget('backup_cart_' . $orderCode);
+                    
+                    return redirect('/keranjang')->with([
+                        'restored_cart' => $items,
+                        'flash_message' => 'Waktu pembayaran habis, item Anda telah dikembalikan ke keranjang.'
+                    ]);
+                }
+
                 abort(404, 'Order tidak ditemukan');
             }
 

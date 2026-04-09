@@ -3,356 +3,373 @@
 @section('title', 'Detail Pesanan • UPBS BRMP Biogen')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-6 lg:px-8 py-10 mt-20 page-animate-rise relative z-10">
-
-    {{-- Decorative Background Elements --}}
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-emerald-400/20 rounded-full blur-3xl -z-10 opacity-40 pointer-events-none"></div>
-    <div class="absolute bottom-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl -z-10 opacity-30 pointer-events-none"></div>
-
-  @if(empty($data))
-    <div class="bg-white/60 backdrop-blur-xl border border-red-200/50 shadow-xl rounded-3xl p-10 text-center max-w-2xl mx-auto">
-        <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-            <i class="fa-solid fa-circle-exclamation text-red-500 text-3xl"></i>
-        </div>
-        <h3 class="text-2xl font-bold text-slate-800 mb-2">Pesanan Tidak Ditemukan</h3>
-        <p class="text-slate-600 mb-8">Maaf, data pesanan yang Anda cari tidak tersedia. Silakan periksa kembali kode pesanan Anda.</p>
-        <a href="/cek-pesanan" class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
-            <i class="fa-solid fa-arrow-left"></i> Kembali ke Pencarian
-        </a>
-    </div>
-  @else
-    @php
-      $statusMap = [
-        'completed' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
-        'paid' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
-        'awaiting_payment' => 'bg-amber-100 text-amber-700 border-amber-200',
-        'pending_verification' => 'bg-orange-100 text-orange-700 border-orange-200',
-        'processing' => 'bg-blue-100 text-blue-700 border-blue-200',
-        'delivery_coordination' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
-        'shipped' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
-        'pickup_ready' => 'bg-cyan-100 text-cyan-700 border-cyan-200',
-        'cancelled' => 'bg-red-100 text-red-700 border-red-200',
-      ];
-      $statusClass = $statusMap[$data->status ?? ''] ?? 'bg-slate-100 text-slate-800 border-slate-200';
-    @endphp
-
-    {{-- Header Section --}}
-    <div class="bg-white/70 backdrop-blur-xl border border-white/50 shadow-xl rounded-3xl p-6 md:p-8 relative z-10 mb-8">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-          <div class="flex items-center gap-4 mb-2">
-              <h2 class="text-3xl font-bold text-slate-800 tracking-tight">Order #{{ $data->order_code ?? '-' }}</h2>
-              <span class="px-4 py-1.5 rounded-full text-sm font-bold border {{ $statusClass }} uppercase tracking-wide shadow-sm">
-                {{ str_replace('_', ' ', $data->status ?? '-') }}
-              </span>
-          </div>
-          <p class="text-slate-500 font-medium flex items-center gap-2">
-            <i class="fa-regular fa-clock"></i>
-            Dibuat pada {{ isset($data->created_at) ? \Carbon\Carbon::parse($data->created_at)->format('d M Y, H:i') : '-' }} WIB
-          </p>
-        </div>
-
-        <div class="flex flex-wrap gap-3 w-full md:w-auto">
-          <a href="/cek-pesanan" 
-             class="flex-1 md:flex-none justify-center px-5 py-3 rounded-xl border border-slate-200 bg-white/60 hover:bg-white text-slate-600 font-bold transition-all shadow-sm hover:shadow-md flex items-center gap-2 group">
-             <i class="fa-solid fa-arrow-left text-sm group-hover:-translate-x-1 transition-transform"></i> Kembali
-          </a>
-          
-          @if(($data->status ?? '') === 'awaiting_payment')
-            <a href="/pesanan/{{ $data->order_code }}/payment" 
-               class="flex-1 md:flex-none justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold shadow-lg shadow-blue-600/20 transition-all transform hover:-translate-y-1 hover:shadow-xl flex items-center gap-2">
-               <i class="fa-regular fa-credit-card"></i> Bayar Sekarang
-            </a>
-          @endif
-          
-          <button id="btn-print" 
-                  class="flex-1 md:flex-none justify-center px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold shadow-lg transition-all transform hover:-translate-y-1 hover:shadow-xl flex items-center gap-2" 
-                  data-order-code="{{ $data->order_code }}" 
-                  data-order-status="{{ $data->status }}">
-              <i class="fa-solid fa-print"></i> Cetak
-          </button>
-        </div>
-      </div>
+<div class="relative min-h-screen pt-24 pb-12">
+    {{-- Background Blobs --}}
+    <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-emerald-300/20 rounded-full blur-3xl mix-blend-multiply animate-blob"></div>
+        <div class="absolute top-0 right-1/4 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-32 left-1/3 w-96 h-96 bg-yellow-100/40 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-4000"></div>
     </div>
 
-    {{-- Item Pesanan --}}
-    <div class="bg-white/70 backdrop-blur-xl border border-white/50 shadow-xl rounded-3xl p-6 md:p-8 mb-8 relative z-10">
-        <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-3 border-b border-slate-200/60 pb-4 text-lg">
-            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg shadow-sm">
-                <i class="fa-solid fa-basket-shopping"></i>
-            </div>
-            Item Pesanan
-        </h3>
-        
-        <div class="space-y-4">
-            @if(!empty($data->items) && is_array($data->items))
-                @foreach($data->items as $item)
-                <div class="flex flex-col sm:flex-row items-center gap-4 p-4 bg-white/50 rounded-2xl border border-white/60 hover:bg-white/80 transition-colors">
-                    {{-- Product Icon/Image Placeholder --}}
-                    <div class="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
-                        <i class="fa-solid fa-seedling text-2xl"></i>
-                    </div>
-                    
-                    {{-- Item Details --}}
-                    <div class="flex-1 text-center sm:text-left">
-                        <h4 class="font-bold text-slate-800 text-lg">{{ $item['resolved_variety_name'] ?? 'Varietas Tidak Diketahui' }}</h4>
-                        <p class="text-sm text-slate-500">{{ $item['product_name'] ?? 'Benih' }}</p>
-                    </div>
-
-                    {{-- Quantity & Price --}}
-                    <div class="flex flex-col items-center sm:items-end gap-1">
-                        <span class="text-slate-600 font-medium bg-slate-100 px-3 py-1 rounded-lg text-sm">
-                            {{ $item['quantity'] }} x Rp {{ number_format((int)($item['price'] ?? 0), 0, ',', '.') }}
-                        </span>
-                        <span class="font-bold text-emerald-600 text-lg">
-                            Rp {{ number_format((int)($item['subtotal'] ?? 0), 0, ',', '.') }}
-                        </span>
-                    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        @if(empty($data))
+            <div class="bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl p-12 text-center shadow-xl">
+                <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl text-red-500"></i>
                 </div>
-                @endforeach
-            @else
-                <div class="text-center py-8 text-slate-500">
-                    <i class="fa-regular fa-folder-open text-4xl mb-3 opacity-50"></i>
-                    <p>Data item tidak tersedia.</p>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    {{-- Grid Info --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      
-      {{-- Informasi Pengiriman (Combined with Recipient Name) --}}
-      <div class="bg-white/70 backdrop-blur-xl border border-white/50 shadow-xl rounded-3xl p-6 md:p-8 hover:shadow-2xl hover:shadow-emerald-900/5 transition-all duration-300">
-        <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-3 border-b border-slate-200/60 pb-4 text-lg">
-            <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-lg shadow-sm">
-                <i class="fa-solid fa-truck-fast"></i>
-            </div>
-            Informasi Pengiriman
-        </h3>
-
-        {{-- Recipient Name (Moved from Data Pelanggan) --}}
-        <div class="mb-6 pb-6 border-b border-dashed border-slate-200">
-            <div class="group">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Nama Penerima</span>
-                <div class="font-semibold text-slate-800 bg-white/60 px-4 py-3 rounded-xl border border-white/60 shadow-sm flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm">
-                        <i class="fa-regular fa-user"></i>
-                    </div>
-                    {{ $data->customer_name ?? '-' }}
-                </div>
-            </div>
-        </div>
-
-        @if(($data->shipping_method ?? '') === 'pickup')
-            <div class="bg-blue-50/80 border border-blue-200 rounded-2xl p-5 shadow-sm">
-                <p class="font-bold text-blue-800 flex items-center gap-2 mb-3 text-lg">
-                    <i class="fa-solid fa-store"></i>
-                    Ambil di Tempat (Pickup)
-                </p>
-                <div class="text-sm text-blue-900 space-y-2 ml-7">
-                    <p class="font-bold">Lokasi Pengambilan:</p>
-                    <p>Kantor UPBS BRMP Biogen</p>
-                    <p>Jl. Tentara Pelajar No. 3A, Bogor</p>
-                    <p class="mt-3 text-xs opacity-90 bg-white/50 p-2.5 rounded-lg border border-blue-100 inline-block font-medium">
-                        <i class="fa-solid fa-ticket mr-1"></i> Tunjukkan kode order saat pengambilan.
-                    </p>
-                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">Pesanan Tidak Ditemukan</h3>
+                <p class="text-slate-600 mb-6">Maaf, kami tidak dapat menemukan data pesanan yang Anda cari.</p>
+                <a href="/cek-pesanan" class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-emerald-600/20">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali
+                </a>
             </div>
         @else
-            <div class="space-y-5">
-              <div class="group">
-                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Kurir</span>
-                  <div class="font-semibold text-slate-800 bg-white/60 px-4 py-3 rounded-xl border border-white/60 shadow-sm">{{ $data->courier_name ?? '-' }}</div>
-              </div>
-              <div class="group">
-                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Layanan</span>
-                  <div class="font-semibold text-slate-800 bg-white/60 px-4 py-3 rounded-xl border border-white/60 shadow-sm">{{ $data->courier_service ?? '-' }}</div>
-              </div>
-              <div class="group">
-                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Nomor Resi (Tracking)</span>
-                  <div class="font-mono font-bold text-slate-800 bg-white/60 px-4 py-3 rounded-xl border border-white/60 shadow-sm flex justify-between items-center group-hover:border-indigo-200 transition-colors">
-                      {{ $data->tracking_number ?? '-' }}
-                      @if($data->tracking_number)
-                        <button onclick="navigator.clipboard.writeText('{{ $data->tracking_number }}')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-400 hover:text-emerald-600 transition-all flex items-center justify-center" title="Salin Resi">
-                            <i class="fa-regular fa-copy"></i>
+            @php
+                $statusMap = [
+                    'completed' => ['label' => 'Selesai', 'class' => 'bg-emerald-100 text-emerald-700 border-emerald-200', 'icon' => 'fa-check-circle'],
+                    'paid' => ['label' => 'Sudah Dibayar', 'class' => 'bg-blue-100 text-blue-700 border-blue-200', 'icon' => 'fa-wallet'],
+                    'awaiting_payment' => ['label' => 'Menunggu Pembayaran', 'class' => 'bg-amber-100 text-amber-700 border-amber-200', 'icon' => 'fa-clock'],
+                    'pending_verification' => ['label' => 'Verifikasi Pembayaran', 'class' => 'bg-orange-100 text-orange-700 border-orange-200', 'icon' => 'fa-magnifying-glass-dollar'],
+                    'processing' => ['label' => 'Sedang Diproses', 'class' => 'bg-indigo-100 text-indigo-700 border-indigo-200', 'icon' => 'fa-box-open'],
+                    'delivery_coordination' => ['label' => 'Koordinasi Pengiriman', 'class' => 'bg-cyan-100 text-cyan-700 border-cyan-200', 'icon' => 'fa-truck-fast'],
+                    'shipped' => ['label' => 'Dalam Pengiriman', 'class' => 'bg-sky-100 text-sky-700 border-sky-200', 'icon' => 'fa-truck'],
+                    'pickup_ready' => ['label' => 'Siap Diambil', 'class' => 'bg-teal-100 text-teal-700 border-teal-200', 'icon' => 'fa-store']
+                ];
+                
+                $statusKey = $data->status ?? '';
+                $statusInfo = $statusMap[$statusKey] ?? ['label' => $statusKey, 'class' => 'bg-slate-100 text-slate-700 border-slate-200', 'icon' => 'fa-circle-info'];
+            @endphp
+
+            {{-- Header Section --}}
+            <div class="bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl p-6 lg:p-8 shadow-xl mb-8">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
+                                Order ID
+                            </span>
+                            @if($data->paid_at ?? $data->settlement_time ?? $data->created_at ?? null)
+                            <span class="text-slate-400 text-sm"><i class="fa-regular fa-calendar mr-1"></i> {{ \Carbon\Carbon::parse($data->paid_at ?? $data->settlement_time ?? $data->created_at)->setTimezone('Asia/Jakarta')->locale('id')->translatedFormat('d F Y, H:i') }} WIB</span>
+                            @endif
+                        </div>
+                        <h1 class="text-3xl font-bold text-slate-800 tracking-tight">#{{ $data->order_code ?? '-' }}</h1>
+                        <div class="mt-3 flex items-center gap-2">
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border {{ $statusInfo['class'] }} text-sm font-medium">
+                                <i class="fa-solid {{ $statusInfo['icon'] }}"></i>
+                                {{ $statusInfo['label'] }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <a href="/cek-pesanan" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 hover:text-slate-800 transition-all">
+                            Kembali
+                        </a>
+                        
+                        @if(($data->status ?? '') === 'awaiting_payment')
+                            <a href="/pesanan/{{ $data->order_code }}/payment" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2">
+                                <i class="fa-regular fa-credit-card"></i> Bayar Sekarang
+                            </a>
+                        @endif
+
+                        <button id="btn-print" data-order-code="{{ $data->order_code }}" data-order-status="{{ $data->status }}" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-medium transition-all shadow-lg shadow-slate-800/20 flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-print"></i> Cetak Invoice
                         </button>
-                      @endif
-                  </div>
-              </div>
-              <div class="group">
-                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 ml-1">Status Pengiriman</span>
-                  <div class="font-semibold text-slate-800 bg-white/60 px-4 py-3 rounded-xl border border-white/60 shadow-sm">{{ $data->shipment_status ?? '-' }}</div>
-              </div>
-            </div>
-        @endif
-      </div>
-
-      {{-- Ringkasan Pembayaran --}}
-      <div class="bg-white/70 backdrop-blur-xl border border-white/50 shadow-xl rounded-3xl p-6 md:p-8 hover:shadow-2xl hover:shadow-emerald-900/5 transition-all duration-300">
-        <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-3 border-b border-slate-200/60 pb-4 text-lg">
-            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg shadow-sm">
-                <i class="fa-solid fa-receipt"></i>
-            </div>
-            Ringkasan Pembayaran
-        </h3>
-        <div class="space-y-4">
-          <div class="flex justify-between items-center p-3 rounded-xl bg-slate-50/50 border border-slate-100">
-              <span class="text-slate-600 font-medium">Subtotal</span>
-              <span class="font-bold text-slate-800">Rp {{ number_format((int)($data->subtotal ?? 0), 0, ',', '.') }}</span>
-          </div>
-          
-          <div class="border-t border-dashed border-slate-300 my-2"></div>
-          
-          <div class="flex justify-between items-center bg-emerald-50 p-4 rounded-xl border border-emerald-100 shadow-sm">
-              <span class="text-slate-700 font-bold">Total</span>
-              <span class="font-extrabold text-emerald-700 text-xl">Rp {{ number_format((int)($data->total_amount ?? 0), 0, ',', '.') }}</span>
-          </div>
-          
-          <div class="mt-4 flex items-start gap-3 text-xs text-slate-500 bg-white/60 p-4 rounded-xl border border-slate-100 leading-relaxed">
-              <i class="fa-solid fa-circle-info mt-0.5 text-slate-400 text-sm"></i>
-              <span>Status pembayaran akan diperbarui secara otomatis setelah verifikasi dari gateway pembayaran selesai.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {{-- Dynamic Status Information Card --}}
-    <div class="mt-10">
-      
-      @if(($data->shipping_method ?? '') === 'delivery')
-        {{-- DELIVERY METHOD --}}
-        @if(($data->status ?? '') === 'paid')
-          <div class="bg-gradient-to-br from-green-50 to-emerald-50/50 backdrop-blur-md border border-green-200 rounded-3xl p-8 shadow-sm">
-            <div class="flex flex-col md:flex-row items-start gap-6">
-              <div class="w-16 h-16 rounded-2xl bg-white text-green-600 flex items-center justify-center shrink-0 shadow-md border border-green-100">
-                  <i class="fa-solid fa-check text-2xl"></i>
-              </div>
-              <div class="flex-1">
-                <h4 class="text-xl font-bold text-green-800 mb-3">Pembayaran Berhasil</h4>
-                <p class="text-green-800/80 text-base mb-6 leading-relaxed max-w-3xl">
-                  Terima kasih! Pembayaran Anda telah kami terima. Silakan cetak resi/kuitansi Anda dan kirimkan ke Admin melalui WhatsApp untuk mempercepat proses koordinasi pengiriman.
-                </p>
-                <div class="flex flex-wrap gap-4">
-                  <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" 
-                     class="px-6 py-3 bg-white text-green-700 border border-green-200 rounded-xl text-sm font-bold hover:bg-green-50 transition-all shadow-sm hover:shadow-md flex items-center gap-2">
-                    <i class="fa-solid fa-print"></i> Cetak Resi
-                  </a>
-                  <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya telah menyelesaikan pembayaran untuk pesanan #'.$data->order_code.'. Berikut saya lampirkan bukti resi untuk koordinasi pengiriman lebih lanjut. Terima kasih!') }}" 
-                     target="_blank" 
-                     class="px-6 py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-lg hover:shadow-xl shadow-green-600/20 flex items-center gap-2">
-                    <i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp Admin
-                  </a>
+                    </div>
                 </div>
-              </div>
             </div>
-          </div>
-          
-        @elseif(($data->status ?? '') === 'processing')
-          <div class="bg-gradient-to-br from-blue-50 to-indigo-50/50 backdrop-blur-md border border-blue-200 rounded-3xl p-8 shadow-sm">
-            <div class="flex flex-col md:flex-row items-start gap-6">
-              <div class="w-16 h-16 rounded-2xl bg-white text-blue-600 flex items-center justify-center shrink-0 shadow-md border border-blue-100">
-                  <i class="fa-solid fa-box-open text-2xl"></i>
-              </div>
-              <div class="flex-1">
-                <h4 class="text-xl font-bold text-blue-800 mb-3">Pesanan Sedang Disiapkan</h4>
-                <p class="text-blue-800/80 text-base mb-6 leading-relaxed max-w-3xl">
-                  Pesanan Anda sedang dalam proses penyiapan oleh tim UPBS. Kami memastikan kualitas terbaik untuk Anda. Mohon tunggu informasi selanjutnya.
-                </p>
-                <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin menanyakan progres persiapan pesanan #'.$data->order_code.'. Terima kasih!') }}" 
-                   target="_blank" 
-                   class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl shadow-blue-600/20">
-                  <i class="fa-brands fa-whatsapp text-lg"></i> Tanya Progres via WA
-                </a>
-              </div>
-            </div>
-          </div>
-          
-        @elseif(($data->status ?? '') === 'shipped')
-          <div class="bg-gradient-to-br from-indigo-50 to-purple-50/50 backdrop-blur-md border border-indigo-200 rounded-3xl p-8 shadow-sm">
-            <div class="flex flex-col md:flex-row items-start gap-6">
-              <div class="w-16 h-16 rounded-2xl bg-white text-indigo-600 flex items-center justify-center shrink-0 shadow-md border border-indigo-100">
-                  <i class="fa-solid fa-truck-fast text-2xl"></i>
-              </div>
-              <div class="flex-1">
-                <h4 class="text-xl font-bold text-indigo-800 mb-3">Pesanan Dalam Pengiriman</h4>
-                <p class="text-indigo-800/80 text-base mb-6 leading-relaxed max-w-3xl">
-                  Kabar baik! Pesanan Anda sedang dalam perjalanan menuju alamat tujuan. Anda dapat melacak posisi paket menggunakan nomor resi yang tersedia.
-                </p>
-                <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin menanyakan status pengiriman pesanan #'.$data->order_code.'. Terima kasih!') }}" 
-                   target="_blank" 
-                   class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl shadow-indigo-600/20">
-                  <i class="fa-brands fa-whatsapp text-lg"></i> Hubungi Admin
-                </a>
-              </div>
-            </div>
-          </div>
-          
-        @elseif(($data->status ?? '') === 'completed')
-          <div class="bg-gradient-to-br from-emerald-50 to-teal-50/50 backdrop-blur-md border border-emerald-200 rounded-3xl p-8 shadow-sm">
-            <div class="flex flex-col md:flex-row items-start gap-6">
-              <div class="w-16 h-16 rounded-2xl bg-white text-emerald-600 flex items-center justify-center shrink-0 shadow-md border border-emerald-100">
-                  <i class="fa-solid fa-check-double text-2xl"></i>
-              </div>
-              <div class="flex-1">
-                <h4 class="text-xl font-bold text-emerald-800 mb-3">Pesanan Selesai</h4>
-                <p class="text-emerald-800/80 text-base mb-6 leading-relaxed max-w-3xl">
-                  Pesanan telah selesai. Terima kasih telah berbelanja di UPBS BRMP Biogen. Jika Anda membutuhkan bantuan lebih lanjut, jangan ragu untuk menghubungi kami.
-                </p>
-                <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, pesanan #'.$data->order_code.' saya sudah selesai. Terima kasih!') }}" 
-                   target="_blank" 
-                   class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-lg hover:shadow-xl shadow-emerald-600/20">
-                  <i class="fa-brands fa-whatsapp text-lg"></i> Kirim Testimoni
-                </a>
-              </div>
-            </div>
-          </div>
-          
-        @endif
-        
-      @elseif(($data->shipping_method ?? '') === 'pickup')
-        {{-- PICKUP METHOD --}}
-        @if(($data->status ?? '') === 'paid')
-          <div class="bg-gradient-to-br from-green-50 to-emerald-50/50 backdrop-blur-md border border-green-200 rounded-3xl p-8 shadow-sm">
-            <div class="flex flex-col md:flex-row items-start gap-6">
-              <div class="w-16 h-16 rounded-2xl bg-white text-green-600 flex items-center justify-center shrink-0 shadow-md border border-green-100">
-                  <i class="fa-solid fa-store text-2xl"></i>
-              </div>
-              <div class="flex-1">
-                 <h4 class="text-xl font-bold text-green-800 mb-3">Siap untuk Pengambilan</h4>
-                 <p class="text-green-800/80 text-base mb-6 leading-relaxed max-w-3xl">
-                    Pembayaran diterima. Silakan datang ke kantor UPBS BRMP Biogen untuk mengambil pesanan Anda. Jangan lupa membawa bukti pesanan ini.
-                 </p>
-                 <a href="https://maps.google.com/?q=Jl.+Tentara+Pelajar+No.+3A,+Bogor" target="_blank"
-                    class="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-lg hover:shadow-xl shadow-green-600/20">
-                    <i class="fa-solid fa-map-location-dot"></i> Lihat Lokasi
-                 </a>
-              </div>
-            </div>
-          </div>
-        @endif
-      @endif
 
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {{-- Left Column: Order Details --}}
+                <div class="lg:col-span-2 space-y-8">
+                    
+                    {{-- Status Information Card (Dynamic) --}}
+                    @if(in_array(($data->status ?? ''), ['paid', 'processing', 'shipped', 'pickup_ready', 'completed']))
+                        <div class="bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-xl border border-white/40 rounded-3xl p-6 lg:p-8 shadow-lg relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-100/50 rounded-full blur-2xl -mr-16 -mt-16 transition-all group-hover:bg-emerald-200/50"></div>
+                            
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-circle-info text-emerald-600"></i> Informasi Status
+                            </h3>
+
+                            <div class="bg-slate-50/80 border border-slate-100 rounded-2xl p-5">
+                                @if(($data->shipping_method ?? '') === 'delivery')
+                                    @if(($data->status ?? '') === 'paid')
+                                        <div class="flex gap-4">
+                                            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
+                                                <i class="fa-solid fa-check text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-slate-800">Pembayaran Berhasil</h4>
+                                                <p class="text-slate-600 text-sm mt-1 mb-4">Pembayaran berhasil. Silakan cetak resi/kuitansi Anda dan kirimkan ke Admin melalui WhatsApp untuk koordinasi pengiriman.</p>
+                                                <div class="flex flex-wrap gap-3">
+                                                    <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
+                                                        <i class="fa-regular fa-file-pdf text-red-500"></i> Cetak Resi
+                                                    </a>
+                                                    <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya telah menyelesaikan pembayaran untuk pesanan #'.$data->order_code.'. Berikut saya lampirkan bukti resi untuk koordinasi pengiriman lebih lanjut. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-all shadow-sm">
+                                                        <i class="fa-brands fa-whatsapp"></i> WhatsApp Admin
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @elseif(($data->status ?? '') === 'processing')
+                                        <div class="flex gap-4">
+                                            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-600">
+                                                <i class="fa-solid fa-box-open text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-slate-800">Sedang Disiapkan</h4>
+                                                <p class="text-slate-600 text-sm mt-1 mb-4">Pesanan Anda sedang disiapkan oleh staf UPBS. Mohon tunggu informasi selanjutnya.</p>
+                                                <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin menanyakan progres persiapan pesanan #'.$data->order_code.'. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-medium hover:bg-indigo-600 transition-all shadow-sm">
+                                                    <i class="fa-brands fa-whatsapp"></i> WhatsApp Admin
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @elseif(($data->status ?? '') === 'shipped')
+                                        <div class="flex gap-4">
+                                            <div class="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center flex-shrink-0 text-sky-600">
+                                                <i class="fa-solid fa-truck text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-slate-800">Dalam Pengiriman</h4>
+                                                <p class="text-slate-600 text-sm mt-1 mb-4">Pesanan Anda sedang dalam perjalanan. Silakan hubungi WhatsApp berikut untuk informasi lebih lanjut.</p>
+                                                <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin menanyakan status pengiriman pesanan #'.$data->order_code.'. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-all shadow-sm">
+                                                    <i class="fa-brands fa-whatsapp"></i> WhatsApp Admin
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @elseif(($data->status ?? '') === 'completed')
+                                        <div class="flex gap-4">
+                                            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
+                                                <i class="fa-solid fa-flag-checkered text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-slate-800">Pesanan Siap Dikirim</h4>
+                                                <p class="text-slate-600 text-sm mt-1 mb-4">Pesanan siap dikirim. Silakan hubungi WhatsApp berikut untuk meminta nomor resi pengiriman dari ekspedisi.</p>
+                                                <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, pesanan #'.$data->order_code.' saya sudah siap dikirim. Saya ingin meminta nomor resi pengiriman dari ekspedisi. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-all shadow-sm">
+                                                    <i class="fa-brands fa-whatsapp"></i> WhatsApp Admin
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @elseif(($data->shipping_method ?? '') === 'pickup')
+                                    @if(($data->status ?? '') === 'paid')
+                                        <div class="flex gap-4">
+                                            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
+                                                <i class="fa-solid fa-check text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-slate-800">Pembayaran Berhasil</h4>
+                                                <p class="text-slate-600 text-sm mt-1 mb-4">Pembayaran berhasil. Silakan cetak kuitansi Anda dan bawa saat pengambilan benih di kantor UPBS BRMP Biogen.</p>
+                                                <div class="flex flex-wrap gap-3">
+                                                    <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
+                                                        <i class="fa-regular fa-file-pdf text-red-500"></i> Cetak Kuitansi
+                                                    </a>
+                                                    <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya telah menyelesaikan pembayaran untuk pesanan #'.$data->order_code.'. Saya ingin mengkoordinasikan waktu pengambilan benih. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-all shadow-sm">
+                                                        <i class="fa-brands fa-whatsapp"></i> WhatsApp Admin
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @elseif(($data->status ?? '') === 'pickup_ready')
+                                        <div class="flex gap-4">
+                                            <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0 text-teal-600">
+                                                <i class="fa-solid fa-store text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-slate-800">Siap Diambil</h4>
+                                                <p class="text-slate-600 text-sm mt-1 mb-4">Pesanan Anda sudah siap diambil. Silakan datang ke kantor UPBS BRMP Biogen pada jam operasional dengan menunjukkan bukti kuitansi.</p>
+                                                <div class="flex flex-wrap gap-3">
+                                                    <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
+                                                        <i class="fa-regular fa-file-pdf text-red-500"></i> Lihat Kuitansi
+                                                    </a>
+                                                    <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin konfirmasi kedatangan untuk pengambilan pesanan #'.$data->order_code.'. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-medium hover:bg-teal-600 transition-all shadow-sm">
+                                                        <i class="fa-brands fa-whatsapp"></i> WhatsApp Admin
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Items List (Card Style) --}}
+                    <div class="bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl p-6 lg:p-8 shadow-xl">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                            <i class="fa-solid fa-basket-shopping text-emerald-600"></i> Rincian Produk
+                        </h3>
+                        <div class="space-y-4">
+                            @foreach(($data->items ?? []) as $it)
+                            <div class="bg-white border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all group">
+                                <div class="flex flex-col sm:flex-row gap-4 justify-between sm:items-center">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                                <i class="fa-solid fa-seedling text-lg"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-slate-800 text-lg">{{ $it['resolved_variety_name'] ?? 'Varietas Tidak Diketahui' }}</h4>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-wrap gap-2 text-xs text-slate-500 pl-[3.25rem]">
+                                            <span class="px-2 py-1 rounded-md bg-slate-50 border border-slate-100">
+                                                <i class="fa-solid fa-tag text-slate-300 mr-1"></i> Kelas {{ $it['seed_class_code'] ?? '-' }}
+                                            </span>
+                                            <span class="px-2 py-1 rounded-md bg-slate-50 border border-slate-100">
+                                                <i class="fa-solid fa-layer-group text-slate-300 mr-1"></i> Lot {{ $it['seed_lot_id'] ?? '-' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-6 pl-[3.25rem] sm:pl-0">
+                                        <div class="text-center">
+                                            <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Jumlah</p>
+                                            <p class="font-bold text-slate-700">{{ (int)($it['quantity'] ?? 0) }} kg</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Total</p>
+                                            <p class="font-bold text-emerald-600 text-lg">Rp {{ number_format(((int)($it['unit_price'] ?? 0)) * ((int)($it['quantity'] ?? 0)), 0, ',', '.') }}</p>
+                                            <p class="text-xs text-slate-400">@ Rp {{ number_format((int)($it['unit_price'] ?? 0), 0, ',', '.') }} / kg</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Customer & Shipping Info --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {{-- Customer Data --}}
+                        <div class="bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl p-6 lg:p-8 shadow-xl">
+                            <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                <i class="fa-regular fa-id-card text-emerald-600"></i> Data Pemesan
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Nama Penerima</p>
+                                    <p class="font-medium text-slate-700">{{ $data->buyer_name ?? $data->customer_name ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Nomor Telepon</p>
+                                    <p class="font-medium text-slate-700">{{ $data->buyer_phone ?? $data->customer_phone ?? '-' }}</p>
+                                </div>
+                                @if(($data->shipping_method ?? '') !== 'pickup')
+                                <div>
+                                    <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Alamat Pengiriman</p>
+                                    <p class="font-medium text-slate-700 leading-relaxed">{{ $data->buyer_address ?? $data->customer_address ?? '-' }}</p>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Shipping Info --}}
+                        <div class="bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl p-6 lg:p-8 shadow-xl">
+                            <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                <i class="fa-solid fa-truck-fast text-emerald-600"></i> Pengiriman
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Metode</p>
+                                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-100 text-slate-600 text-sm font-medium">
+                                        @if(($data->shipping_method ?? '') === 'pickup')
+                                            <i class="fa-solid fa-store"></i> Ambil Sendiri (Pickup)
+                                        @else
+                                            <i class="fa-solid fa-truck"></i> Jasa Ekspedisi
+                                        @endif
+                                    </div>
+                                </div>
+                                
+                                @if(($data->shipping_method ?? '') !== 'pickup')
+                                    <div>
+                                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Kurir & Layanan</p>
+                                        <p class="font-medium text-slate-700 uppercase">
+                                            {{ $data->shipping_courier ?? '-' }} <span class="text-slate-400 mx-1">•</span> {{ $data->shipping_service ?? '-' }}
+                                        </p>
+                                    </div>
+                                    @if(!empty($data->shipping_tracking_number))
+                                    <div>
+                                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Nomor Resi</p>
+                                        <div class="flex items-center gap-2">
+                                            <p class="font-mono font-medium text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-100 select-all">
+                                                {{ $data->shipping_tracking_number }}
+                                            </p>
+                                            <button onclick="navigator.clipboard.writeText('{{ $data->shipping_tracking_number }}')" class="text-slate-400 hover:text-emerald-600 transition-colors" title="Salin Resi">
+                                                <i class="fa-regular fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
+                                @else
+                                    <div>
+                                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Lokasi Pengambilan</p>
+                                        <p class="font-medium text-slate-700 leading-relaxed">
+                                            Kantor UPBS BRMP Biogen<br>
+                                            <span class="text-sm text-slate-500 font-normal">Jl. Tentara Pelajar No.3A, Menteng, Kec. Bogor Bar., Kota Bogor, Jawa Barat 16111</span>
+                                        </p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                {{-- Right Column: Summary --}}
+                <div class="space-y-8 sticky top-24">
+
+                    {{-- Payment Summary --}}
+                    <div class="bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-xl">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-receipt text-emerald-600"></i> Ringkasan
+                        </h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between text-slate-600">
+                                <span>Subtotal Produk</span>
+                                <span class="font-medium">Rp {{ number_format((int)($data->subtotal ?? 0), 0, ',', '.') }}</span>
+                            </div>
+                            
+                            {{-- Additional Fees --}}
+                            @php
+                                $subtotal = (int)($data->subtotal ?? 0);
+                                $serviceFee = floor($subtotal * 0.01);
+                                $appFee = 4000;
+                                $shippingCost = (int)($data->shipping_cost ?? 0);
+                                $finalTotal = $subtotal + $serviceFee + $appFee + $shippingCost;
+                            @endphp
+
+                            <div class="flex justify-between text-slate-600">
+                                <span>Biaya Layanan (1%)</span>
+                                <span class="font-medium">Rp {{ number_format($serviceFee, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>Biaya Aplikasi</span>
+                                <span class="font-medium">Rp {{ number_format($appFee, 0, ',', '.') }}</span>
+                            </div>
+
+                            @if($shippingCost > 0)
+                            <div class="flex justify-between text-slate-600">
+                                <span>Ongkos Kirim</span>
+                                <span class="font-medium">Rp {{ number_format($shippingCost, 0, ',', '.') }}</span>
+                            </div>
+                            @endif
+
+                            <div class="pt-3 border-t border-slate-200 flex justify-between items-center">
+                                <span class="font-bold text-slate-800 text-base">Total Bayar</span>
+                                <span class="font-bold text-emerald-600 text-xl">Rp {{ number_format($finalTotal, 0, ',', '.') }}</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-2 text-center bg-slate-50 py-2 rounded-lg">
+                                <i class="fa-solid fa-shield-halved mr-1"></i> Transaksi Aman & Terverifikasi
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
-
-  @endif
 </div>
 
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const btnPrint = document.getElementById('btn-print');
-        if (btnPrint) {
-            btnPrint.addEventListener('click', function() {
-                const orderCode = this.getAttribute('data-order-code');
-                if (orderCode) {
-                    // Gunakan route yang sesuai dengan web.php: /pesanan/{code}/receipt
-                    const url = `/pesanan/${orderCode}/receipt`;
-                    window.open(url, '_blank');
-                }
-            });
-        }
-    });
-</script>
-@endpush
+@vite('resources/js/print.js')
 @endsection

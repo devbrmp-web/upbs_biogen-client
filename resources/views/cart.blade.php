@@ -10,6 +10,16 @@
     <div class="absolute bottom-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl -z-10 opacity-30 pointer-events-none"></div>
 
     <div class="flex items-center justify-between mb-8">
+        @if(session('flash_message'))
+        <div id="restoration-alert" class="w-full mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 flex items-center gap-3 shadow-sm animate-fade-in-down">
+            <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+            <div>
+                <p class="font-bold">Waktu Pembayaran Habis</p>
+                <p class="text-sm">{{ session('flash_message') }}</p>
+            </div>
+        </div>
+        @endif
+
         <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Keranjang Belanja</h1>
         <a href="/katalog" class="hidden md:inline-flex items-center gap-2 text-slate-600 hover:text-emerald-600 font-medium transition-colors group">
             <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> Lanjut Belanja
@@ -82,6 +92,32 @@
 </div>
 
 @push('scripts')
+    @if(session('restored_cart'))
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const restoredItems = @json(session('restored_cart'));
+                
+                if (restoredItems && Array.isArray(restoredItems) && restoredItems.length > 0) {
+                    // Wait for window.cart to be available
+                    const restoreInterval = setInterval(() => {
+                        if (window.cart) {
+                            clearInterval(restoreInterval);
+                            window.cart.data.items = restoredItems;
+                            window.cart.save();
+                            console.log('Cart restored from shadow backup.');
+                        }
+                    }, 100);
+                    
+                    // Fallback if cart not loaded in 5s
+                    setTimeout(() => clearInterval(restoreInterval), 5000);
+                }
+            } catch (e) {
+                console.error('Failed to restore cart:', e);
+            }
+        });
+    </script>
+    @endif
     {{-- Script Cart Logic inline or loaded via Vite --}}
 @endpush
 @endsection
