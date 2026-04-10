@@ -245,6 +245,12 @@ DEBUG VARIETY AUDIENCE:
                         
                         @php
                             $seedLots = collect($variety['seed_lots'] ?? []);
+                            
+                            $totalSellableStock = $seedLots->filter(function($lot) {
+                                return ($lot['is_sellable'] ?? false) && (int)($lot['quantity'] ?? 0) > 0;
+                            })->sum('quantity');
+                            $isOutOfStock = $totalSellableStock <= 0;
+
                             $allSeedClasses = collect($seedClasses ?? []);
                             
                             // Filter lots yang memiliki data seed_class valid (code harus ada)
@@ -347,19 +353,27 @@ DEBUG VARIETY AUDIENCE:
                     <input type="hidden" id="selected-lot-id">
                     <input type="hidden" id="selected-qty">
                     
-                    <!-- Action Buttons (Initially Hidden or Disabled until selection) -->
-                    <div class="mt-auto grid grid-cols-2 gap-4 sticky bottom-0 bg-white py-4 border-t border-gray-100">
-                        <button id="btn-add-cart" onclick="addToCartAction(false)" disabled class="flex items-center justify-center gap-2 bg-white border-2 border-blue-600 text-blue-600 py-3.5 rounded-xl font-bold hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            + Keranjang
-                        </button>
-                        <button id="btn-buy-now" onclick="addToCartAction(true)" disabled class="bg-blue-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                            Beli Sekarang
-                        </button>
-                    </div>
-                    
-                    <!-- Helper text for selection -->
-                    <p id="selection-helper" class="text-center text-sm text-gray-500 mt-2">Silakan pilih kelas benih dan jumlah di atas.</p>
+                    @if($isOutOfStock)
+                        <div class="mt-auto sticky bottom-0 bg-white py-4 border-t border-gray-100">
+                            <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin tanya stok untuk varietas ' . $variety['name']) }}" target="_blank" class="flex w-full items-center justify-center gap-2 bg-green-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-green-200 hover:bg-green-600 transition">
+                                <i class="bx bxl-whatsapp text-xl"></i> Tanyakan Ketersediaan via WhatsApp
+                            </a>
+                        </div>
+                    @else
+                        <!-- Action Buttons (Initially Hidden or Disabled until selection) -->
+                        <div class="mt-auto grid grid-cols-2 gap-4 sticky bottom-0 bg-white py-4 border-t border-gray-100">
+                            <button id="btn-add-cart" onclick="addToCartAction(false)" disabled class="flex items-center justify-center gap-2 bg-white border-2 border-blue-600 text-blue-600 py-3.5 rounded-xl font-bold hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                + Keranjang
+                            </button>
+                            <button id="btn-buy-now" onclick="addToCartAction(true)" disabled class="bg-blue-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                Beli Sekarang
+                            </button>
+                        </div>
+                        
+                        <!-- Helper text for selection -->
+                        <p id="selection-helper" class="text-center text-sm text-gray-500 mt-2">Silakan pilih kelas benih dan jumlah di atas.</p>
+                    @endif
 
 
                 </div>

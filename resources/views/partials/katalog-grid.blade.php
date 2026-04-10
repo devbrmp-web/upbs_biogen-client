@@ -71,6 +71,27 @@
                          class="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
                          loading="lazy"
                          onerror="this.src='https://placehold.co/400x300?text=No+Image'">
+                         
+                    @php
+                        $totalKg = $variety['stock']['total_stock_kg'] ?? 0;
+                        $totalPl = $variety['stock']['total_planlet'] ?? 0;
+                        $sumStockData = 0;
+                        if ($stockData->isNotEmpty()) {
+                            foreach ($stockData as $data) {
+                                $sumStockData += is_array($data) ? ($data['stock'] ?? 0) : $data;
+                            }
+                        }
+                        // Stok kosong jika total kg 0, planlet 0, dan stock data dari controller juga 0
+                        $isOutOfStock = ($totalKg <= 0 && $totalPl <= 0 && $sumStockData <= 0);
+                    @endphp
+                    
+                    @if($isOutOfStock)
+                        <div class="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
+                            <span class="bg-gray-800/90 border border-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-xl text-center backdrop-blur-sm">
+                                <i class="bx bx-info-circle mr-1"></i>Stok Kosong
+                            </span>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="p-3">
