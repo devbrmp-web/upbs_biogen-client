@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class TrackOrderController extends Controller
 {
     public function index(Request $request)
     {
         $method = $request->query('method', 'tracking');
-        $value  = $request->query('search');
+        $value  = trim($request->query('search')); // Trim input whitespace
         $order  = null;
 
         if (!$value) {
@@ -45,8 +46,11 @@ class TrackOrderController extends Controller
                 }
             }
 
-            // 2. Fallback: Jika gagal dan bukan pencarian via HP, coba direct GET /api/orders/{code}
-            if (!$order && $method !== 'phone') {
+            // 2. Fallback: Jika gagal, coba direct GET /api/orders/{code}
+            // Kita lakukan ini jika $order belum ditemukan. 
+            // Kita hapus batasan method !== 'phone' agar jika user salah input atau sistem salah deteksi, kita tetap mencoba cari by code.
+            // API admin biasanya akan return 404 jika value bukan kode valid, jadi aman.
+            if (!$order) {
                  $fallbackEndpoint = "$baseUrl/api/orders/" . urlencode($value);
                  $fallbackResponse = Http::timeout(8)->get($fallbackEndpoint);
                  
@@ -149,6 +153,17 @@ class TrackOrderController extends Controller
             );
 
             if (!$res->successful()) {
+                // Shadow Cache Restoration Logic
+                if (Cache::has('backup_cart_' . $orderCode)) {
+                    $items = Cache::get('backup_cart_' . $orderCode);
+                    Cache::forget('backup_cart_' . $orderCode);
+                    
+                    return redirect('/keranjang')->with([
+                        'restored_cart' => $items,
+                        'flash_message' => 'Waktu pembayaran habis, item Anda telah dikembalikan ke keranjang.'
+                    ]);
+                }
+
                 abort(404, 'Order tidak ditemukan');
             }
 

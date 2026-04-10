@@ -10,6 +10,8 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/css/produk.css',
                 'resources/js/produk.js',
+                'resources/js/catalog.js',
+                'resources/js/cart.js',
             ],
             refresh: true,
         }),

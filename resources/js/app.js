@@ -4,6 +4,10 @@ import './cart.js';
 import './render-cart.js';
 import './services/cache.js';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import.meta.glob([
+  '../img/**',
+  '../fonts/**',
+]);
 
 // Animasi halaman: jalankan sekali per navigasi
 document.addEventListener('DOMContentLoaded', () => {

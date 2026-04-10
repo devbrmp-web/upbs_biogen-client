@@ -217,7 +217,18 @@ window.cart = {
         if (!container) return;
 
         if (this.data.items.length === 0) {
-            container.innerHTML = `<div class="p-10 text-center text-gray-500">Keranjang Anda kosong.</div>`;
+            container.innerHTML = `
+                <div class="p-12 text-center flex flex-col items-center justify-center">
+                    <div class="w-24 h-24 bg-emerald-100/50 rounded-full flex items-center justify-center mb-6 shadow-inner backdrop-blur-sm">
+                        <i class="fa-solid fa-basket-shopping text-4xl text-emerald-500/50"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-700 mb-2">Keranjang Anda Kosong</h3>
+                    <p class="text-slate-500 mb-8 max-w-sm mx-auto">Sepertinya Anda belum menambahkan benih apapun ke keranjang.</p>
+                    <a href="/katalog" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-emerald-600/20 transition-all hover:-translate-y-1">
+                        Mulai Belanja <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            `;
             if (summaryCount) summaryCount.textContent = '0 Item';
             if (summaryWeight) summaryWeight.textContent = '0 kg';
             if (summaryTotal) summaryTotal.textContent = 'Rp 0';
@@ -241,46 +252,52 @@ window.cart = {
             if (item.seed_class_code === 'FS') badgeClass = 'bg-purple-100 text-purple-800';
 
             return `
-                <div class="cart-item p-6 flex gap-6 items-start border-b border-gray-100 last:border-0" data-item-key="${this.itemKey(item)}">
-                    <div class="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-                        <img src="${item.image || '/img/placeholder.jpg'}" class="w-full h-full object-cover" loading="lazy">
+                <div class="cart-item p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start border-b border-white/40 last:border-0 bg-white/10 hover:bg-white/20 transition-colors duration-200" data-item-key="${this.itemKey(item)}">
+                    <!-- Image -->
+                    <div class="w-full sm:w-24 h-48 sm:h-24 flex-shrink-0 bg-white/30 rounded-xl overflow-hidden shadow-sm relative group">
+                        <img src="${item.image || '/img/placeholder.jpg'}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </div>
-                    <div class="flex-1">
-                        <div class="flex justify-between mb-2">
+                    
+                    <!-- Content -->
+                    <div class="flex-1 w-full">
+                        <div class="flex flex-col sm:flex-row justify-between mb-2 gap-2">
                             <div>
-                                <h3 class="font-semibold text-gray-900 text-lg">${item.name}</h3>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="${badgeClass} text-xs font-bold px-2 py-0.5 rounded">
+                                <h3 class="font-bold text-slate-800 text-lg leading-tight tracking-tight">${item.name}</h3>
+                                <div class="flex flex-wrap items-center gap-2 mt-2">
+                                    <span class="${badgeClass} text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm border border-white/50 backdrop-blur-sm">
                                         ${item.seed_class_code}
                                     </span>
-                                    <span class="text-sm text-gray-500">
+                                    <span class="text-sm text-slate-600 bg-white/40 px-2 py-0.5 rounded-md border border-white/30 backdrop-blur-sm">
                                         ${item.seed_class_name || 'Benih'}
                                     </span>
-                                    <span class="text-sm text-gray-500">
+                                    <span class="text-xs text-slate-500 font-mono bg-slate-100/50 px-2 py-0.5 rounded-md border border-slate-200/50">
                                         Lot: ${item.seed_lot_id || '-'}
                                     </span>
                                 </div>
                             </div>
-                            <button class="btn-remove text-gray-400 hover:text-red-500 transition-colors" title="Hapus item">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
+                            <button class="btn-remove self-end sm:self-start text-red-400 hover:text-red-600 bg-red-50/50 hover:bg-red-100 p-2 rounded-lg transition-all shadow-sm hover:shadow-md active:scale-95" title="Hapus item">
+                                <i class="fa-regular fa-trash-can"></i>
                             </button>
                         </div>
                         
-                        <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg mt-3">
-                            <div class="text-sm text-gray-600">
-                                Harga: ${this.formatIDR(parseInt(item.price_per_unit) || 0)} / kg
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/40 backdrop-blur-md p-4 rounded-xl mt-3 border border-white/50 shadow-inner gap-4">
+                            <div class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                <i class="fa-solid fa-tag text-emerald-500/70"></i>
+                                <span>${this.formatIDR(parseInt(item.price_per_unit) || 0)} <span class="text-xs text-slate-500 font-normal">/ kg</span></span>
                             </div>
-                            <div class="flex flex-col items-end gap-2">
-                                <div class="flex items-center bg-white rounded-md border border-gray-200">
-                                    <button class="btn-dec px-3 py-1 text-gray-600 hover:bg-gray-50 border-r border-gray-200" data-item-key="${this.itemKey(item)}">
+                            
+                            <div class="flex flex-col items-end gap-2 w-full sm:w-auto">
+                                <div class="flex items-center bg-white/80 rounded-xl shadow-sm border border-white/60 w-full sm:w-auto justify-between sm:justify-start overflow-hidden ring-1 ring-slate-200/50 focus-within:ring-emerald-400/50 transition-all">
+                                    <button class="btn-dec w-12 sm:w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-emerald-600 transition-colors active:bg-slate-100 border-r border-slate-100" data-item-key="${this.itemKey(item)}">
                                         ${this.getDecreaseButtonIcon(item)}
                                     </button>
-                                    <input type="number" class="qty-input w-16 text-center text-sm font-medium text-gray-900 border-0 focus:ring-0 p-1" value="${item.quantity}" min="${item.seed_class_code === 'FS' ? 5 : 1}" step="${item.seed_class_code === 'FS' ? 5 : 1}" data-item-key="${this.itemKey(item)}">
-                                    <button class="btn-inc px-3 py-1 text-gray-600 hover:bg-gray-50 border-l border-gray-200" data-item-key="${this.itemKey(item)}">+</button>
+                                    <input type="number" class="qty-input w-full sm:w-16 text-center text-sm font-bold text-slate-800 border-0 bg-transparent focus:ring-0 p-0" value="${item.quantity}" min="${item.seed_class_code === 'FS' ? 5 : 1}" step="${item.seed_class_code === 'FS' ? 5 : 1}" data-item-key="${this.itemKey(item)}">
+                                    <button class="btn-inc w-12 sm:w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-emerald-600 transition-colors active:bg-slate-100 border-l border-slate-100" data-item-key="${this.itemKey(item)}">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
                                 </div>
-                                <div class="error-msg text-xs text-red-600 mt-1 hidden"></div>
+                                <div class="error-msg text-xs text-red-500 font-medium hidden text-right bg-red-50 px-2 py-1 rounded-md border border-red-100"></div>
                             </div>
                         </div>
                     </div>
@@ -328,33 +345,30 @@ window.cart = {
                 : '-';
             
             return `
-              <div class="flex items-start gap-4 border-b pb-3 last:border-0" data-item-key="${this.itemKey(item)}">
-                <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-                  <img src="${item.image || '/img/placeholder.jpg'}" class="w-full h-full object-cover" loading="lazy">
+              <div class="flex items-start gap-4 border-b border-slate-100 pb-4 last:border-0 last:pb-0 group" data-item-key="${this.itemKey(item)}">
+                <div class="w-16 h-16 bg-white rounded-lg overflow-hidden shadow-sm border border-slate-100 flex-shrink-0">
+                  <img src="${item.image || '/img/placeholder.jpg'}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy">
                 </div>
-                <div class="flex-1">
-                  <div class="flex justify-between">
-                    <div>
-                      <h4 class="font-semibold text-gray-900 text-sm">${item.name}</h4>
-                      <div class="flex items-center gap-2 mt-1">
-                        <span class="${badgeClass} text-xs font-bold px-2 py-0.5 rounded">${item.seed_class_code}</span>
-                        <span class="text-xs text-gray-500">Lot: ${item.seed_lot_id || '-'}</span>
-                      </div>
-                    </div>
-                    <button class="btn-remove text-gray-400 hover:text-red-500" title="Hapus item">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                      </svg>
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between items-start mb-1">
+                    <h4 class="font-bold text-slate-800 text-sm truncate pr-2">${item.name}</h4>
+                    <button class="btn-remove text-slate-400 hover:text-red-500 transition-colors p-1 rounded-md hover:bg-red-50" title="Hapus item">
+                      <i class="fa-regular fa-trash-can"></i>
                     </button>
                   </div>
-                  <div class="flex items-center justify-between bg-gray-50 p-2 rounded mt-2">
-                    <div class="text-xs text-gray-600">${this.formatIDR(parseInt(item.price_per_unit) || 0)} / kg</div>
-                    <div class="flex items-center gap-2">
-                      <button class="btn-dec px-2 py-1 border rounded" data-item-key="${this.itemKey(item)}">${decreaseIcon}</button>
-                      <span class="w-8 text-center text-sm">${item.quantity}</span>
-                      <button class="btn-inc px-2 py-1 border rounded" data-item-key="${this.itemKey(item)}">+</button>
-                      <span class="font-bold text-gray-900">${this.formatIDR(itemTotal)}</span>
+                  
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="${badgeClass} text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm border border-white/50">${item.seed_class_code}</span>
+                    <span class="text-[10px] text-slate-500 font-mono bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">Lot: ${item.seed_lot_id || '-'}</span>
+                  </div>
+
+                  <div class="flex items-center justify-between bg-slate-50/50 p-2 rounded-lg border border-slate-100">
+                    <div class="flex items-center bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden">
+                      <button class="btn-dec w-7 h-7 flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-emerald-600 transition-colors border-r border-slate-100" data-item-key="${this.itemKey(item)}">${decreaseIcon}</button>
+                      <span class="w-8 text-center text-xs font-bold text-slate-800">${item.quantity}</span>
+                      <button class="btn-inc w-7 h-7 flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-emerald-600 transition-colors border-l border-slate-100" data-item-key="${this.itemKey(item)}">+</button>
                     </div>
+                    <span class="font-bold text-emerald-600 text-sm">${this.formatIDR(itemTotal)}</span>
                   </div>
                 </div>
               </div>`;

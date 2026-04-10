@@ -87,21 +87,27 @@
             $transactionId = $payment['transaction_id'] ?? $order['transaction_id'] ?? $order['order_code'] ?? '-';
             
             // Get paid_at date
-            $paidAt = $payment['paid_at'] ?? $order['paid_at'] ?? $order['settlement_time'] ?? null;
-            if ($paidAt && is_string($paidAt)) {
+            $rawDate = $order['paid_at'] ?? $order['settlement_time'] ?? $order['created_at'] ?? null;
+            
+            if ($rawDate) {
                 try {
-                    $paidAt = \Carbon\Carbon::parse($paidAt)->format('d F Y, H:i');
+                    $paidAt = \Carbon\Carbon::parse($rawDate)
+                        ->setTimezone('Asia/Jakarta')
+                        ->locale('id')
+                        ->translatedFormat('d F Y, H:i') . ' WIB';
                 } catch (\Exception $e) {
-                    // Keep as string if parsing fails
+                    $paidAt = '-';
                 }
+            } else {
+                $paidAt = '-';
             }
         @endphp
         <div class="label">Payment</div>
         <div>Metode: {{ ucwords(str_replace('_', ' ', $paymentMethod)) }}</div>
         <div>ID Transaksi: {{ $transactionId }}</div>
-        <div>Tanggal Bayar: {{ $paidAt ?: '-' }}</div>
+        <div>Tanggal Bayar: {{ $paidAt }}</div>
         <div>PNBP: {{ $payment['pnbp_receipt_no'] ?? $order['pnbp_receipt_no'] ?? '-' }}</div>
-        <div style="margin-top:16px;background:{{ $statusBgColor }};color:{{ $statusTextColor }}" class="badge">
+        <div style="margin-top:16px;background:{{ $statusBgColor }};color:{{ $statusTextColor }};" class="badge">
             {{ $statusLabel }}
         </div>
       </div>
@@ -133,10 +139,40 @@
 </tr>
 @endforeach
 
+@php
+    $subtotal = (int)($order['subtotal'] ?? 0);
+    // Fallback calculation if subtotal is missing/zero but items exist
+    if ($subtotal === 0 && !empty($order['items'])) {
+        foreach($order['items'] as $item) {
+            $subtotal += ((int)($item['unit_price']??0)) * ((int)($item['quantity']??0));
+        }
+    }
+    
+    $serviceFee = floor($subtotal * 0.01);
+    $appFee = 4000;
+    $shippingCost = (int)($order['shipping_cost'] ?? 0);
+    $finalTotal = $subtotal + $serviceFee + $appFee + $shippingCost;
+@endphp
+
+<tr>
+    <td colspan="3" style="text-align:right">Biaya Layanan (1%)</td>
+    <td class="amount">Rp {{ number_format($serviceFee, 0, ',', '.') }}</td>
+</tr>
+<tr>
+    <td colspan="3" style="text-align:right">Biaya Aplikasi</td>
+    <td class="amount">Rp {{ number_format($appFee, 0, ',', '.') }}</td>
+</tr>
+@if($shippingCost > 0)
+<tr>
+    <td colspan="3" style="text-align:right">Ongkos Kirim</td>
+    <td class="amount">Rp {{ number_format($shippingCost, 0, ',', '.') }}</td>
+</tr>
+@endif
+
 <tr class="total-row">
     <td colspan="3" style="text-align:right">Total</td>
     <td class="amount">
-        Rp {{ number_format((int)($order['total_amount'] ?? 0), 0, ',', '.') }}
+        Rp {{ number_format($finalTotal, 0, ',', '.') }}
     </td>
 </tr>
 </tbody>
