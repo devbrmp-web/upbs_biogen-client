@@ -154,60 +154,15 @@ class CatalogController extends Controller
             }
 
             /* =====================================================
-            | CALCULATE PRICE RANGES (Client Side) with Caching
+            | PRICE RANGE DATA (Now provided by API list endpoint)
             ===================================================== */
-            $varieties = array_map(function ($v) use ($url) {
-                $slug = $v['slug'] ?? '';
-                if (empty($slug)) {
+            // price_range_text is now included directly in the /api/varieties response
+            // via the withPriceRange() scope, eliminating N+1 HTTP requests.
+            $varieties = array_map(function ($v) {
+                // Use price_range_text from API if available, otherwise null
+                if (!isset($v['price_range_text'])) {
                     $v['price_range_text'] = null;
-                    return $v;
                 }
-                
-                // Cache key untuk price range
-                $cacheKey = "variety_price_{$slug}";
-                
-                // Gunakan cache dengan TTL 60 menit (3600 detik) untuk optimal performance
-                $priceRangeText = Cache::remember($cacheKey, 3600, function () use ($url, $slug) {
-                    try {
-                        // Coba ambil detail varietas untuk mendapatkan seed_lots
-                        $response = Http::timeout(3)->get($url . '/api/varieties/' . $slug);
-                        
-                        if ($response->successful()) {
-                            $detail = $response->json('data');
-                            if (!empty($detail['seed_lots']) && is_array($detail['seed_lots'])) {
-                                // Filter seed lots yang aktif dijual dan memiliki quantity > 0
-                                $sellableLots = array_filter($detail['seed_lots'], function ($lot) {
-                                    return ($lot['is_sellable'] ?? false) && 
-                                           ($lot['quantity'] ?? 0) > 0 && 
-                                           ($lot['price_per_unit'] ?? 0) > 0;
-                                });
-                                
-                                if (!empty($sellableLots)) {
-                                    $prices = array_column($sellableLots, 'price_per_unit');
-                                    $minPrice = min($prices);
-                                    $maxPrice = max($prices);
-                                    
-                                    // Format price range
-                                    if ($minPrice == $maxPrice) {
-                                        return 'Rp ' . number_format($minPrice, 0, ',', '.');
-                                    } else {
-                                        return 'Rp ' . number_format($minPrice, 0, ',', '.') . 
-                                           ' - Rp ' . number_format($maxPrice, 0, ',', '.');
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // Return null jika tidak ada harga yang tersedia
-                        return null;
-                        
-                    } catch (\Exception $e) {
-                        // Jika gagal ambil detail, return null
-                        return null;
-                    }
-                });
-                
-                $v['price_range_text'] = $priceRangeText;
                 return $v;
             }, $varieties);
 
