@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL'),
 
     /*
     |--------------------------------------------------------------------------
@@ -123,5 +123,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    'url_dev_admin' => env('URL_DEV_ADMIN', 'http://localhost:8000'),
+    'url_dev_admin' => env('URL_DEV_ADMIN'),
+
+    'api_url' => env('VITE_API_BASE_URL'),
 ];

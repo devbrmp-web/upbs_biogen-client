@@ -20,12 +20,12 @@
 - Menyesuaikan payload items agar sesuai backend: variety_id , quantity , seed_lot_id
 - Menambahkan field wajib di form: customer_address dan terms_accepted ; serta courier_name (select: Pos Indonesia/Indah Cargo) dan delivery_coordination_acknowledged untuk metode delivery
 - Menangani error validasi dari backend dan menampilkan pesan yang relevan ke pengguna
-- Konfigurasi dev: set APP_URL ke http://localhost:8001 di .env.example , tambah script composer serve pada port 8001
+- Konfigurasi dev: set APP_URL ke {{CLIENT_APP_URL}} di .env.example , tambah script composer serve pada port 8001
 File terkait:
 
 - resources/js/bootstrap.js — set header Accept dan baseURL
 - resources/views/components/form-checkout.blade.php — update form dan payload, error handling
-- .env.example — APP_URL ke http://localhost:8001
+- .env.example — APP_URL ke {{CLIENT_APP_URL}}
 - composer.json — menambah script serve untuk port 8001
 Alasan perubahan:
 
@@ -35,7 +35,7 @@ Alasan perubahan:
 ---
 
 ### [28-11-2025] : [chore] Set APP_URL 8001, tambah script serve
-Mengubah .env.example untuk menetapkan APP_URL menjadi http://localhost:8001 agar konsisten dengan port pengembangan aplikasi client.
+Mengubah .env.example untuk menetapkan APP_URL menjadi {{CLIENT_APP_URL}} agar konsisten dengan port pengembangan aplikasi client.
 
 Menambahkan script serve pada composer.json ( php artisan serve --port=8001 ) untuk memudahkan menjalankan server dev client pada port yang sesuai.
 
@@ -77,7 +77,7 @@ SKPL: SKPL-WUB-IN-020
 ---
 
 ### [29-11-2025] : [chore] Konfigurasi dev client ke port 8001
-- Menetapkan APP_URL menjadi http://localhost:8001 agar origin frontend konsisten selama pengembangan
+- Menetapkan APP_URL menjadi {{CLIENT_APP_URL}} agar origin frontend konsisten selama pengembangan
 - Menambahkan script serve ( php artisan serve --port=8001 ) untuk memudahkan menjalankan server dev di port yang sesuai
 - Dampak: URL asset dan link sesuai dengan origin, integrasi API backend admin lebih stabil dan mengurangi potensi masalah CORS
 - SKPL: SKPL-WUB-IN-020
