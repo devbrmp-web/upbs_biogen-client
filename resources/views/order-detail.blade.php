@@ -326,20 +326,24 @@
                             <i class="fa-solid fa-receipt text-emerald-600"></i> Ringkasan
                         </h3>
                         <div class="space-y-3 text-sm">
-                            <div class="flex justify-between text-slate-600">
-                                <span>Subtotal Produk</span>
-                                <span class="font-medium">Rp {{ number_format((int)($data->subtotal ?? 0), 0, ',', '.') }}</span>
-                            </div>
-                            
-                            {{-- Additional Fees --}}
                             @php
-                                $subtotal = (int)($data->subtotal ?? 0);
-                                $serviceFee = floor($subtotal * 0.01);
-                                $appFee = 4000;
+                                // === SUMBER KEBENARAN: data matang dari API Admin ===
+                                // Prioritas: gunakan nilai langsung dari database (sudah dihitung di server)
+                                $subtotal     = (int)($data->subtotal ?? 0);
+                                $serviceFee   = (int)($data->service_fee ?? round($subtotal * 0.01));
+                                $appFee       = (int)($data->app_fee ?? 4000);
                                 $shippingCost = (int)($data->shipping_cost ?? 0);
-                                $finalTotal = $subtotal + $serviceFee + $appFee + $shippingCost;
+                                // total_amount adalah sumber kebenaran utama dari database
+                                $dbTotal      = (int)($data->total_amount ?? 0);
+                                // Fallback jika total_amount tidak ada
+                                $finalTotal   = $dbTotal > 0 ? $dbTotal : ($subtotal + $serviceFee + $appFee + $shippingCost);
                             @endphp
 
+                            <div class="flex justify-between text-slate-600">
+                                <span>Subtotal Produk</span>
+                                <span class="font-medium">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+                            </div>
+                            
                             <div class="flex justify-between text-slate-600">
                                 <span>Biaya Layanan (1%)</span>
                                 <span class="font-medium">Rp {{ number_format($serviceFee, 0, ',', '.') }}</span>
