@@ -56,25 +56,16 @@
             </span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div class="bg-white/50 p-4 rounded-2xl border border-white/60">
-                <span class="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-2">
-                    <i class="fa-solid fa-truck-fast mr-1 text-slate-400"></i> Kurir
-                </span>
-                <div class="font-semibold text-slate-800 text-lg">{{ $order->courier_name ?? '-' }}</div>
+        <div class="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+                <h4 class="text-emerald-800 font-bold mb-1">Informasi Pengiriman</h4>
+                <p class="text-sm text-emerald-600/80">
+                    Untuk informasi detail mengenai pengiriman atau pengambilan pesanan, silakan hubungi Admin kami.
+                </p>
             </div>
-            <div class="bg-white/50 p-4 rounded-2xl border border-white/60">
-                <span class="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-2">
-                    <i class="fa-solid fa-barcode mr-1 text-slate-400"></i> No. Resi
-                </span>
-                <div class="font-mono font-semibold text-slate-800 text-lg tracking-wide">{{ $order->tracking_number ?? '-' }}</div>
-            </div>
-            <div class="bg-white/50 p-4 rounded-2xl border border-white/60">
-                <span class="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-2">
-                    <i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> Status Pengiriman
-                </span>
-                <div class="font-semibold text-slate-800 text-lg">{{ $order->shipment_status ?? '-' }}</div>
-            </div>
+            <a href="https://wa.me/6281234567890" target="_blank" class="shrink-0 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-emerald-600/20 transition-all">
+                <i class="fa-brands fa-whatsapp text-lg"></i> Hubungi Admin
+            </a>
         </div>
 
         <div class="flex justify-end">

@@ -300,6 +300,7 @@ document.addEventListener("DOMContentLoaded", function () {
         resultCol.classList.remove("hidden");
         formCol.classList.remove("lg:col-span-3");
         formCol.classList.add("lg:col-span-1");
+        historySection.classList.add("hidden");
     }
 
     // 2. Handle Form Submit (AJAX)
@@ -348,6 +349,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     resultCol.classList.remove("hidden");
                     formCol.classList.remove("lg:col-span-3");
                     formCol.classList.add("lg:col-span-1");
+                    historySection.classList.add("hidden");
 
                     // Save to History if order found
                     if (data.order) {
