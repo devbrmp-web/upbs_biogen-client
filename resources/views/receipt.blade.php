@@ -40,7 +40,7 @@
       <div class="doc-no">NO. {{ $order['order_code'] ?? '-' }}</div>
     </div>
 
-    <div class="doc-title">KWITANSI PEMBAYARAN</div>
+    <div class="doc-title">KUITANSI PEMBAYARAN</div>
 
     <div class="meta">
       <div class="block">

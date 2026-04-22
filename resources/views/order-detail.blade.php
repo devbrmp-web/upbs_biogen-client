@@ -307,7 +307,7 @@
                                         <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Lokasi Pengambilan</p>
                                         <p class="font-medium text-slate-700 leading-relaxed">
                                             Kantor UPBS BRMP Biogen<br>
-                                            <span class="text-sm text-slate-500 font-normal">Jl. Tentara Pelajar No.3A, Menteng, Kec. Bogor Bar., Kota Bogor, Jawa Barat 16111</span>
+                                            <span class="text-sm text-slate-500 font-normal">Jl. Tentara Pelajar No.3A, RT.02/RW.7, Menteng, Kec. Bogor Barat, Kota Bogor, Jawa Barat 16111 Indonesia</span>
                                         </p>
                                     </div>
                                 @endif
