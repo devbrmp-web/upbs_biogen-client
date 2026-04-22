@@ -19,7 +19,7 @@
 
     {{-- Header --}}
     <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-full mb-4">
             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
@@ -54,7 +54,7 @@
         
         <div class="text-center py-4">
             <p class="text-sm text-gray-500 mb-1">Total Pembayaran</p>
-            <p class="text-3xl font-bold text-blue-600">
+            <p class="text-3xl font-bold text-emerald-600">
                 Rp {{ number_format($order->total_amount ?? 0, 0, ',', '.') }}
             </p>
             @if($order->payment_deadline ?? false)
@@ -102,7 +102,7 @@
     {{-- Bank Accounts --}}
     <div class="bg-white/80 backdrop-blur-md shadow-lg rounded-xl p-6 border border-white/50 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
             </svg>
             Transfer ke Rekening
@@ -110,9 +110,9 @@
         
         <div class="space-y-4">
             @foreach($order->banks ?? [] as $bank)
-            <div class="flex items-center p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200">
+            <div class="flex items-center p-4 bg-gradient-to-r from-gray-50 to-emerald-50 rounded-xl border border-gray-200">
                 <div class="flex-shrink-0 w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center mr-4">
-                    <span class="text-lg font-bold text-blue-600">{{ substr($bank['bank'] ?? 'B', 0, 3) }}</span>
+                    <span class="text-lg font-bold text-emerald-600">{{ substr($bank['bank'] ?? 'B', 0, 3) }}</span>
                 </div>
                 <div class="flex-1">
                     <p class="font-semibold text-gray-900">{{ $bank['bank'] ?? 'Bank' }}</p>
@@ -120,7 +120,7 @@
                     <p class="text-sm text-gray-600">a.n. {{ $bank['account_name'] ?? '-' }}</p>
                 </div>
                 <button onclick="copyToClipboard('{{ $bank['account_number'] ?? '' }}')" 
-                        class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                        class="p-2 text-gray-500 hover:text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors"
                         title="Salin nomor rekening">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
@@ -165,7 +165,7 @@
               class="space-y-4">
             @csrf
             
-            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-all duration-200" 
+            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-emerald-400 transition-all duration-200" 
                  id="dropzone">
                 <input type="file" 
                        name="payment_proof" 
@@ -180,7 +180,7 @@
                     <p class="text-gray-600 mb-1">Klik untuk pilih file atau drag & drop</p>
                     <p class="text-sm text-gray-500">JPG, PNG, atau PDF (maks. 10MB)</p>
                 </label>
-                <p id="file-name" class="mt-2 text-sm text-blue-600 font-medium hidden"></p>
+                <p id="file-name" class="mt-2 text-sm text-emerald-600 font-medium hidden"></p>
             </div>
             
             @error('payment_proof')
@@ -188,7 +188,7 @@
             @enderror
             
             <button type="submit" 
-                    class="w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-[1.02] shadow-lg">
+                    class="w-full py-3 px-6 bg-emerald-700 text-white font-semibold rounded-xl hover:bg-emerald-800 transition-all transform hover:scale-[1.02] shadow-lg">
                 Kirim Bukti Pembayaran
             </button>
         </form>
@@ -261,11 +261,11 @@ if (fileInput && dropzone) {
 
     function highlight(e) {
         dropzone.classList.remove('border-gray-300');
-        dropzone.classList.add('border-blue-500', 'bg-blue-50', 'scale-[1.02]');
+        dropzone.classList.add('border-emerald-500', 'bg-emerald-50', 'scale-[1.02]');
     }
 
     function unhighlight(e) {
-        dropzone.classList.remove('border-blue-500', 'bg-blue-50', 'scale-[1.02]');
+        dropzone.classList.remove('border-emerald-500', 'bg-emerald-50', 'scale-[1.02]');
         dropzone.classList.add('border-gray-300');
     }
 
