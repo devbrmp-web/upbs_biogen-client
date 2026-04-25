@@ -101,25 +101,6 @@ class CatalogController extends Controller
                         return [];
                     });
                 }
-
-                // Normalize stock data for the view
-                // The endpoint returns 'stock_by_class' => ['class_id' => ..., 'total' => ...]
-                // We need to inject this so the view can display it
-                $seedClassName = collect($seedClasses)->firstWhere('id', $activeSeedClassId)['name'] ?? $activeSeedClassCode;
-                
-                $varieties = array_map(function ($v) use ($activeSeedClassCode, $seedClassName) {
-                    // If the API returns stock_by_class, use it
-                    if (isset($v['stock_by_class']['total'])) {
-                        $v['stock_by_class'] = [
-                            $activeSeedClassCode => [
-                                'name' => $seedClassName,
-                                'stock' => $v['stock_by_class']['total']
-                            ]
-                        ];
-                    }
-                    return $v;
-                }, $varieties);
-
             } else {
                 // Scenario B: No Seed Class Filter (Fetch All)
                 if ($forceRefresh) {

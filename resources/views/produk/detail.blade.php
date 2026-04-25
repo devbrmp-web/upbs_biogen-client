@@ -239,106 +239,93 @@ DEBUG VARIETY AUDIENCE:
                         </div>
                     </div>
                     @endif
-                    <!-- Seed Class Cards Section (New Design) -->
+                    <!-- Seed Class Cards Section (Dynamic Design) -->
                     <div class="mb-8" id="seed-selection-container">
                         <h3 class="font-semibold text-gray-900 mb-4 text-lg">Pilih Kelas Benih & Stok</h3>
                         
                         @php
+                            $stockDetails = collect($variety['stock']['details'] ?? []);
+                            $isOutOfStock = ($variety['stock']['total_weight_kg'] ?? 0) <= 0 && ($variety['stock']['total_unit_qty'] ?? 0) <= 0;
                             $seedLots = collect($variety['seed_lots'] ?? []);
-                            
-                            $totalSellableStock = $seedLots->filter(function($lot) {
-                                return ($lot['is_sellable'] ?? false) && (int)($lot['quantity'] ?? 0) > 0;
-                            })->sum('quantity');
-                            $isOutOfStock = $totalSellableStock <= 0;
-
-                            $allSeedClasses = collect($seedClasses ?? []);
-                            
-                            // Filter lots yang memiliki data seed_class valid (code harus ada)
-                            $classes = $seedLots->filter(function($lot) {
-                                return !empty($lot['seed_class']) && isset($lot['seed_class']['code']);
-                            })->groupBy('seed_class.code')->map(function($lots, $code) use ($allSeedClasses) {
-                                $first = $lots->first();
-                                $seedClass = $first['seed_class'] ?? [];
-                                
-                                // Cari ID dari referensi seedClasses jika tidak ada di response variety
-                                $classRef = $allSeedClasses->firstWhere('code', $code);
-                                $realId = $classRef['id'] ?? ($seedClass['id'] ?? 0);
-
-                                return [
-                                    'id' => $realId,
-                                    'code' => $code,
-                                    'name' => $seedClass['name'] ?? ($classRef['name'] ?? $code),
-                                    'total_stock' => $lots->where('is_sellable', true)->sum('quantity'),
-                                    'min_order' => $code === 'FS' ? 5 : 1,
-                                    'unit' => $first['unit'] ?? 'kg',
-                                    'price' => $first['price_per_unit'] ?? null
-                                ];
-                            })->filter(function($c) {
-                                return $c['id'] !== 0;
-                            });
                         @endphp
  
                         <div id="class-cards-container" class="space-y-4">
-                            @forelse($classes as $class)
+                            @forelse($stockDetails as $class)
                                 <div class="seed-class-card border rounded-xl p-5 relative group hover:border-blue-300 transition bg-white cursor-pointer" 
-                                     data-seed-class-id="{{ $class['id'] }}" 
+                                     data-seed-class-id="{{ $class['class_id'] }}" 
                                      data-seed-class-code="{{ $class['code'] }}"
                                      data-seed-class-name="{{ $class['name'] }}"
                                      data-price="{{ $class['price'] ?? 0 }}"
-                                     data-minimum-limit="{{ $class['min_order'] }}"
+                                     data-min-order="{{ $class['min_order_qty'] ?? 1 }}"
+                                     data-step-increment="{{ $class['step_increment'] ?? 1 }}"
+                                     data-unit="{{ $class['default_unit'] ?? 'kg' }}"
                                      onclick="selectClass('{{ $class['code'] }}')">
                                      
                                      <div class="flex justify-between items-start">
                                         <div>
                                             <div class="flex items-center gap-2 mb-1">
-                                                <span class="px-2 py-0.5 rounded text-xs font-bold border {{ $class['code'] == 'BS' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-purple-50 text-purple-700 border-purple-200' }}">{{ $class['code'] }}</span>
+                                                <span class="px-2 py-0.5 rounded text-xs font-bold border {{ $class['category'] == 'unit' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : ($class['code'] == 'BS' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-purple-50 text-purple-700 border-purple-200') }}">
+                                                    {{ $class['code'] }}
+                                                </span>
                                                 <h4 class="font-bold text-gray-900 text-lg">{{ $class['name'] }}</h4>
                                             </div>
                                             
                                             <p class="mb-2 font-semibold text-blue-600">
                                                 @if(!empty($class['price']))
-                                                    Rp {{ number_format($class['price'], 0, ',', '.') }} <span class="text-sm font-normal text-gray-500">per kg</span>
+                                                    Rp {{ number_format($class['price'], 0, ',', '.') }} <span class="text-sm font-normal text-gray-500">per {{ $class['default_unit'] ?? 'kg' }}</span>
                                                 @else
                                                     <span class="text-sm font-normal text-gray-400 italic">Harga belum tersedia</span>
                                                 @endif
                                             </p>
 
                                             <p class="text-sm text-gray-500">
-                                                Total Stok: <span class="font-semibold text-gray-900">{{ $class['total_stock'] }} {{ $class['unit'] }}</span>
+                                                Tersedia: <span class="font-semibold text-gray-900">{{ number_format($class['quantity'], 0, ',', '.') }} {{ $class['default_unit'] ?? 'kg' }}</span>
                                             </p>
-                                            <p class="text-xs text-gray-400 mt-1">Min. Pembelian: {{ $class['min_order'] }} {{ $class['unit'] }}</p>
+                                            <p class="text-xs text-gray-400 mt-1">Min. Pembelian: {{ $class['min_order_qty'] }} {{ $class['default_unit'] ?? 'kg' }}</p>
                                         </div>
                                      </div>
                         
                                     <div class="quantity-controls hidden absolute right-5 bottom-5 bg-white shadow-lg border rounded-lg p-1 items-center gap-2 z-10" onclick="event.stopPropagation()"> 
                                         <button type="button" class="decrease w-8 h-8 flex items-center justify-center bg-gray-100 rounded hover:bg-gray-200">-</button> 
-                                        <input type="number" class="quantity w-16 text-center border-gray-200 rounded text-sm" value="{{ $class['min_order'] }}" min="{{ $class['min_order'] }}" step="{{ $class['code'] == 'FS' ? 5 : 1 }}" oninput="handleQtyInput(this)"> 
+                                        <input type="number" class="quantity w-16 text-center border-gray-200 rounded text-sm" 
+                                               value="{{ $class['min_order_qty'] }}" 
+                                               min="{{ $class['min_order_qty'] }}" 
+                                               step="{{ $class['step_increment'] }}" 
+                                               inputmode="numeric" pattern="[0-9]*"
+                                               oninput="this.value = !!this.value && Math.abs(this.value) >= 1 ? Math.abs(Math.floor(this.value)) : null; handleQtyInput(this)"> 
                                         <button type="button" class="increase w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded hover:bg-blue-700">+</button> 
                                     </div> 
-                                    <p class="qty-error text-xs text-red-600 mt-1 hidden">Jumlah untuk Foundation Seed (FS) harus kelipatan 5 kg</p>
+                                    <p class="qty-error text-xs text-red-600 mt-1 hidden">
+                                        @if(($class['step_increment'] ?? 1) > 1)
+                                            Jumlah harus kelipatan {{ $class['step_increment'] }} {{ $class['default_unit'] ?? 'kg' }}
+                                        @else
+                                            Jumlah minimal {{ $class['min_order_qty'] }} {{ $class['default_unit'] ?? 'kg' }}
+                                        @endif
+                                    </p>
                                     
                                     @php
                                         $lotsForClass = $seedLots->filter(function($lot) use ($class) {
-                                            return !empty($lot['seed_class']) && ($lot['seed_class']['code'] ?? null) === $class['code'];
+                                            return !empty($lot['seed_class']) && ($lot['seed_class']['id'] ?? null) == $class['class_id'];
                                         })->filter(function($lot) {
-                                            return ($lot['is_sellable'] ?? false) && (int)($lot['quantity'] ?? 0) > 0;
+                                            return ($lot['is_sellable'] ?? false) && (float)($lot['quantity'] ?? 0) > 0;
                                         });
                                     @endphp
+
                                     @if($lotsForClass->count() > 0)
                                     <div class="lot-options mt-4 space-y-2" data-seed-class-code="{{ $class['code'] }}">
                                         @foreach($lotsForClass as $lot)
                                             <label class="flex items-center justify-between border rounded-lg p-3 cursor-pointer hover:border-blue-300">
                                                 <div class="flex items-center gap-3">
-                                                    <input type="radio" name="lot-{{ $class['code'] }}" value="{{ $lot['id'] }}" data-price="{{ (int) ($lot['price_per_unit'] ?? 0) }}">
+                                                    <input type="radio" name="lot-{{ $class['code'] }}" value="{{ $lot['id'] }}" data-price="{{ (float) ($lot['price_per_unit'] ?? 0) }}">
                                                     <span class="text-sm text-gray-900">Lot {{ $lot['id'] }}</span>
-                                                    <span class="text-xs text-gray-500">Stok {{ (int) ($lot['quantity'] ?? 0) }} {{ $lot['unit'] ?? 'kg' }}</span>
+                                                    <span class="text-xs text-gray-500">Stok {{ number_format($lot['quantity'], 0, ',', '.') }} {{ $lot['unit'] ?? 'kg' }}</span>
                                                 </div>
-                                                <div class="text-sm font-semibold text-blue-600">Rp {{ number_format((int) ($lot['price_per_unit'] ?? 0), 0, ',', '.') }}</div>
+                                                <div class="text-sm font-semibold text-blue-600">Rp {{ number_format((float) ($lot['price_per_unit'] ?? 0), 0, ',', '.') }}</div>
                                             </label>
                                         @endforeach
                                     </div>
                                     @else
-                                    <div class="text-sm text-gray-500 mt-3">Tidak ada lot tersedia untuk kelas ini.</div>
+                                    <div class="text-sm text-gray-500 mt-3 italic">Pilih kelas ini untuk melihat detail ketersediaan.</div>
                                     @endif
                                 </div>
                             @empty

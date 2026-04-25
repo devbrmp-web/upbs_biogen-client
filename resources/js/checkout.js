@@ -247,10 +247,12 @@ function renderCheckoutCart() {
     container.innerHTML = items.map(item => {
         const unitPrice = parseInt(item.price_per_unit) || 0;
         const itemTotal = item.quantity * unitPrice;
+        const unit = item.unit || 'kg';
         
         let badgeClass = 'bg-gray-100 text-gray-800';
         if (item.seed_class_code === 'BS') badgeClass = 'bg-yellow-100 text-yellow-800';
         if (item.seed_class_code === 'FS') badgeClass = 'bg-purple-100 text-purple-800';
+        if (item.unit === 'bottle') badgeClass = 'bg-indigo-100 text-indigo-800';
 
         return `
             <div class="flex gap-4 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
@@ -274,7 +276,7 @@ function renderCheckoutCart() {
                                 <span class="text-xs text-gray-500">Lot: ${item.seed_lot_id || 'Auto'}</span>
                             </div>
                             <span class="font-medium text-gray-900">
-                                ${item.quantity} kg x ${formatIDR(unitPrice)}
+                                ${item.quantity} ${unit} x ${formatIDR(unitPrice)}
                             </span>
                         </div>
                         <div class="text-right font-bold text-blue-600">
@@ -342,17 +344,28 @@ window.processCheckout = async function() {
     try {
         const cartItems = getCart();
         const shippingMethod = document.querySelector('input[name="shipping_method"]:checked').value;
-        const invalidQty = cartItems.some(it => {
-            if (it.seed_class_code === 'FS') {
-                return !(it.quantity % 5 === 0 && it.quantity >= 5);
-            }
-            if (it.seed_class_code === 'BS') {
-                return !(it.quantity >= 1);
-            }
-            return !(it.quantity >= 1);
+        const invalidItem = cartItems.find(it => {
+            const step = it.step_increment || 1;
+            const min = it.min_order_qty || 1;
+            const val = parseFloat(it.quantity) || 0;
+            
+            const isStepOk = step > 1 ? (val % step === 0) : true;
+            const isMinOk = val >= min;
+            
+            return !isStepOk || !isMinOk;
         });
-        if (invalidQty) {
-            throw new Error('Jumlah item tidak memenuhi aturan kelas benih (FS kelipatan 5 kg, BS minimal 1 kg).');
+
+        if (invalidItem) {
+            const step = invalidItem.step_increment || 1;
+            const min = invalidItem.min_order_qty || 1;
+            const unit = invalidItem.unit || 'kg';
+            let errorMsg = `Jumlah item ${invalidItem.name} tidak valid.`;
+            if (parseFloat(invalidItem.quantity) < min) {
+                errorMsg = `Minimal pembelian ${invalidItem.name} adalah ${min} ${unit}.`;
+            } else if (step > 1 && parseFloat(invalidItem.quantity) % step !== 0) {
+                errorMsg = `Jumlah ${invalidItem.name} harus kelipatan ${step} ${unit}.`;
+            }
+            throw new Error(errorMsg);
         }
 
         const payload = {

@@ -9,6 +9,16 @@ import.meta.glob([
   '../fonts/**',
 ]);
 
+// Global Integer-Only Policy for Quantity Inputs
+document.addEventListener('keydown', (e) => {
+    if (e.target && (e.target.matches('.quantity') || e.target.matches('.qty-input') || e.target.id === 'qtyInput')) {
+        // Block: . , - e
+        if (['.', ',', '-', 'e', 'E'].includes(e.key)) {
+            e.preventDefault();
+        }
+    }
+});
+
 // Animasi halaman: jalankan sekali per navigasi
 document.addEventListener('DOMContentLoaded', () => {
   try {

@@ -5,6 +5,16 @@ import '../css/produk.css';
 
 document.addEventListener('DOMContentLoaded', () => {
     initInteraction();
+
+    // Enforce integer-only policy globally for quantity inputs
+    document.addEventListener('keydown', (e) => {
+        if (e.target && e.target.matches('.quantity')) {
+            // Block: . , - e
+            if (['.', ',', '-', 'e', 'E'].includes(e.key)) {
+                e.preventDefault();
+            }
+        }
+    });
 });
 
 function initInteraction() {
@@ -13,11 +23,15 @@ function initInteraction() {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const input = btn.parentElement.querySelector('.quantity');
-            const code = btn.closest('.seed-class-card')?.dataset.seedClassCode;
-            const step = code === 'FS' ? 5 : 1;
+            const card = btn.closest('.seed-class-card');
+            const step = parseInt(card?.dataset.stepIncrement) || 1;
             const current = parseInt(input.value) || 0;
             input.value = current + step;
-            updateSelection(btn.closest('.seed-class-card'));
+            updateSelection(card);
+            
+            // Trigger input event to run validation
+            const event = new Event('input', { bubbles: true });
+            input.dispatchEvent(event);
         });
     });
 
@@ -25,13 +39,17 @@ function initInteraction() {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const input = btn.parentElement.querySelector('.quantity');
-            const code = btn.closest('.seed-class-card')?.dataset.seedClassCode;
-            const step = code === 'FS' ? 5 : 1;
+            const card = btn.closest('.seed-class-card');
+            const step = parseInt(card?.dataset.stepIncrement) || 1;
             const current = parseInt(input.value) || 0;
             const min = parseInt(input.min) || 1;
             if (current > min) {
                 input.value = current - step;
-                updateSelection(btn.closest('.seed-class-card'));
+                updateSelection(card);
+                
+                // Trigger input event to run validation
+                const event = new Event('input', { bubbles: true });
+                input.dispatchEvent(event);
             }
         });
     });
@@ -45,6 +63,10 @@ function initInteraction() {
                 c.classList.add('border-blue-500', 'ring-2', 'ring-blue-200');
                 c.classList.remove('border-gray-200');
                 
+                // Show quantity controls for selected card
+                c.querySelectorAll('.quantity-controls').forEach(el => el.classList.remove('hidden'));
+                c.querySelectorAll('.quantity-controls').forEach(el => el.classList.add('flex'));
+
                 // Update hidden inputs
                 document.getElementById('selected-lot-id').value = '';
                 
@@ -68,13 +90,17 @@ function initInteraction() {
                     }
                 }
                 
-                const valid = validateQtyInput(qtyInput, code);
+                const valid = validateQtyInput(qtyInput);
                 const hasLot = !!window.selectedLotId;
                 document.getElementById('btn-add-cart').disabled = !(valid && hasLot);
                 document.getElementById('btn-buy-now').disabled = !(valid && hasLot);
+                document.getElementById('selection-helper')?.classList.add('hidden');
             } else {
                 c.classList.remove('border-blue-500', 'ring-2', 'ring-blue-200');
                 c.classList.add('border-gray-200');
+                // Hide quantity controls for other cards
+                c.querySelectorAll('.quantity-controls').forEach(el => el.classList.add('hidden'));
+                c.querySelectorAll('.quantity-controls').forEach(el => el.classList.remove('flex'));
             }
         });
     };
@@ -96,10 +122,9 @@ document.addEventListener('change', (e) => {
         window.selectedPrice = price;
         document.getElementById('selected-lot-id').value = String(val);
         const card = t.closest('.seed-class-card');
-        const code = card?.dataset.seedClassCode;
         const qtyInput = card?.querySelector('.quantity');
         if (qtyInput) {
-            const valid = validateQtyInput(qtyInput, code);
+            const valid = validateQtyInput(qtyInput);
             const hasLot = !!window.selectedLotId;
             document.getElementById('btn-add-cart').disabled = !(valid && hasLot);
             document.getElementById('btn-buy-now').disabled = !(valid && hasLot);
@@ -119,13 +144,20 @@ window.addToCartAction = function(isBuyNow) {
     }
 
     const qty = document.getElementById('selected-qty').value;
+    const card = document.querySelector(`.seed-class-card[data-seed-class-id="${window.selectedClassId}"]`);
+    const unit = card?.dataset.unit || 'kg';
+    const step = parseInt(card?.dataset.stepIncrement) || 1;
+    const min = parseInt(card?.dataset.minOrder) || 1;
     
     const item = {
         variety_id: window.varietyData.id,
         name: window.varietyData.name,
         price_per_unit: parseInt(window.selectedPrice || window.varietyData.base_price) || 0,
         image: window.varietyData.image,
-        quantity: parseInt(qty),
+        quantity: parseFloat(qty),
+        unit: unit,
+        step_increment: step,
+        min_order_qty: min,
         seed_class_id: window.selectedClassId,
         seed_class_code: window.selectedClassCode,
         seed_class_name: window.selectedClassName,
@@ -170,8 +202,7 @@ window.addToCartAction = function(isBuyNow) {
 
 window.handleQtyInput = function(el) {
     const card = el.closest('.seed-class-card');
-    const code = card?.dataset.seedClassCode;
-    const valid = validateQtyInput(el, code);
+    const valid = validateQtyInput(el);
     if (card.classList.contains('border-blue-500')) {
         document.getElementById('btn-add-cart').disabled = !valid;
         document.getElementById('btn-buy-now').disabled = !valid;
@@ -179,27 +210,35 @@ window.handleQtyInput = function(el) {
     }
 };
 
-function validateQtyInput(input, code) {
-    let val = parseInt(input.value) || 0;
-    if (code === 'FS') {
-        const ok = val % 5 === 0 && val >= 5;
-        const errEl = input.closest('.seed-class-card')?.querySelector('.qty-error');
-        if (!ok) {
-            if (errEl) errEl.classList.remove('hidden');
-            return false;
-        } else {
-            if (errEl) errEl.classList.add('hidden');
+function validateQtyInput(input) {
+    const card = input.closest('.seed-class-card');
+    const step = parseInt(card?.dataset.stepIncrement) || 1;
+    const min = parseInt(card?.dataset.minOrder) || 1;
+    const unit = card?.dataset.unit || 'kg';
+    
+    let val = parseFloat(input.value) || 0;
+    
+    const isStepOk = step > 1 ? (val % step === 0) : true;
+    const isMinOk = val >= min;
+    
+    const errEl = card?.querySelector('.qty-error');
+    
+    if (!isMinOk) {
+        if (errEl) {
+            errEl.textContent = `Minimal pembelian ${min} ${unit}`;
+            errEl.classList.remove('hidden');
         }
-        return true;
-    } else {
-        const ok = val >= 1;
-        const errEl = input.closest('.seed-class-card')?.querySelector('.qty-error');
-        if (!ok) {
-            if (errEl) { errEl.textContent = 'Jumlah minimal 1'; errEl.classList.remove('hidden'); }
-            return false;
-        } else {
-            if (errEl) errEl.classList.add('hidden');
-        }
-        return true;
+        return false;
     }
+    
+    if (!isStepOk) {
+        if (errEl) {
+            errEl.textContent = `Jumlah harus kelipatan ${step} ${unit}`;
+            errEl.classList.remove('hidden');
+        }
+        return false;
+    }
+    
+    if (errEl) errEl.classList.add('hidden');
+    return true;
 }

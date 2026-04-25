@@ -27,24 +27,12 @@
             // --- END FIX URL GAMBAR ---
 
             // Prepare Stock Data
-            // Prioritize data from Controller (stock_by_class)
-            $stockData = collect($variety['stock_by_class'] ?? []);
-            $totalStock = $variety['stock']['total_stock_kg'] ?? 0;
+            $stockDetails = collect($variety['stock']['details'] ?? []);
+            $totalKg = $variety['stock']['total_weight_kg'] ?? 0;
+            $totalUnit = $variety['stock']['total_unit_qty'] ?? 0;
             
-            // Fallback to calculation if empty (legacy support or if seed_lots exists)
-            if ($stockData->isEmpty() && !empty($variety['seed_lots'])) {
-                $seedLots = collect($variety['seed_lots']);
-                $stockData = $seedLots
-                    ->filter(fn ($lot) =>
-                        ($lot['is_sellable'] ?? false) &&
-                        !empty($lot['seed_class']['code']) &&
-                        ($lot['quantity'] ?? 0) > 0
-                    )
-                    ->groupBy(fn ($lot) => $lot['seed_class']['code'])
-                    ->map(fn ($lots) => [
-                        'stock' => $lots->sum('quantity')
-                    ]);
-            }
+            // Stok kosong jika total berat dan total unit keduanya 0
+            $isOutOfStock = ($totalKg <= 0 && $totalUnit <= 0);
         @endphp
 
         <div class="bg-white border border-gray-100 shadow-md
@@ -71,19 +59,6 @@
                          class="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
                          loading="lazy"
                          onerror="this.src='https://placehold.co/400x300?text=No+Image'">
-                         
-                    @php
-                        $totalKg = $variety['stock']['total_stock_kg'] ?? 0;
-                        $totalPl = $variety['stock']['total_planlet'] ?? 0;
-                        $sumStockData = 0;
-                        if ($stockData->isNotEmpty()) {
-                            foreach ($stockData as $data) {
-                                $sumStockData += is_array($data) ? ($data['stock'] ?? 0) : $data;
-                            }
-                        }
-                        // Stok kosong jika total kg 0, planlet 0, dan stock data dari controller juga 0
-                        $isOutOfStock = ($totalKg <= 0 && $totalPl <= 0 && $sumStockData <= 0);
-                    @endphp
                     
                     @if($isOutOfStock)
                         <div class="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
@@ -112,23 +87,22 @@
                     </p>
 
                     <p class="text-xs text-gray-500 mt-1">
-                        Minimum: {{ $variety['minimum_limit'] ?? 0 }} kg
+                        Limit: {{ $variety['minimum_limit'] ?? 0 }} kg
                     </p>
 
-                    @if ($stockData->isNotEmpty())
-                        <p class="text-xs text-gray-600 mt-2 flex flex-wrap">
-                            @foreach ($stockData as $code => $data)
-                                @php
-                                    $qty = is_array($data) ? ($data['stock'] ?? 0) : $data;
-                                @endphp
-                                <span class="mr-2">
-                                    <b>{{ $code }}</b>: {{ $qty }}
-                                </span>
+                    @if ($stockDetails->isNotEmpty())
+                        <p class="text-xs text-gray-600 mt-2 flex flex-wrap gap-y-1">
+                            @foreach ($stockDetails as $detail)
+                                @if(($detail['quantity'] ?? 0) > 0)
+                                    <span class="mr-2 bg-gray-50 border border-gray-100 px-1.5 py-0.5 rounded">
+                                        <b class="text-gray-900">{{ $detail['code'] }}</b>: {{ number_format($detail['quantity'], 0, ',', '.') }} {{ $detail['default_unit'] ?? 'kg' }}
+                                    </span>
+                                @endif
                             @endforeach
                         </p>
                     @else
                         <p class="text-xs text-gray-500 mt-2">
-                            Total Stok: {{ $totalStock }} kg
+                            Total Stok: {{ number_format($totalKg, 0, ',', '.') }} kg
                         </p>
                     @endif
                 </div>

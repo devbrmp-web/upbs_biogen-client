@@ -23,7 +23,9 @@
         <!-- Qty control -->
         <div class="flex items-center gap-3">
           <button id="qtyMinus" class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl">−</button>
-          <input id="qtyInput" type="number" min="1" class="w-20 text-center border rounded-lg p-2" value="1">
+          <input id="qtyInput" type="number" min="1" step="1" inputmode="numeric" pattern="[0-9]*" 
+                 oninput="this.value = !!this.value && Math.abs(this.value) >= 1 ? Math.abs(Math.floor(this.value)) : null"
+                 class="w-20 text-center border rounded-lg p-2" value="1">
           <button id="qtyPlus" class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-xl">+</button>
         </div>
 
