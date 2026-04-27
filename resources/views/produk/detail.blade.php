@@ -37,11 +37,11 @@ DEBUG VARIETY AUDIENCE:
             <span class="text-emerald-700 font-medium">{{ $variety['name'] }}</span>
         </nav>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             
-            <!-- Left Column: Image (Sticky) -->
-            <div class="lg:col-span-5 lg:sticky lg:top-28" data-aos="fade-right">
-                <div class="bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-white/40">
+            <!-- Left Column: Image Track -->
+            <div class="lg:col-span-5 relative">
+                <div class="lg:sticky lg:top-28 z-30 bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden border border-white/40 transition-all duration-500" data-aos="fade-right">
                     <div class="bg-slate-50/50 flex flex-col items-center justify-center p-6 border-b border-slate-100">
 
         @php

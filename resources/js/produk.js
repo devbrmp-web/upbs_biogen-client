@@ -301,3 +301,32 @@ function validateQtyInput(input) {
     if (errEl) errEl.classList.add('hidden');
     return true;
 }
+
+/**
+ * Premium Sticky Image Interaction
+ * Detects when the image container starts sticking to apply visual feedback.
+ */
+function initStickyObserver() {
+    const stickyEl = document.querySelector('.lg\\:sticky');
+    if (!stickyEl) return;
+
+    // We use a small threshold and rootMargin to detect the sticky state accurately
+    // lg:top-28 = 7rem = 112px. We use -113px to trigger right when it hits the top.
+    const observer = new IntersectionObserver(
+        ([e]) => {
+            // intersectionRatio < 1 means it's partially or fully outside the observer's root (hitting the margin)
+            e.target.classList.toggle('is-stuck', e.intersectionRatio < 1);
+        },
+        { 
+            threshold: [1],
+            rootMargin: '-113px 0px 0px 0px' 
+        }
+    );
+
+    observer.observe(stickyEl);
+}
+
+// Re-initialize or add to DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    initStickyObserver();
+});

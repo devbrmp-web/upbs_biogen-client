@@ -163,9 +163,12 @@ select:focus {
 
 /* Global Layout Fixes - No Horizontal Scroll */
 html, body {
-    overflow-x: hidden !important;
     position: relative;
     width: 100%;
+}
+
+main {
+    overflow: visible;
 }
 
 /* Ensure all relative parents for absolute decorative elements handle overflow */
