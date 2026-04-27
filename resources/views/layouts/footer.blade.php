@@ -1,4 +1,10 @@
-<footer class="relative mt-20 border-t border-white/20 bg-white/10 backdrop-blur-xl shadow-[0_-4px_30px_rgba(0,0,0,0.05)] overflow-hidden z-10">
+<footer class="relative mt-20 pb-32 border-t border-slate-200 bg-white/40 backdrop-blur-xl shadow-[0_-4px_30px_rgba(0,0,0,0.03)] overflow-hidden z-10">
+    {{-- Leaf Decoration Footer --}}
+    <div class="absolute -top-10 -right-10 w-40 h-40 opacity-[0.03] pointer-events-none rotate-45">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#064E3B" d="M40,-62.1C53.3,-54.5,66.7,-47.1,75.2,-35.6C83.7,-24.1,87.4,-8.6,85.2,6.1C83,20.8,74.9,34.7,64.8,46C54.7,57.3,42.6,66,29.4,72.4C16.1,78.8,1.8,82.9,-13.4,81.1C-28.7,79.2,-44.8,71.5,-57.4,60.1C-70.1,48.7,-79.3,33.5,-82.5,17.4C-85.7,1.4,-82.9,-15.5,-75.4,-30.3C-68,-45.1,-55.9,-57.7,-41.8,-65C-27.7,-72.3,-11.5,-74.3,2.4,-78.3C16.3,-82.3,32.7,-88.2,40,-62.1Z" transform="translate(100 100)" />
+        </svg>
+    </div>
     <!-- Decorative Elements for Glass Effect Depth -->
     <div class="absolute top-0 left-1/4 w-96 h-96 bg-green-400/10 rounded-full blur-3xl -translate-y-1/2 pointer-events-none"></div>
     <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl translate-y-1/2 pointer-events-none"></div>

@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Re-query immediately after replacement to update reference
                 gridContainer = document.getElementById('product-grid-container');
+                
+                // Catalog data loaded successfully
             } else {
                 console.error('Failed to load catalog data');
             }
@@ -49,18 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 1. Force Refresh on Browser Reload
-    try {
-        const navEntries = performance.getEntriesByType("navigation");
-        if (navEntries.length > 0 && navEntries[0].type === 'reload') {
-            console.log('Page reloaded, forcing data refresh...');
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('refresh', '1');
-            fetchCatalog(currentUrl.toString(), false);
-        }
-    } catch (e) {
-        console.warn('Navigation Timing API not supported');
-    }
 
     // 2. Auto Refresh every 5 minutes
     const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes

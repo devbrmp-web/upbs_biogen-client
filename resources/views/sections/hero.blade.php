@@ -14,7 +14,7 @@
     </div>
 
     <!-- 🌾 Konten -->
-    <div class="relative z-20 max-w-7xl mx-auto mt-8 px-6 lg:px-8 
+    <div class="relative z-20 max-w-[1600px] mx-auto mt-8 px-6 lg:px-8 
                 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center text-gray-900">
 
         <!-- 🧬 Kiri: Teks & Form -->
