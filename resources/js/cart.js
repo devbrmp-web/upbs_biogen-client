@@ -30,9 +30,11 @@ window.cart = {
 
             const clearCartBtn = target.closest('#clearCartBtn');
             if (clearCartBtn) {
-                if (confirm('Yakin mau menghapus semua item dari keranjang?')) {
-                    this.clearCart();
-                }
+                window.confirmAction('Kosongkan Keranjang?', 'Yakin mau menghapus semua item dari keranjang?').then((result) => {
+                    if (result.isConfirmed) {
+                        this.clearCart();
+                    }
+                });
             }
 
             const checkoutBtn = target.closest('#cartCheckoutBtn');
@@ -137,15 +139,25 @@ window.cart = {
     },
 
     removeItem(itemKey) {
-        if (!confirm('Hapus item ini dari keranjang?')) return;
-        this.data.items = this.data.items.filter(i => this.itemKey(i) !== itemKey);
-        this.save();
+        window.confirmAction('Hapus Item?', 'Hapus item ini dari keranjang?').then((result) => {
+            if (result.isConfirmed) {
+                this.data.items = this.data.items.filter(i => this.itemKey(i) !== itemKey);
+                this.save();
+                window.toast.fire({
+                    icon: 'success',
+                    title: 'Item berhasil dihapus'
+                });
+            }
+        });
     },
 
     clearCart() {
-        if (!confirm('Kosongkan keranjang?')) return;
         this.data.items = [];
         this.save();
+        window.toast.fire({
+            icon: 'success',
+            title: 'Keranjang telah dikosongkan'
+        });
     },
 
     updateQty(itemKey, delta) {

@@ -128,7 +128,13 @@ function openSnapPopup(snapToken, orderCode) {
             window.location.href = '/payment/error?order_code=' + encodeURIComponent(orderCode);
         },
         onClose: function() {
-            alert("Anda menutup pop-up pembayaran.");
+            Swal.fire({
+                icon: 'info',
+                title: 'Pembayaran Dibatalkan',
+                text: 'Anda menutup pop-up pembayaran. Silakan klik tombol bayar kembali untuk melanjutkan.',
+                confirmButtonColor: '#10b981',
+                customClass: { popup: 'rounded-3xl' }
+            });
             if (btn) {
                 btn.disabled = false;
                 btn.classList.remove('hidden');
