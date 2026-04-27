@@ -60,8 +60,8 @@ function initInteraction() {
         const cards = document.querySelectorAll('.seed-class-card');
         cards.forEach(c => {
             if (c.dataset.seedClassCode === code) {
-                c.classList.add('border-blue-500', 'ring-2', 'ring-blue-200');
-                c.classList.remove('border-gray-200');
+                c.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-200', 'bg-emerald-50/50');
+                c.classList.remove('border-slate-100', 'bg-white');
                 
                 // Show quantity controls for selected card
                 c.querySelectorAll('.quantity-controls').forEach(el => el.classList.remove('hidden'));
@@ -71,6 +71,19 @@ function initInteraction() {
                 document.getElementById('selected-lot-id').value = '';
                 
                 const qtyInput = c.querySelector('.quantity');
+                const step = parseInt(c.dataset.stepIncrement) || 1;
+                const min = parseInt(c.dataset.minOrder) || 1;
+
+                // Sync attributes
+                qtyInput.min = min;
+                qtyInput.step = step;
+
+                // Update initial value if it's less than min or not a multiple of step
+                let currentVal = parseInt(qtyInput.value) || 0;
+                if (currentVal < min || (step > 1 && currentVal % step !== 0)) {
+                    qtyInput.value = min > step ? min : step;
+                }
+                
                 document.getElementById('selected-qty').value = qtyInput.value;
                 
                 window.selectedClassId = c.dataset.seedClassId;
@@ -96,8 +109,8 @@ function initInteraction() {
                 document.getElementById('btn-buy-now').disabled = !(valid && hasLot);
                 document.getElementById('selection-helper')?.classList.add('hidden');
             } else {
-                c.classList.remove('border-blue-500', 'ring-2', 'ring-blue-200');
-                c.classList.add('border-gray-200');
+                c.classList.remove('border-emerald-500', 'ring-2', 'ring-emerald-200', 'bg-emerald-50/50');
+                c.classList.add('border-slate-100', 'bg-white');
                 // Hide quantity controls for other cards
                 c.querySelectorAll('.quantity-controls').forEach(el => el.classList.add('hidden'));
                 c.querySelectorAll('.quantity-controls').forEach(el => el.classList.remove('flex'));
@@ -107,7 +120,7 @@ function initInteraction() {
 }
 
 function updateSelection(card) {
-    if (card.classList.contains('border-blue-500')) {
+    if (card.classList.contains('border-emerald-500')) {
         const qty = card.querySelector('.quantity').value;
         document.getElementById('selected-qty').value = qty;
     }
@@ -135,13 +148,34 @@ document.addEventListener('change', (e) => {
 // Override or Implement addToCartAction
 window.addToCartAction = function(isBuyNow) {
     if (!window.selectedClassId) {
-        alert('Silakan pilih kelas benih terlebih dahulu.');
+        Swal.fire({
+            icon: 'info',
+            title: 'Kelas Benih Belum Dipilih',
+            text: 'Silakan pilih salah satu kelas benih (BS, FS, ST, dll) terlebih dahulu.',
+            confirmButtonColor: '#10b981',
+            customClass: { popup: 'rounded-3xl' }
+        });
         return;
     }
     if (!window.selectedLotId) {
-        alert('Silakan pilih lot yang tersedia untuk kelas benih tersebut.');
+        Swal.fire({
+            icon: 'info',
+            title: 'Lot Belum Dipilih',
+            text: 'Silakan pilih salah satu nomor lot yang tersedia untuk kelas benih tersebut.',
+            confirmButtonColor: '#10b981',
+            customClass: { popup: 'rounded-3xl' }
+        });
         return;
     }
+
+    // Loading State
+    const btnAdd = document.getElementById('btn-add-cart');
+    const btnBuy = document.getElementById('btn-buy-now');
+    const activeBtn = isBuyNow ? btnBuy : btnAdd;
+    const originalContent = activeBtn.innerHTML;
+    
+    activeBtn.disabled = true;
+    activeBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...`;
 
     const qty = document.getElementById('selected-qty').value;
     const card = document.querySelector(`.seed-class-card[data-seed-class-id="${window.selectedClassId}"]`);
@@ -183,16 +217,15 @@ window.addToCartAction = function(isBuyNow) {
         window.location.href = '/checkout';
     } else {
         // Show success feedback
-        const btn = document.getElementById('btn-add-cart');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '✓ Masuk Keranjang';
-        btn.classList.remove('text-blue-600', 'border-blue-600');
-        btn.classList.add('bg-green-600', 'text-white', 'border-green-600');
+        activeBtn.innerHTML = '✓ Masuk Keranjang';
+        activeBtn.classList.remove('text-emerald-600', 'border-emerald-600');
+        activeBtn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
         
         setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.classList.add('text-blue-600', 'border-blue-600');
-            btn.classList.remove('bg-green-600', 'text-white', 'border-green-600');
+            activeBtn.disabled = false;
+            activeBtn.innerHTML = originalContent;
+            activeBtn.classList.add('text-emerald-600', 'border-emerald-600');
+            activeBtn.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-600');
         }, 2000);
         
         // Dispatch event for header cart count update if exists
@@ -203,7 +236,7 @@ window.addToCartAction = function(isBuyNow) {
 window.handleQtyInput = function(el) {
     const card = el.closest('.seed-class-card');
     const valid = validateQtyInput(el);
-    if (card.classList.contains('border-blue-500')) {
+    if (card.classList.contains('border-emerald-500')) {
         document.getElementById('btn-add-cart').disabled = !valid;
         document.getElementById('btn-buy-now').disabled = !valid;
         updateSelection(card);
