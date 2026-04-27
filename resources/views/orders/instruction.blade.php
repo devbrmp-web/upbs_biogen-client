@@ -219,8 +219,10 @@
 <script>
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
-        // Show toast or feedback
-        alert('Nomor rekening disalin!');
+        window.toast.fire({
+            icon: 'success',
+            title: 'Nomor rekening disalin!'
+        });
     });
 }
 
@@ -282,13 +284,25 @@ if (fileInput && dropzone) {
             // Validate file type
             const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
             if (!validTypes.includes(file.type)) {
-                alert('Format file tidak didukung. Gunakan JPG, PNG, atau PDF.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Format Tidak Didukung',
+                    text: 'Silakan gunakan file dengan format JPG, PNG, atau PDF.',
+                    confirmButtonColor: '#10b981',
+                    customClass: { popup: 'rounded-3xl' }
+                });
                 return;
             }
 
             // Validate file size (10MB max)
             if (file.size > 10 * 1024 * 1024) {
-                alert('Ukuran file terlalu besar. Maksimal 10MB.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'File Terlalu Besar',
+                    text: 'Ukuran maksimal file adalah 10MB.',
+                    confirmButtonColor: '#10b981',
+                    customClass: { popup: 'rounded-3xl' }
+                });
                 return;
             }
 

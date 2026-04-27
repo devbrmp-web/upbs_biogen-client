@@ -179,13 +179,22 @@
 
         window.saveSignature = function() {
             if (signaturePad.isEmpty()) {
-                alert("Silakan tanda tangan terlebih dahulu.");
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tanda Tangan Kosong',
+                    text: 'Silakan berikan tanda tangan Anda pada area yang tersedia.',
+                    confirmButtonColor: '#10b981',
+                    customClass: { popup: 'rounded-3xl' }
+                });
                 return;
             }
             const dataUrl = signaturePad.toDataURL();
             localStorage.setItem(storageKey, dataUrl);
             showSavedSignature(dataUrl);
-            alert("Tanda tangan berhasil disimpan!");
+            window.toast.fire({
+                icon: 'success',
+                title: 'Tanda tangan berhasil disimpan'
+            });
         };
 
         window.clearSignature = function() {

@@ -8,7 +8,7 @@
     $hasSearch = request()->has('search');
 @endphp
 
-<div class="max-w-7xl mx-auto px-4 lg:px-8 py-10 mt-28 page-animate-fadeIn relative z-10">
+<div class="max-w-7xl mx-auto px-4 lg:px-8 pt-20 md:pt-28 pb-10 page-animate-fadeIn relative z-10">
 
     {{-- Decorative Background Elements --}}
     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-96 bg-emerald-400/20 rounded-full blur-3xl -z-10 opacity-50 pointer-events-none"></div>
@@ -388,16 +388,22 @@ document.addEventListener("DOMContentLoaded", function () {
     // 4. Handle Clear All
     if (clearBtn) {
         clearBtn.addEventListener("click", function () {
-            if (confirm("Hapus semua riwayat?")) {
-                setData([]);
-                renderHistory();
-                // If no result currently shown, hide result col
-                if (!resultContainer.innerHTML.trim()) {
-                     resultCol.classList.add("hidden");
-                     formCol.classList.remove("lg:col-span-1");
-                     formCol.classList.add("lg:col-span-3");
+            window.confirmAction("Hapus Riwayat?", "Hapus semua riwayat pencarian pesanan Anda?").then((result) => {
+                if (result.isConfirmed) {
+                    setData([]);
+                    renderHistory();
+                    // If no result currently shown, hide result col
+                    if (!resultContainer.innerHTML.trim()) {
+                         resultCol.classList.add("hidden");
+                         formCol.classList.remove("lg:col-span-1");
+                         formCol.classList.add("lg:col-span-3");
+                    }
+                    window.toast.fire({
+                        icon: 'success',
+                        title: 'Riwayat pencarian dihapus'
+                    });
                 }
-            }
+            });
         });
     }
 });
