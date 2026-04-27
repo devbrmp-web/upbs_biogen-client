@@ -280,8 +280,9 @@ DEBUG VARIETY AUDIENCE:
                                      data-seed-class-code="{{ $class['code'] }}"
                                      data-seed-class-name="{{ $class['name'] }}"
                                      data-price="{{ $class['price'] ?? 0 }}"
-                                     data-min-order="{{ $class['min_order_qty'] ?? 1 }}"
-                                     data-step-increment="{{ $class['step_increment'] ?? 1 }}"
+                                     data-min-order="{{ $class['min_order_qty'] ?? 0 }}"
+                                     data-step-increment="{{ $class['step_increment'] ?? 0 }}"
+                                     data-stock="{{ $class['quantity'] ?? 0 }}"
                                      data-unit="{{ $class['default_unit'] ?? 'kg' }}"
                                      onclick="selectClass('{{ $class['code'] }}')">
                                      

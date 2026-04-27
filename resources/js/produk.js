@@ -71,19 +71,21 @@ function initInteraction() {
                 document.getElementById('selected-lot-id').value = '';
                 
                 const qtyInput = c.querySelector('.quantity');
-                const step = parseInt(c.dataset.stepIncrement) || 1;
-                const min = parseInt(c.dataset.minOrder) || 1;
+                const step = parseInt(c.dataset.stepIncrement) || 0;
+                const min = parseInt(c.dataset.minOrder) || 0;
+                const stock = parseFloat(c.dataset.stock) || 0;
 
                 // Sync attributes
                 qtyInput.min = min;
-                qtyInput.step = step;
+                qtyInput.step = step || 1;
+                qtyInput.max = stock;
 
-                // Update initial value if it's less than min or not a multiple of step
-                let currentVal = parseInt(qtyInput.value) || 0;
-                if (currentVal < min || (step > 1 && currentVal % step !== 0)) {
-                    qtyInput.value = min > step ? min : step;
-                }
+                // Requirement: Forceful Initial Value Logic
+                // Logic: Math.ceil(min / step) * step
+                let calculatedMin = (step > 0) ? Math.ceil(min / step) * step : min;
+                if (calculatedMin === 0) calculatedMin = 1; // Absolute fallback
                 
+                qtyInput.value = calculatedMin;
                 document.getElementById('selected-qty').value = qtyInput.value;
                 
                 window.selectedClassId = c.dataset.seedClassId;
@@ -91,6 +93,17 @@ function initInteraction() {
                 window.selectedClassName = c.dataset.seedClassName;
                 window.selectedPrice = parseFloat(c.dataset.price) || 0;
                 
+                // Handle critical edge case: min > stock
+                if (calculatedMin > stock && stock > 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Stok Terbatas',
+                        text: `Perhatian: Batas minimal pembelian (${calculatedMin} kg) melebihi stok yang tersedia (${stock} kg).`,
+                        confirmButtonColor: '#10b981',
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+                }
+
                 const lotGroup = document.querySelector(`.lot-options[data-seed-class-code="${code}"]`);
                 if (lotGroup) {
                     const radios = lotGroup.querySelectorAll('input[type="radio"]');
@@ -103,6 +116,9 @@ function initInteraction() {
                     }
                 }
                 
+                // Crucial: Trigger input event manually to sync listeners (price, validation)
+                qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+
                 const valid = validateQtyInput(qtyInput);
                 const hasLot = !!window.selectedLotId;
                 document.getElementById('btn-add-cart').disabled = !(valid && hasLot);
@@ -245,14 +261,16 @@ window.handleQtyInput = function(el) {
 
 function validateQtyInput(input) {
     const card = input.closest('.seed-class-card');
-    const step = parseInt(card?.dataset.stepIncrement) || 1;
-    const min = parseInt(card?.dataset.minOrder) || 1;
+    const step = parseInt(card?.dataset.stepIncrement) || 0;
+    const min = parseInt(card?.dataset.minOrder) || 0;
+    const stock = parseFloat(card?.dataset.stock) || 0;
     const unit = card?.dataset.unit || 'kg';
     
     let val = parseFloat(input.value) || 0;
     
-    const isStepOk = step > 1 ? (val % step === 0) : true;
+    const isStepOk = step > 0 ? (val % step === 0) : true;
     const isMinOk = val >= min;
+    const isStockOk = val <= stock;
     
     const errEl = card?.querySelector('.qty-error');
     
@@ -264,6 +282,14 @@ function validateQtyInput(input) {
         return false;
     }
     
+    if (!isStockOk) {
+        if (errEl) {
+            errEl.textContent = `Stok tidak mencukupi (Tersedia: ${stock} ${unit})`;
+            errEl.classList.remove('hidden');
+        }
+        return false;
+    }
+
     if (!isStepOk) {
         if (errEl) {
             errEl.textContent = `Jumlah harus kelipatan ${step} ${unit}`;
