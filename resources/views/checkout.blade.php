@@ -244,7 +244,7 @@
 <!-- Terms & Conditions Modal -->
 <div id="terms-modal" class="fixed inset-0 z-50 hidden">
   <div class="absolute inset-0 bg-black/50" onclick="closeTermsModal()"></div>
-  <div class="relative mx-auto my-10 w-[92%] max-w-xl bg-white rounded-xl shadow-xl p-6">
+  <div class="relative mx-auto mt-36 mb-12 w-[92%] max-w-xl bg-white rounded-xl shadow-xl p-6">
     <div class="flex justify-between items-center mb-3">
       <h3 class="text-lg font-semibold text-gray-900">Syarat dan Ketentuan</h3>
       <button type="button" class="text-gray-500 hover:text-gray-800" onclick="closeTermsModal()">✕</button>
@@ -314,10 +314,22 @@
       } catch {}
     }
     document.getElementById('btnSaveCheckoutSig')?.addEventListener('click', () => {
-      if (pad.isEmpty()) return alert('Silakan tanda tangan terlebih dahulu.');
+      if (pad.isEmpty()) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Tanda Tangan Kosong',
+          text: 'Silakan berikan tanda tangan Anda pada area yang tersedia.',
+          confirmButtonColor: '#10b981',
+          customClass: { popup: 'rounded-3xl' }
+        });
+        return;
+      }
       const dataUrl = pad.toDataURL();
       localStorage.setItem(KEY, dataUrl);
-      alert('Tanda tangan disimpan.');
+      window.toast.fire({
+          icon: 'success',
+          title: 'Tanda tangan berhasil disimpan'
+      });
     });
     document.getElementById('btnClearCheckoutSig')?.addEventListener('click', () => {
       pad.clear();

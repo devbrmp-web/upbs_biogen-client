@@ -20,16 +20,30 @@ try{
 </script>
 @endif
 
-<div class="page-animate-rise">
-<section class="pt-28 pb-16 bg-gray-50 min-h-screen">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+<div class="page-animate-rise relative overflow-hidden">
+    {{-- Decorative Background Elements --}}
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-emerald-100/40 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-0 w-[500px] h-[500px] bg-emerald-50/50 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+    
+    {{-- Organic SVG Blobs --}}
+    <div class="absolute top-20 right-10 w-64 h-64 opacity-[0.04] pointer-events-none -z-10 animate-pulse">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#10B981" d="M44.7,-76.4C58.1,-69.2,70,-58,79.1,-44.6C88.2,-31.2,94.5,-15.6,93.4,-0.6C92.4,14.4,84,28.8,74.5,41.5C65,54.2,54.4,65.2,41.4,73.1C28.4,81,14.2,85.8,-0.9,87.4C-16.1,89,-32.1,87.5,-45.6,80C-59.1,72.6,-70.1,59.3,-78,44.7C-85.9,30.1,-90.7,14.1,-89.7,-1.7C-88.7,-17.5,-82,-33.1,-71.5,-45.5C-61,-57.9,-46.8,-67.2,-33,-74C-19.2,-80.8,-5.8,-85,8.8,-83.1C23.4,-81.2,31.3,-83.5,44.7,-76.4Z" transform="translate(100 100)" />
+        </svg>
+    </div>
+
+<section class="pt-16 md:pt-28 pb-16 min-h-screen bg-transparent relative">
+    {{-- Subtle Texture Overlay --}}
+    <div class="absolute inset-0 opacity-[0.015] pointer-events-none -z-10" style="background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');"></div>
+
+    <div class="max-w-[1600px] mx-auto px-6 lg:px-12">
 
         <!-- =======================
              JUDUL
         ======================== -->
         <div id="tutorial-title" class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">Katalog Produk</h1>
-            <p class="text-gray-700 text-lg">
+            <h1 class="text-4xl font-bold text-slate-800 mb-2 tracking-tight">Katalog Produk</h1>
+            <p class="text-slate-600 text-lg">
                 Temukan berbagai varietas unggul hasil inovasi UPBS BRMP Biogen 🌾
             </p>
         </div>
@@ -88,21 +102,42 @@ try{
         <!-- =======================
              FILTER SEED CLASS
         ======================== -->
+        <style>
+            #seed-class-select {
+                appearance: none !important;
+                -webkit-appearance: none !important;
+                -moz-appearance: none !important;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2310b981' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+                background-repeat: no-repeat !important;
+                background-position: right 1rem center !important;
+                background-size: 1.25rem !important;
+                padding-right: 2.5rem !important;
+                border-radius: 0.75rem !important;
+                border: 1px solid #10b981 !important;
+                background-color: #ffffff !important;
+                transition: all 0.2s ease !important;
+            }
+            #seed-class-select:focus {
+                border-color: #059669 !important;
+                box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15) !important;
+                outline: none !important;
+            }
+        </style>
         <div id="tutorial-seed-filter" class="mb-10">
             <h2 class="text-lg font-semibold text-gray-800 mb-2">Filter Kelas Benih</h2>
 
-            <select
-                id="seed-class-select"
-                class="block w-full max-w-xs rounded-lg border-gray-300 shadow-sm
-                       focus:border-indigo-500 focus:ring-indigo-500
-                       sm:text-sm p-2.5 bg-white border">
-                <option value="">Semua Kelas</option>
+            <div class="w-full max-w-xs">
+                <select
+                    id="seed-class-select"
+                    class="select-emerald-premium block w-full shadow-sm sm:text-sm cursor-pointer">
+                    <option value="">Semua Kelas</option>
                 @foreach ($seedClasses as $sc)
                     <option value="{{ $sc['code'] }}" {{ ($activeSeedClass == $sc['code']) ? 'selected' : '' }}>
                         {{ $sc['name'] }} ({{ $sc['code'] }})
                     </option>
                 @endforeach
-            </select>
+                </select>
+            </div>
         </div>
 
         <!-- =======================
@@ -119,11 +154,11 @@ try{
                 $refreshUrl .= ($activeCommodity || $activeSeedClass) ? '&refresh=1' : '?refresh=1';
             @endphp
             <div class="flex items-center gap-3">
-                <span id="autoRefreshIndicator" class="text-sm text-gray-500 font-medium bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm">
+                <span id="autoRefreshIndicator" class="text-xs text-emerald-600 font-bold bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 shadow-sm uppercase tracking-wider">
                     Auto refresh: 5m
                 </span>
-                <a href="{{ $refreshUrl }}" id="refreshDataBtn" class="inline-flex items-center justify-center w-9 h-9 rounded-full border border-blue-600 text-blue-600 hover:bg-blue-50 transition shadow-sm" aria-label="Muat Ulang Data" title="Muat Ulang Sekarang">
-                    <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <a href="{{ $refreshUrl }}" id="refreshDataBtn" class="inline-flex items-center justify-center w-10 h-10 rounded-xl border border-emerald-200 text-emerald-600 bg-white hover:bg-emerald-50 hover:border-emerald-500 transition-all shadow-sm hover:shadow-emerald-900/5" aria-label="Muat Ulang Data" title="Muat Ulang Sekarang">
+                    <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v6h6M20 20v-6h-6M5 19a9 9 0 0014-7M19 5a9 9 0 00-14 7" />
                     </svg>
                 </a>

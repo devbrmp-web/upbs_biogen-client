@@ -47,11 +47,30 @@
   </div>
 </nav>
 
-<!-- 📱 Mobile Logo Only (Simple Header) -->
-<div class="fixed top-4 left-4 z-40 md:hidden">
-    <div class="w-10 h-10 overflow-hidden rounded-full flex items-center justify-center bg-white/50 backdrop-blur-md shadow-sm border border-white/30">
-        <img src="{{ Vite::asset('resources/img/logo.png') }}" alt="Logo" class="object-contain w-8 h-8">
+<!-- 📱 Mobile Logo & Breadcrumb Bar -->
+<div class="fixed top-4 left-4 right-4 z-40 md:hidden flex items-center justify-between">
+    <div class="flex items-center gap-2 bg-white/70 backdrop-blur-md px-2.5 py-1.5 rounded-2xl shadow-sm border border-white/40 max-w-[85%]">
+        <div class="w-7 h-7 overflow-hidden rounded-full flex items-center justify-center bg-white shadow-inner">
+            <img src="{{ Vite::asset('resources/img/logo.png') }}" alt="Logo" class="object-contain w-5 h-5">
+        </div>
+        <div class="flex flex-col overflow-hidden">
+            <span class="text-[9px] text-emerald-600 font-bold leading-none tracking-tight uppercase truncate">UPBS BIOGEN</span>
+            <div class="flex items-center text-[8px] text-slate-500 truncate whitespace-nowrap mt-0.5">
+                <span>Beranda</span>
+                <i class="fa-solid fa-chevron-right mx-1 text-[6px] opacity-50"></i>
+                <span class="{{ request()->routeIs('katalog') ? 'text-emerald-700 font-bold' : '' }}">Katalog</span>
+                @if(isset($variety['name']))
+                    <i class="fa-solid fa-chevron-right mx-1 text-[6px] opacity-50"></i>
+                    <span class="text-emerald-700 font-bold truncate max-w-[60px]">{{ $variety['name'] }}</span>
+                @endif
+            </div>
+        </div>
     </div>
+
+    <!-- Mobile Mini Search Button -->
+    <a href="{{ route('katalog') }}" class="w-10 h-10 bg-white/70 backdrop-blur-md rounded-2xl shadow-sm border border-white/40 flex items-center justify-center text-slate-600">
+        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+    </a>
 </div>
 
 <!-- 📱 Mobile Bottom Navigation (Floating Curved Glass) -->

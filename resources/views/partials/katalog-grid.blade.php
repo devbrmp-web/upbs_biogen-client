@@ -1,14 +1,14 @@
-<div id="product-grid-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+<div id="product-grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8">
     @if(empty($varieties))
          <div class="col-span-2 md:col-span-4 p-8 text-center bg-white rounded-xl shadow-sm border border-gray-100">
             <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <h3 class="text-lg font-medium text-gray-900">Tidak ada varietas ditemukan</h3>
             <p class="text-gray-500 mt-1">Coba ubah filter atau kata kunci pencarian Anda.</p>
-            <a href="/katalog" class="reset-filter-btn mt-4 inline-block text-blue-600 hover:underline">Reset Filter</a>
+            <a href="/katalog" class="reset-filter-btn mt-4 inline-block text-emerald-600 hover:text-emerald-700 font-semibold hover:underline transition-colors">Reset Filter</a>
          </div>
     @endif
 
-    @forelse ($varieties as $variety)
+    @forelse ($varieties as $index => $variety)
         @php
             $priceRaw = $variety['price_idr'] ?? 0;
             $priceClean = (float) preg_replace('/[^\d.]/', '', $priceRaw);
@@ -35,8 +35,8 @@
             $isOutOfStock = ($totalKg <= 0 && $totalUnit <= 0);
         @endphp
 
-        <div class="bg-white border border-gray-100 shadow-md
-                    hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden group/card">
+        <div class="bg-white border border-slate-200/60 shadow-sm
+                    hover:shadow-2xl hover:shadow-emerald-900/10 hover:-translate-y-2 hover:scale-[1.03] hover:ring-4 hover:ring-emerald-500/10 transition-all duration-500 rounded-3xl overflow-hidden group/card relative card-premium-feedback animate-fade-up">
 
             <a href="{{ route('product.detail', $variety['slug']) }}" class="block">
 
@@ -48,9 +48,14 @@
                             if (!empty($img['is_primary'])) { $primaryImg = $img; break; }
                         }
                         if ($primaryImg && !empty($primaryImg['image_url'])) {
-                            $pathOnly = parse_url($primaryImg['image_url'], PHP_URL_PATH);
-                            $cleanP = str_replace(['public/', 'storage/'], '', $pathOnly ?: '');
-                            $cardImg = $adminUrl . '/storage/' . ltrim($cleanP, '/');
+                            $rawUrl = $primaryImg['image_url'];
+                            if (str_starts_with($rawUrl, 'http') || str_starts_with($rawUrl, 'https')) {
+                                $cardImg = $rawUrl;
+                            } else {
+                                $pathOnly = parse_url($rawUrl, PHP_URL_PATH);
+                                $cleanP = str_replace(['public/', 'storage/'], '', $pathOnly ?: '');
+                                $cardImg = $adminUrl . '/storage/' . ltrim($cleanP, '/');
+                            }
                         } else {
                             $cardImg = $imageUrl;
                         }
@@ -61,8 +66,8 @@
                          onerror="this.src='https://placehold.co/400x300?text=No+Image'">
                     
                     @if($isOutOfStock)
-                        <div class="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
-                            <span class="bg-gray-800/90 border border-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium shadow-xl text-center backdrop-blur-sm">
+                        <div class="absolute inset-0 bg-slate-900/40 z-10 flex items-center justify-center backdrop-blur-[2px]">
+                            <span class="bg-white/90 border border-white text-slate-900 px-3 py-1.5 rounded-full text-xs font-bold shadow-xl text-center uppercase tracking-wider">
                                 <i class="bx bx-info-circle mr-1"></i>Stok Kosong
                             </span>
                         </div>
@@ -70,7 +75,7 @@
                 </div>
 
                 <div class="p-3">
-                    <h3 class="font-semibold text-gray-900 text-sm line-clamp-2">
+                    <h3 class="font-semibold text-gray-900 text-sm line-clamp-2 break-words">
                         {{ $variety['name'] }}
                     </h3>
 
@@ -78,7 +83,7 @@
                         {{ $variety['commodity']['name'] ?? '-' }}
                     </p>
                     
-                    <p class="text-sm text-green-700 font-semibold mt-2">
+                    <p class="text-sm text-emerald-600 font-bold mt-2">
                         @if(!empty($variety['price_range_text']))
                             {{ $variety['price_range_text'] }}
                         @else
