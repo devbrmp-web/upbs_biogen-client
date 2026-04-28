@@ -3,7 +3,7 @@
 @section('title', 'Halaman Tidak Ditemukan - UPBS BRMP Biogen')
 
 @section('content')
-<div class="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-50 to-green-50 px-4">
+<div class="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-50 to-green-50 px-4">
     <!-- Background Decoration -->
     <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-200/20 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
     <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-200/20 rounded-full blur-[100px] translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
