@@ -126,17 +126,61 @@ try{
         <div id="tutorial-seed-filter" class="mb-10">
             <h2 class="text-lg font-semibold text-gray-800 mb-2">Filter Kelas Benih</h2>
 
-            <div class="w-full max-w-xs">
-                <select
-                    id="seed-class-select"
-                    class="select-emerald-premium block w-full shadow-sm sm:text-sm cursor-pointer">
-                    <option value="">Semua Kelas</option>
-                @foreach ($seedClasses as $sc)
-                    <option value="{{ $sc['code'] }}" {{ ($activeSeedClass == $sc['code']) ? 'selected' : '' }}>
-                        {{ $sc['name'] }} ({{ $sc['code'] }})
-                    </option>
-                @endforeach
-                </select>
+            <div class="w-full max-w-xs"
+                 x-data="{ 
+                    open: false, 
+                    selected: '{{ $activeSeedClass ?? '' }}', 
+                    label: '{{ $activeSeedClass ? ($seedClasses[array_search($activeSeedClass, array_column($seedClasses, 'code'))]['name'] ?? 'Semua Kelas') : 'Semua Kelas' }}',
+                    options: [
+                        { value: '', label: 'Semua Kelas' },
+                        @foreach ($seedClasses as $sc)
+                            { value: '{{ $sc['code'] }}', label: '{{ $sc['name'] }} ({{ $sc['code'] }})' },
+                        @endforeach
+                    ],
+                    selectOption(opt) {
+                        this.selected = opt.value;
+                        this.label = opt.label;
+                        this.open = false;
+                        
+                        const filterEl = document.getElementById('seed-class-select-hidden');
+                        if (filterEl) {
+                            filterEl.value = opt.value;
+                            filterEl.dispatchEvent(new Event('change'));
+                        }
+                    }
+                 }">
+                
+                {{-- Hidden input for catalog.js --}}
+                <input type="hidden" id="seed-class-select-hidden" value="{{ $activeSeedClass ?? '' }}">
+
+                {{-- Trigger Button --}}
+                <button @click="open = !open" 
+                        @click.away="open = false"
+                        class="relative w-full flex items-center justify-between bg-white border border-emerald-100 rounded-xl p-3 shadow-sm hover:border-emerald-500 transition-all duration-200">
+                    <span class="text-slate-700 font-medium" x-text="label"></span>
+                    <i class="fa-solid fa-chevron-down text-emerald-500 text-xs transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                </button>
+
+                {{-- Dropdown Menu --}}
+                <div x-show="open" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     class="absolute mt-2 w-full max-w-xs bg-white border border-slate-100 rounded-xl shadow-xl z-50 overflow-hidden"
+                     style="display: none;">
+                    
+                    <template x-for="opt in options" :key="opt.value">
+                        <button @click="selectOption(opt)"
+                                class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between"
+                                :class="selected === opt.value ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-slate-600 hover:bg-slate-50'">
+                            <span x-text="opt.label"></span>
+                            <i x-show="selected === opt.value" class="fa-solid fa-check text-emerald-500 text-xs"></i>
+                        </button>
+                    </template>
+                </div>
             </div>
         </div>
 

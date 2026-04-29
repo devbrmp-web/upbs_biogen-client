@@ -32,21 +32,72 @@
                 </p>
             </div>
             
-            {{-- Filter Glass --}}
-            <div class="relative z-10 group min-w-[250px]">
-                <div class="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
-                <div class="relative flex items-center bg-white border border-white/60 rounded-xl p-1.5 shadow-lg shadow-emerald-900/5">
-                    <div class="pl-4 pr-3 text-emerald-600">
-                        <i class="fa-solid fa-filter"></i>
-                    </div>
-                    <select id="vs-filter" class="w-full bg-transparent border-none text-slate-700 font-semibold focus:ring-0 cursor-pointer py-2 pl-0 pr-8">
-                        <option value="">Semua Komoditas</option>
+            {{-- Filter Glass with Alpine.js --}}
+            <div class="relative z-10 group min-w-[280px]" 
+                 x-data="{ 
+                    open: false, 
+                    selected: '', 
+                    label: 'Semua Komoditas',
+                    options: [
+                        { value: '', label: 'Semua Komoditas' },
                         @foreach($uniqueKomoditas as $kom)
                             @if($kom !== '')
-                                <option value="{{ $kom }}">{{ ucfirst($kom) }}</option>
+                                { value: '{{ $kom }}', label: '{{ ucfirst($kom) }}' },
                             @endif
                         @endforeach
-                    </select>
+                    ],
+                    selectOption(opt) {
+                        this.selected = opt.value;
+                        this.label = opt.label;
+                        this.open = false;
+                        
+                        // Dispatch event for existing filter logic
+                        const filterEl = document.getElementById('vs-filter-hidden');
+                        if (filterEl) {
+                            filterEl.value = opt.value;
+                            filterEl.dispatchEvent(new Event('change'));
+                        }
+                    }
+                 }">
+                
+                {{-- Decorative Glow --}}
+                <div class="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+                
+                {{-- Hidden input for existing logic compatibility --}}
+                <input type="hidden" id="vs-filter-hidden" value="">
+
+                {{-- Trigger Button --}}
+                <button @click="open = !open" 
+                        @click.away="open = false"
+                        class="relative w-full flex items-center justify-between bg-white/90 backdrop-blur-md border border-emerald-100 rounded-2xl p-3.5 shadow-xl shadow-emerald-900/5 hover:border-emerald-300 transition-all duration-300">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                            <i class="fa-solid fa-filter text-sm"></i>
+                        </div>
+                        <span class="text-slate-700 font-bold tracking-tight" x-text="label"></span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-emerald-400 text-xs transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                </button>
+
+                {{-- Dropdown Menu --}}
+                <div x-show="open" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                     class="absolute left-0 right-0 mt-3 bg-white/95 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl shadow-emerald-900/10 z-50 overflow-hidden py-2"
+                     style="display: none;">
+                    
+                    <template x-for="opt in options" :key="opt.value">
+                        <button @click="selectOption(opt)"
+                                class="w-full text-left px-5 py-3.5 text-sm font-semibold transition-all duration-200 flex items-center justify-between group/item"
+                                :class="selected === opt.value ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-600'">
+                            <span x-text="opt.label"></span>
+                            <i x-show="selected === opt.value" class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
+                        </button>
+                    </template>
                 </div>
             </div>
         </div>
@@ -329,7 +380,7 @@
         }
 
         // Filter Logic
-        const filter = document.getElementById('vs-filter');
+        const filter = document.getElementById('vs-filter-hidden');
         if (filter) {
             filter.addEventListener('change', function(){
                 const val = this.value;

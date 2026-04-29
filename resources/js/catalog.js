@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Initial references
     let gridContainer = document.getElementById('product-grid-container');
-    const seedSelect = document.getElementById('seed-class-select');
+    const seedSelect = document.getElementById('seed-class-select-hidden');
     const commodityContainer = document.getElementById('tutorial-commodity-filter');
     
     // Function to fetch and update grid
