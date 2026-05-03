@@ -12,7 +12,7 @@
 
     <div class="relative z-10 max-w-4xl mx-auto">
         <div class="text-center mb-16">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 mb-4">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 mb-4 leading-normal">
                 Pertanyaan Umum
             </h1>
             <p class="text-lg text-gray-600 max-w-2xl mx-auto">

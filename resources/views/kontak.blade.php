@@ -12,8 +12,8 @@
 
     <div class="relative z-10 max-w-6xl mx-auto">
         <div class="text-center mb-16">
-            
-            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 mb-4">
+
+            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 mb-4 leading-normal">
                 Hubungi Kami
             </h1>
             <p class="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -70,12 +70,12 @@
         </div>
 
         <div class="mt-16 bg-white/40 backdrop-blur-xl rounded-2xl border border-white/50 p-4 shadow-sm h-96 overflow-hidden">
-             <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5740770169386!2d106.78634729999999!3d-6.575313200000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69c50067ce74b5%3A0x191e27fcc8713db!2sBalai%20Besar%20Perakitan%20dan%20Modernisasi%20Bioteknologi%20dan%20Sumber%20Daya%20Genetik%20Pertanian%20(BRMP%20BIOGEN)!5e0!3m2!1sen!2sid!4v1777797566481!5m2!1sen!2sid" 
-                width="100%" 
-                height="100%" 
-                style="border:0;" 
-                allowfullscreen="" 
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5740770169386!2d106.78634729999999!3d-6.575313200000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69c50067ce74b5%3A0x191e27fcc8713db!2sBalai%20Besar%20Perakitan%20dan%20Modernisasi%20Bioteknologi%20dan%20Sumber%20Daya%20Genetik%20Pertanian%20(BRMP%20BIOGEN)!5e0!3m2!1sen!2sid!4v1777797566481!5m2!1sen!2sid"
+                width="100%"
+                height="100%"
+                style="border:0;"
+                allowfullscreen=""
                 loading="lazy"
                 referrerpolicy="no-referrer-when-downgrade"
                 class="rounded-xl grayscale hover:grayscale-0 transition-all duration-500">
