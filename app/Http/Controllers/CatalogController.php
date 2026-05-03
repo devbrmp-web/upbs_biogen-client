@@ -308,14 +308,9 @@ class CatalogController extends Controller
             return Http::timeout(5)->get($url . '/api/seed-classes')->json('data') ?? [];
         });
 
-        // $varietyInfo = \App\Services\VarietyInfoService::matchVarietyDetails($variety) ?? null;
-        $varietyAudience = \App\Services\VarietyInfoService::summarizeByName($variety['name'] ?? '') ?? null;
-
         return view('produk.detail', [
             'variety' => $variety,
             'seedClasses' => $seedClasses,
-            // 'varietyInfo' => $varietyInfo,
-            'varietyAudience' => $varietyAudience,
         ]);
     }
 
