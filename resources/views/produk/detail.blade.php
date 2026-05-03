@@ -289,7 +289,19 @@ DEBUG VARIETY AUDIENCE:
                                      <div class="flex justify-between items-start">
                                         <div>
                                             <div class="flex items-center gap-2 mb-1">
-                                                <span class="px-2 py-0.5 rounded text-xs font-bold border {{ $class['category'] == 'unit' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : ($class['code'] == 'BS' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-purple-50 text-purple-700 border-purple-200') }}">
+                                                @php
+                                                    $badgeClass = 'bg-gray-50 text-gray-700 border-gray-200'; // fallback
+                                                    if ($class['category'] == 'unit') {
+                                                        $badgeClass = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                                                    } elseif ($class['code'] === 'BS') {
+                                                        $badgeClass = 'bg-yellow-400/20 text-yellow-800 border-yellow-300';
+                                                    } elseif ($class['code'] === 'FS') {
+                                                        $badgeClass = 'bg-white text-gray-800 border-gray-400';
+                                                    } elseif ($class['code'] === 'SS') {
+                                                        $badgeClass = 'bg-purple-600 text-white border-purple-700';
+                                                    }
+                                                @endphp
+                                                <span class="px-2 py-0.5 rounded text-xs font-bold border {{ $badgeClass }}">
                                                     {{ $class['code'] }}
                                                 </span>
                                                 <h4 class="font-bold text-slate-800 text-lg">{{ $class['name'] }}</h4>

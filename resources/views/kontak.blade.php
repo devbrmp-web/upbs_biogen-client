@@ -47,8 +47,8 @@
                 <p class="text-gray-600 leading-relaxed mb-4">
                     Senin - Jumat, 08:00 - 16:00
                 </p>
-                <a href="tel:+622518337975" class="text-xl font-semibold text-emerald-600 hover:text-emerald-700 transition-colors">
-                    (0251) 8337975
+                <a href="tel:+622518333975" class="text-xl font-semibold text-emerald-600 hover:text-emerald-700 transition-colors">
+                    (0251) 8333975
                 </a>
             </div>
 
@@ -63,21 +63,21 @@
                 <p class="text-gray-600 leading-relaxed mb-4">
                     Kirim pertanyaan kapan saja
                 </p>
-                <a href="mailto:upbs.biogen@pertanian.go.id" class="text-emerald-600 hover:text-emerald-700 font-medium break-all transition-colors">
-                    upbs.biogen@pertanian.go.id
+                <a href="mailto:brmp.biogen@pertanian.go.id" class="text-emerald-600 hover:text-emerald-700 font-medium break-all transition-colors">
+                    brmp.biogen@pertanian.go.id
                 </a>
             </div>
         </div>
 
-        <!-- Optional Map Section -->
         <div class="mt-16 bg-white/40 backdrop-blur-xl rounded-2xl border border-white/50 p-4 shadow-sm h-96 overflow-hidden">
              <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.428574167389!2d106.7865223147728!3d-6.593539995228587!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69c5c777085777%3A0x6739665335198904!2sBalai%20Besar%20Penelitian%20dan%20Pengembangan%20Bioteknologi%20dan%20Sumberdaya%20Genetik%20Pertanian!5e0!3m2!1sid!2sid!4v1626926342611!5m2!1sid!2sid" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5740770169386!2d106.78634729999999!3d-6.575313200000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69c50067ce74b5%3A0x191e27fcc8713db!2sBalai%20Besar%20Perakitan%20dan%20Modernisasi%20Bioteknologi%20dan%20Sumber%20Daya%20Genetik%20Pertanian%20(BRMP%20BIOGEN)!5e0!3m2!1sen!2sid!4v1777797566481!5m2!1sen!2sid" 
                 width="100%" 
                 height="100%" 
                 style="border:0;" 
                 allowfullscreen="" 
                 loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
                 class="rounded-xl grayscale hover:grayscale-0 transition-all duration-500">
             </iframe>
         </div>

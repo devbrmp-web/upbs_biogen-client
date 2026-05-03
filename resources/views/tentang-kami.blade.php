@@ -160,15 +160,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-5">
                     <!-- Photo Column -->
                     <div class="md:col-span-2 bg-gray-100 relative min-h-[320px]">
-                        <img src="https://biogen.brmp.pertanian.go.id/storage/assets/uploads/images/sdm/square/w0H5q91jbNAXa26iA0wQ8COtIMF40H793iB4hRjc.png" 
-                             alt="Arif Surahman" 
+                        <img src="https://biogen.brmp.pertanian.go.id/storage/assets/uploads/images/sdm/square/sMa6N5HFTFBsRTCcx4R9PzRx41AoWkr8hbVrnL86.jpg" 
+                             alt="Dr. ATEKAN" 
                              class="absolute inset-0 w-full h-full object-cover object-top">
                     </div>
                     <!-- Details Column -->
                     <div class="md:col-span-3 p-8 md:p-10 flex flex-col justify-center">
                         <div>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-1">ARIF SURAHMAN S.PI, M.SC PH.D</h3>
-                            <p class="text-green-600 font-semibold text-sm uppercase tracking-wide mb-6">Kepala Balai Besar</p>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-1">Dr. ATEKAN, S.P,. M.Si.</h3>
+                            <p class="text-green-600 font-semibold text-sm uppercase tracking-wide mb-6">KEPALA BALAI BESAR PERAKITAN DAN MODERNISASI BIOTEKNOLOGI DAN SUMBERDAYA GENETIK PERTANIAN</p>
                             
                             <div class="space-y-4 text-sm text-gray-600 mb-8">
                                 <div class="flex items-start gap-3">
@@ -177,11 +177,11 @@
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                                    <span>(0251) 8337975</span>
+                                    <span>(0251) 8333975</span>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                    <span>arifsurahman@pertanian.go.id</span>
+                                    <span>brmp.biogen@pertanian.go.id</span>
                                 </div>
                             </div>
 
@@ -190,15 +190,15 @@
                                 <ul class="space-y-2 text-sm text-gray-600">
                                     <li class="flex gap-2">
                                         <span class="font-semibold text-gray-900 w-12 shrink-0">S3</span>
-                                        <span>Asian Institute of Technology (AIT) Thailand (2017)</span>
+                                        <span>Institut Pertanian Bogor (IPB) (2012)</span>
                                     </li>
                                     <li class="flex gap-2">
                                         <span class="font-semibold text-gray-900 w-12 shrink-0">S2</span>
-                                        <span>Asian Institute of Technology (AIT) Thailand (2002)</span>
+                                        <span>Institut Pertanian Bogor (IPB) (2001)</span>
                                     </li>
                                     <li class="flex gap-2">
                                         <span class="font-semibold text-gray-900 w-12 shrink-0">S1</span>
-                                        <span>Universitas Diponegoro (1995)</span>
+                                        <span>Universitas Sebelas Maret (UNS) (1993)</span>
                                     </li>
                                 </ul>
                             </div>
@@ -207,7 +207,7 @@
                                 <h4 class="font-bold text-gray-900 mb-2 text-sm">Penghargaan</h4>
                                 <div class="inline-flex items-center gap-2 px-3 py-1 bg-yellow-50 text-yellow-800 rounded-full text-xs font-medium border border-yellow-100">
                                     <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
-                                    Satyalancana Karya Satya XX Tahun 2020
+                                    Satyalancana Karya Satya
                                 </div>
                             </div>
                         </div>

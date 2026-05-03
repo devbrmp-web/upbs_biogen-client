@@ -97,8 +97,18 @@
                 <p class="text-xs text-gray-600 mt-2 flex flex-wrap gap-y-1">
                     @foreach ($stockDetails as $detail)
                     @if(($detail['quantity'] ?? 0) > 0)
-                    <span class="mr-2 bg-gray-50 border border-gray-100 px-1.5 py-0.5 rounded">
-                        <b class="text-gray-900">{{ $detail['code'] }}</b>: {{ number_format($detail['quantity'], 0, ',', '.') }} {{ $detail['default_unit'] ?? 'kg' }}
+                    @php
+                        $badgeClass = 'bg-gray-50 border-gray-100 text-gray-900';
+                        if ($detail['code'] === 'BS') {
+                            $badgeClass = 'bg-yellow-400/20 text-yellow-800 border-yellow-300';
+                        } elseif ($detail['code'] === 'FS') {
+                            $badgeClass = 'bg-white text-gray-800 border-gray-400';
+                        } elseif ($detail['code'] === 'SS') {
+                            $badgeClass = 'bg-purple-600 text-white border-purple-700';
+                        }
+                    @endphp
+                    <span class="mr-2 border px-1.5 py-0.5 rounded {{ $badgeClass }}">
+                        <b>{{ $detail['code'] }}</b>: {{ number_format($detail['quantity'], 0, ',', '.') }} {{ $detail['default_unit'] ?? 'kg' }}
                     </span>
                     @endif
                     @endforeach

@@ -16,6 +16,9 @@
   {{-- Kategori Produk --}}
   @include('sections.kategori')
 
+  {{-- Alur Pemesanan --}}
+  @include('sections.alur-pemesanan')
+
   {{-- Informasi Benih Unggul (Buku Saku) --}}
   @include('sections.informasi-benih', ['infoVarietas' => $infoVarietas])
   </div>
