@@ -81,100 +81,54 @@ class CatalogController extends Controller
             }
 
             /* =====================================================
-            | FETCH VARIETIES
+            | FETCH VARIETIES (SERVER-SIDE FILTERING)
             ===================================================== */
-            $varieties = [];
+            $trait = request()->query('trait');
+            $queryParams = [];
+            if ($search) $queryParams['search'] = $search;
+            if ($trait) $queryParams['trait'] = $trait;
+            if ($activeCommoditySlug) $queryParams['commodity'] = $activeCommoditySlug;
+
+            $hasFilters = !empty($search) || !empty($trait);
+            $cacheKeySuffix = $hasFilters ? '_' . md5(json_encode($queryParams)) : '';
 
             if ($activeSeedClassId) {
-                // Scenario A: Filter by Seed Class (Use specific endpoint)
-                $cacheKey = "varieties_by_class_{$activeSeedClassId}";
-                if ($forceRefresh) {
-                    $response = Http::timeout(5)->get($url . "/api/seed-classes/{$activeSeedClassId}/varieties");
-                    $varieties = $response->successful() ? ($response->json('data') ?? []) : [];
-                    Cache::put($cacheKey, $varieties, 300);
-                } else {
-                    $varieties = Cache::remember($cacheKey, 300, function () use ($url, $activeSeedClassId) {
-                        $response = Http::timeout(5)->get($url . "/api/seed-classes/{$activeSeedClassId}/varieties");
-                        if ($response->successful()) {
-                            return $response->json('data') ?? [];
-                        }
-                        return [];
-                    });
+                $cacheKey = "varieties_by_class_{$activeSeedClassId}{$cacheKeySuffix}";
+                $endpoint = $url . "/api/seed-classes/{$activeSeedClassId}/varieties";
+            } else {
+                $cacheKey = "varieties_all{$cacheKeySuffix}";
+                $endpoint = $url . '/api/varieties';
+            }
+
+            if ($forceRefresh || $hasFilters) {
+                // Bypass cache if there are deep search filters
+                $response = Http::timeout(5)->get($endpoint, $queryParams);
+                $data = $response->successful() ? ($response->json('data') ?? []) : [];
+                $varieties = array_map(function($item) {
+                    if (!isset($item['images'])) $item['images'] = [];
+                    if (!isset($item['price_range_text'])) $item['price_range_text'] = null;
+                    if (!isset($item['stock_by_class'])) $item['stock_by_class'] = [];
+                    return $item;
+                }, $data);
+
+                if (!$hasFilters) {
+                    Cache::put($cacheKey, $varieties, $activeSeedClassId ? 300 : 1800);
                 }
             } else {
-                // Scenario B: No Seed Class Filter (Fetch All)
-                if ($forceRefresh) {
-                    $response = Http::timeout(5)->get($url . '/api/varieties');
+                $varieties = Cache::remember($cacheKey, $activeSeedClassId ? 300 : 1800, function () use ($endpoint, $queryParams) {
+                    $response = Http::timeout(5)->get($endpoint, $queryParams);
                     if ($response->successful()) {
                         $data = $response->json('data') ?? [];
-                        $varieties = array_map(function($item) {
+                        return array_map(function($item) {
                             if (!isset($item['images'])) $item['images'] = [];
+                            if (!isset($item['price_range_text'])) $item['price_range_text'] = null;
+                            if (!isset($item['stock_by_class'])) $item['stock_by_class'] = [];
                             return $item;
                         }, $data);
-                        Cache::put('varieties_all', $varieties, 1800);
-                    } else {
-                        $varieties = [];
                     }
-                } else {
-                    $varieties = Cache::remember('varieties_all', 1800, function () use ($url) {
-                        $response = Http::timeout(5)->get($url . '/api/varieties');
-                        if ($response->successful()) {
-                            // Tambahkan fallback images array jika kosong agar tidak error di view
-                            $data = $response->json('data') ?? [];
-                            return array_map(function($item) {
-                                if (!isset($item['images'])) $item['images'] = [];
-                                return $item;
-                            }, $data);
-                        }
-                        return [];
-                    });
-                }
-                
-                // Note: /api/varieties does NOT return seed_lots or stock breakdown.
-                // We rely on 'stock' => ['total_stock_kg' => ...]
+                    return [];
+                });
             }
-
-            /* =====================================================
-            | PRICE RANGE DATA (Now provided by API list endpoint)
-            ===================================================== */
-            // price_range_text is now included directly in the /api/varieties response
-            // via the withPriceRange() scope, eliminating N+1 HTTP requests.
-            $varieties = array_map(function ($v) {
-                // Use price_range_text from API if available, otherwise null
-                if (!isset($v['price_range_text'])) {
-                    $v['price_range_text'] = null;
-                }
-                return $v;
-            }, $varieties);
-
-            /* =====================================================
-            | FILTER BY COMMODITY (Client Side)
-            ===================================================== */
-            if (!empty($activeCommoditySlug)) {
-                $varieties = array_values(array_filter($varieties, function ($v) use ($activeCommoditySlug) {
-                    return strtolower($v['commodity']['slug'] ?? '') === $activeCommoditySlug;
-                }));
-            }
-
-            /* =====================================================
-            | SEARCH FILTER (Client Side)
-            ===================================================== */
-            if (!empty($search)) {
-                $varieties = array_values(array_filter($varieties, function ($v) use ($search) {
-                    return stripos($v['name'], $search) !== false
-                        || stripos($v['commodity']['name'] ?? '', $search) !== false;
-                }));
-            }
-
-            // Fallback for stock_by_class if it wasn't built (e.g. fetching all)
-            // The previous logic tried to build it from seed_lots, but seed_lots is missing in index API.
-            // So we leave it empty or null, and the view should handle it.
-            $varieties = array_map(function ($v) {
-                if (!isset($v['stock_by_class'])) {
-                    $v['stock_by_class'] = [];
-                }
-                return $v;
-            }, $varieties);
 
 
             /* =====================================================
@@ -223,22 +177,22 @@ class CatalogController extends Controller
             return response()->json([]);
         }
 
-        // Ambil dari cache yang panjang
-        $varieties = Cache::get('varieties_all') ?? [];
+        // Request API untuk search suggestion
+        $url = config('app.url_dev_admin');
+        $response = Http::timeout(5)->get($url . '/api/varieties', ['search' => $keyword]);
+        $varieties = $response->successful() ? ($response->json('data') ?? []) : [];
         $commodities = Cache::get('commodities_all') ?? [];
 
         $results = [];
 
         // 🔹 MATCH VARIETAS
-        foreach ($varieties as $v) {
-            if (stripos($v['name'], $keyword) !== false) {
-                $results[] = [
-                    'type' => 'Varietas',
-                    'name' => $v['name'],
-                    'slug' => $v['slug'] ?? null,
-                    'url'  => route('product.detail', $v['slug']), // otomatis buka detail
-                ];
-            }
+        foreach (array_slice($varieties, 0, 5) as $v) {
+            $results[] = [
+                'type' => 'Varietas',
+                'name' => $v['name'],
+                'slug' => $v['slug'] ?? null,
+                'url'  => route('product.detail', $v['slug']), // otomatis buka detail
+            ];
         }
 
         // 🔹 MATCH KOMODITAS

@@ -123,65 +123,130 @@ try{
                 outline: none !important;
             }
         </style>
-        <div id="tutorial-seed-filter" class="mb-10">
-            <h2 class="text-lg font-semibold text-gray-800 mb-2">Filter Kelas Benih</h2>
+        <div class="mb-10 flex flex-wrap gap-4 items-end" x-data="{ modalOpen: false }">
+            <div id="tutorial-seed-filter" class="flex-1 min-w-[250px] max-w-xs">
+                <h2 class="text-lg font-semibold text-gray-800 mb-2">Filter Kelas Benih</h2>
 
-            <div class="w-full max-w-xs"
-                 x-data="{ 
-                    open: false, 
-                    selected: '{{ $activeSeedClass ?? '' }}', 
-                    label: '{{ $activeSeedClass ? ($seedClasses[array_search($activeSeedClass, array_column($seedClasses, 'code'))]['name'] ?? 'Semua Kelas') : 'Semua Kelas' }}',
-                    options: [
-                        { value: '', label: 'Semua Kelas' },
-                        @foreach ($seedClasses as $sc)
-                            { value: '{{ $sc['code'] }}', label: '{{ $sc['name'] }} ({{ $sc['code'] }})' },
-                        @endforeach
-                    ],
-                    selectOption(opt) {
-                        this.selected = opt.value;
-                        this.label = opt.label;
-                        this.open = false;
-                        
-                        const filterEl = document.getElementById('seed-class-select-hidden');
-                        if (filterEl) {
-                            filterEl.value = opt.value;
-                            filterEl.dispatchEvent(new Event('change'));
+                <div class="w-full"
+                     x-data="{ 
+                        open: false, 
+                        selected: '{{ $activeSeedClass ?? '' }}', 
+                        label: '{{ $activeSeedClass ? ($seedClasses[array_search($activeSeedClass, array_column($seedClasses, 'code'))]['name'] ?? 'Semua Kelas') : 'Semua Kelas' }}',
+                        options: [
+                            { value: '', label: 'Semua Kelas' },
+                            @foreach ($seedClasses as $sc)
+                                { value: '{{ $sc['code'] }}', label: '{{ $sc['name'] }} ({{ $sc['code'] }})' },
+                            @endforeach
+                        ],
+                        selectOption(opt) {
+                            this.selected = opt.value;
+                            this.label = opt.label;
+                            this.open = false;
+                            
+                            const filterEl = document.getElementById('seed-class-select-hidden');
+                            if (filterEl) {
+                                filterEl.value = opt.value;
+                                filterEl.dispatchEvent(new Event('change'));
+                            }
                         }
-                    }
-                 }">
-                
-                {{-- Hidden input for catalog.js --}}
-                <input type="hidden" id="seed-class-select-hidden" value="{{ $activeSeedClass ?? '' }}">
-
-                {{-- Trigger Button --}}
-                <button @click="open = !open" 
-                        @click.away="open = false"
-                        class="relative w-full flex items-center justify-between bg-white border border-emerald-100 rounded-xl p-3 shadow-sm hover:border-emerald-500 transition-all duration-200">
-                    <span class="text-slate-700 font-medium" x-text="label"></span>
-                    <i class="fa-solid fa-chevron-down text-emerald-500 text-xs transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
-                </button>
-
-                {{-- Dropdown Menu --}}
-                <div x-show="open" 
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 scale-95"
-                     x-transition:enter-end="opacity-100 scale-100"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 scale-100"
-                     x-transition:leave-end="opacity-0 scale-95"
-                     class="absolute mt-2 w-full max-w-xs bg-white border border-slate-100 rounded-xl shadow-xl z-50 overflow-hidden"
-                     style="display: none;">
+                     }">
                     
-                    <template x-for="opt in options" :key="opt.value">
-                        <button @click="selectOption(opt)"
-                                class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between"
-                                :class="selected === opt.value ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-slate-600 hover:bg-slate-50'">
-                            <span x-text="opt.label"></span>
-                            <i x-show="selected === opt.value" class="fa-solid fa-check text-emerald-500 text-xs"></i>
-                        </button>
-                    </template>
+                    {{-- Hidden input for catalog.js --}}
+                    <input type="hidden" id="seed-class-select-hidden" value="{{ $activeSeedClass ?? '' }}">
+
+                    {{-- Trigger Button --}}
+                    <button @click="open = !open" 
+                            @click.away="open = false"
+                            class="relative w-full flex items-center justify-between bg-white border border-emerald-100 rounded-xl p-3 shadow-sm hover:border-emerald-500 transition-all duration-200 h-[46px]">
+                        <span class="text-slate-700 font-medium" x-text="label"></span>
+                        <i class="fa-solid fa-chevron-down text-emerald-500 text-xs transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                    </button>
+
+                    {{-- Dropdown Menu --}}
+                    <div x-show="open" 
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute mt-2 w-full max-w-xs bg-white border border-slate-100 rounded-xl shadow-xl z-50 overflow-hidden"
+                         style="display: none;">
+                        
+                        <template x-for="opt in options" :key="opt.value">
+                            <button @click="selectOption(opt)"
+                                    class="w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between"
+                                    :class="selected === opt.value ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-slate-600 hover:bg-slate-50'">
+                                <span x-text="opt.label"></span>
+                                <i x-show="selected === opt.value" class="fa-solid fa-check text-emerald-500 text-xs"></i>
+                            </button>
+                        </template>
+                    </div>
                 </div>
             </div>
+            
+            <!-- ADVANCED FILTER BUTTON & MODAL -->
+            <div>
+                <button @click="modalOpen = true" class="px-5 py-3 rounded-xl bg-white border border-slate-200 shadow-sm text-slate-700 font-medium hover:border-emerald-500 hover:text-emerald-600 transition flex items-center gap-2 h-[46px]">
+                    <i class="fa-solid fa-sliders text-sm"></i> Filter Lanjutan
+                </button>
+            </div>
+            
+            <!-- MODAL OVERLAY & CONTENT -->
+            <template x-teleport="body">
+                <div x-show="modalOpen" style="display: none;" class="fixed inset-0 z-[999] flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
+                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+                     
+                    <div @click.away="modalOpen = false" class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]"
+                         x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                         x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                         
+                         <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+                             <h3 class="font-bold text-slate-800 text-lg">Filter Lanjutan</h3>
+                             <button @click="modalOpen = false" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center transition">
+                                 <i class="fa-solid fa-xmark"></i>
+                             </button>
+                         </div>
+                         
+                         <div class="p-6 overflow-y-auto">
+                             <form action="/katalog" method="GET" id="advanced-filter-form" class="flex flex-col h-full">
+                                 <!-- Keep existing params -->
+                                 @if(request('commodity'))
+                                     <input type="hidden" name="commodity" value="{{ request('commodity') }}">
+                                 @endif
+                                 @if(request('seed_class'))
+                                     <input type="hidden" name="seed_class" value="{{ request('seed_class') }}">
+                                 @endif
+                                 @if(request('search'))
+                                     <input type="hidden" name="search" value="{{ request('search') }}">
+                                 @endif
+                                 
+                                 <!-- Filter Karakteristik Nasi -->
+                                 <div class="mb-5">
+                                     <label class="block text-sm font-semibold text-slate-700 mb-3">Karakteristik Nasi</label>
+                                     <div class="flex gap-3">
+                                         <label class="flex-1 relative cursor-pointer">
+                                             <input type="radio" name="trait" value="Pulen" class="peer sr-only" {{ request('trait') == 'Pulen' ? 'checked' : '' }}>
+                                             <div class="px-4 py-3 border border-slate-200 rounded-xl text-center transition peer-checked:border-green-600 peer-checked:bg-green-600 peer-checked:text-white font-medium text-slate-600 hover:bg-slate-50">Pulen</div>
+                                         </label>
+                                         <label class="flex-1 relative cursor-pointer">
+                                             <input type="radio" name="trait" value="Pera" class="peer sr-only" {{ request('trait') == 'Pera' ? 'checked' : '' }}>
+                                             <div class="px-4 py-3 border border-slate-200 rounded-xl text-center transition peer-checked:border-green-600 peer-checked:bg-green-600 peer-checked:text-white font-medium text-slate-600 hover:bg-slate-50">Pera</div>
+                                         </label>
+                                     </div>
+                                 </div>
+                                 
+                                 <!-- Action Buttons (Sticky at bottom) -->
+                                 <div class="flex gap-3 mt-auto pt-6 border-t border-slate-100">
+                                     <button type="button" onclick="window.location.href='/katalog'" class="flex-1 px-4 py-3 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition text-center">Reset</button>
+                                     <button type="submit" class="flex-1 px-4 py-3 bg-green-600 text-white font-medium rounded-xl shadow-md hover:bg-green-700 transition">Terapkan Filter</button>
+                                 </div>
+                             </form>
+                         </div>
+                    </div>
+                </div>
+            </template>
         </div>
 
         <!-- =======================
