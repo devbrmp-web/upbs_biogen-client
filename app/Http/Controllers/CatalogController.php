@@ -89,7 +89,7 @@ class CatalogController extends Controller
             if ($trait) $queryParams['trait'] = $trait;
             if ($activeCommoditySlug) $queryParams['commodity'] = $activeCommoditySlug;
 
-            $hasFilters = !empty($search) || !empty($trait);
+            $hasFilters = !empty($search) || !empty($trait) || !empty($activeCommoditySlug);
             $cacheKeySuffix = $hasFilters ? '_' . md5(json_encode($queryParams)) : '';
 
             if ($activeSeedClassId) {

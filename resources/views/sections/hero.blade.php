@@ -73,7 +73,7 @@
                     Lihat Katalog
                 </a>
 
-                <a href="#"
+                <a href="{{ route('about') }}"
                    class="text-sm font-semibold text-gray-800 hover:text-gray-900 transition">
                     Selengkapnya <span aria-hidden="true">→</span>
                 </a>
@@ -117,7 +117,7 @@
 
                     data.forEach(item => {
                         html += `
-                            <a href="/katalog?search=${encodeURIComponent(item.name)}"
+                            <a href="${item.url}"
                                 class="block px-4 py-3 hover:bg-gray-100 cursor-pointer">
                                 <div class="font-medium text-gray-900">${item.name}</div>
                                 <div class="text-xs text-gray-500">${item.type}</div>
