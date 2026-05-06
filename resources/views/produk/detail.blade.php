@@ -392,7 +392,7 @@
                     
                     @if($isOutOfStock)
                         <div class="mt-auto sticky bottom-0 bg-white/80 backdrop-blur-md py-4 border-t border-slate-100">
-                            <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin tanya stok untuk varietas ' . $variety['name']) }}" target="_blank" class="flex w-full items-center justify-center gap-2 bg-emerald-600 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                            <a href="https://wa.me/628111756776?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin tanya stok untuk varietas ' . $variety['name']) }}" target="_blank" class="flex w-full items-center justify-center gap-2 bg-emerald-600 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
                                 <i class="bx bxl-whatsapp text-xl"></i> Tanyakan Ketersediaan via WhatsApp
                             </a>
                         </div>

@@ -106,7 +106,7 @@
                                                     <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
                                                         <i class="fa-regular fa-file-pdf text-red-500"></i> Cetak Resi
                                                     </a>
-                                                    <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya telah menyelesaikan pembayaran untuk pesanan #'.$data->order_code.'. Berikut saya lampirkan bukti resi untuk koordinasi pengiriman lebih lanjut. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-all shadow-sm">
+                                                    <a href="https://wa.me/628111756776?text={{ urlencode('Halo Admin UPBS Biogen, saya telah menyelesaikan pembayaran untuk pesanan #'.$data->order_code.'. Berikut saya lampirkan bukti resi untuk koordinasi pengiriman lebih lanjut. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-all shadow-sm">
                                                         <i class="fa-brands fa-whatsapp"></i> WhatsApp Admin
                                                     </a>
                                                 </div>
@@ -120,7 +120,7 @@
                                             <div>
                                                 <h4 class="font-bold text-slate-800">Sedang Disiapkan</h4>
                                                 <p class="text-slate-600 text-sm mt-1 mb-4">Pesanan Anda sedang disiapkan oleh staf UPBS. Mohon tunggu informasi selanjutnya.</p>
-                                                <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin menanyakan progres persiapan pesanan #'.$data->order_code.'. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-medium hover:bg-indigo-600 transition-all shadow-sm">
+                                                <a href="https://wa.me/628111756776?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin menanyakan progres persiapan pesanan #'.$data->order_code.'. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-medium hover:bg-indigo-600 transition-all shadow-sm">
                                                     <i class="fa-brands fa-whatsapp"></i> WhatsApp Admin
                                                 </a>
                                             </div>
@@ -133,7 +133,7 @@
                                             <div>
                                                 <h4 class="font-bold text-slate-800">Dalam Pengiriman</h4>
                                                 <p class="text-slate-600 text-sm mt-1 mb-4">Pesanan Anda sedang dalam perjalanan. Silakan hubungi WhatsApp berikut untuk informasi lebih lanjut.</p>
-                                                <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin menanyakan status pengiriman pesanan #'.$data->order_code.'. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-all shadow-sm">
+                                                <a href="https://wa.me/628111756776?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin menanyakan status pengiriman pesanan #'.$data->order_code.'. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-all shadow-sm">
                                                     <i class="fa-brands fa-whatsapp"></i> WhatsApp Admin
                                                 </a>
                                             </div>
@@ -146,7 +146,7 @@
                                             <div>
                                                 <h4 class="font-bold text-slate-800">Pesanan Siap Dikirim</h4>
                                                 <p class="text-slate-600 text-sm mt-1 mb-4">Pesanan siap dikirim. Silakan hubungi WhatsApp berikut untuk meminta nomor resi pengiriman dari ekspedisi.</p>
-                                                <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, pesanan #'.$data->order_code.' saya sudah siap dikirim. Saya ingin meminta nomor resi pengiriman dari ekspedisi. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-all shadow-sm">
+                                                <a href="https://wa.me/628111756776?text={{ urlencode('Halo Admin UPBS Biogen, pesanan #'.$data->order_code.' saya sudah siap dikirim. Saya ingin meminta nomor resi pengiriman dari ekspedisi. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-all shadow-sm">
                                                     <i class="fa-brands fa-whatsapp"></i> WhatsApp Admin
                                                 </a>
                                             </div>
@@ -165,7 +165,7 @@
                                                     <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
                                                         <i class="fa-regular fa-file-pdf text-red-500"></i> Cetak Kuitansi
                                                     </a>
-                                                    <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya telah menyelesaikan pembayaran untuk pesanan #'.$data->order_code.'. Saya ingin mengkoordinasikan waktu pengambilan benih. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-all shadow-sm">
+                                                    <a href="https://wa.me/628111756776?text={{ urlencode('Halo Admin UPBS Biogen, saya telah menyelesaikan pembayaran untuk pesanan #'.$data->order_code.'. Saya ingin mengkoordinasikan waktu pengambilan benih. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-all shadow-sm">
                                                         <i class="fa-brands fa-whatsapp"></i> WhatsApp Admin
                                                     </a>
                                                 </div>
@@ -183,7 +183,7 @@
                                                     <a href="{{ route('order.print', ['order_code' => $data->order_code]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
                                                         <i class="fa-regular fa-file-pdf text-red-500"></i> Lihat Kuitansi
                                                     </a>
-                                                    <a href="https://wa.me/6285155238654?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin konfirmasi kedatangan untuk pengambilan pesanan #'.$data->order_code.'. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-medium hover:bg-teal-600 transition-all shadow-sm">
+                                                    <a href="https://wa.me/628111756776?text={{ urlencode('Halo Admin UPBS Biogen, saya ingin konfirmasi kedatangan untuk pengambilan pesanan #'.$data->order_code.'. Terima kasih!') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-medium hover:bg-teal-600 transition-all shadow-sm">
                                                         <i class="fa-brands fa-whatsapp"></i> WhatsApp Admin
                                                     </a>
                                                 </div>

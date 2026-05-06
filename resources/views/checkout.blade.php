@@ -411,7 +411,7 @@
             } catch(e) {}
             const base = 'Halo Admin, saya ingin mengkonfirmasi pembelian dan biaya pengiriman.';
             const msg = base + '\\n\\n' + itemsText + 'Mohon informasi biaya kirim dan langkah pembayaran ongkir.';
-            const url = 'https://wa.me/6285155238654?text=' + encodeURIComponent(msg);
+            const url = 'https://wa.me/628111756776?text=' + encodeURIComponent(msg);
             window.open(url, '_blank');
         });
     });
@@ -451,7 +451,7 @@ ${fullAddress}
 terima kasih kak.`;
 
         const encodedMessage = encodeURIComponent(message);
-        window.open(`https://wa.me/6285155238654?text=${encodedMessage}`, '_blank');
+        window.open(`https://wa.me/628111756776?text=${encodedMessage}`, '_blank');
     }
 </script>
 @endsection
