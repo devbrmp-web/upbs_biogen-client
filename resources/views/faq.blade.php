@@ -50,7 +50,7 @@
                         </span>
                     </summary>
                     <div class="px-6 pb-6 text-gray-600 leading-relaxed border-t border-white/30 pt-4">
-                        <p>Kami mendukung pembayaran melalui transfer bank (Virtual Account) dan QRIS. Semua pembayaran diproses secara otomatis melalui payment gateway resmi untuk menjamin keamanan transaksi PNBP.</p>
+                        <p>Kami mendukung pembayaran melalui transfer bank secara manual. Pembayaran dapat dilakukan ke rekening resmi BRI atau Bank Mandiri atas nama Bendahara Pengeluaran BRMP Biogen. Setelah melakukan transfer, Anda wajib mengunggah bukti pembayaran pada halaman detail pesanan untuk diverifikasi oleh admin secara manual dalam waktu maksimal 1x24 jam kerja.</p>
                     </div>
                 </details>
             </div>
