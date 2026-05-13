@@ -201,6 +201,7 @@ window.addToCartAction = function(isBuyNow) {
     
     const item = {
         variety_id: window.varietyData.id,
+        slug: window.varietyData.slug,
         name: window.varietyData.name,
         price_per_unit: parseInt(window.selectedPrice || window.varietyData.base_price) || 0,
         image: window.varietyData.image,
