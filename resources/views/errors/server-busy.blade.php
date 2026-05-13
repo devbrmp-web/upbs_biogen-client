@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="{{ Vite::asset('resources/img/logo.png') }}">
     <title>503 — Server Busy</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>

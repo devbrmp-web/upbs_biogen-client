@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="{{ Vite::asset('resources/img/logo.png') }}">
   <title>Kuitansi Resmi {{ $order['order_code'] ?? '' }}</title>
   <style>
     /* A4 Paper Dimensions and Base Settings */

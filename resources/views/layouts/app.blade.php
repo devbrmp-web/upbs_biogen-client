@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="{{ Vite::asset('resources/img/logo.png') }}">
     <title>@yield('title', 'UPBS BRMP Biogen')</title>
+
+    {{-- SEO Meta Tags --}}
+    <meta name="description" content="@yield('meta_description', 'Unit Pengelola Benih Sumber (UPBS) Balai Besar Perakitan dan Modernisasi Bioteknologi dan Sumber Daya Genetik Pertanian - Temukan benih sumber unggul berkualitas tinggi.')" />
+    <meta name="keywords" content="UPBS, Biogen, Benih Sumber, Pertanian, Varietas Unggul, Benih Padi, Kedelai, Indonesia" />
+    <meta name="author" content="UPBS BRMP Biogen" />
+    <meta name="robots" content="index, follow" />
+
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@yield('title', 'UPBS BRMP Biogen')" />
+    <meta property="og:description" content="@yield('meta_description', 'Dapatkan benih sumber berkualitas tinggi hasil perakitan dan modernisasi bioteknologi.')" />
+    <meta property="og:image" content="{{ Vite::asset('resources/img/logo.png') }}" />
+    <meta property="og:url" content="{{ request()->url() }}" />
+    <meta property="og:site_name" content="UPBS BRMP Biogen" />
+
+    {{-- Twitter --}}
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="@yield('title', 'UPBS BRMP Biogen')" />
+    <meta name="twitter:description" content="@yield('meta_description', 'Dapatkan benih sumber berkualitas tinggi hasil perakitan dan modernisasi bioteknologi.')" />
+    <meta name="twitter:image" content="{{ Vite::asset('resources/img/logo.png') }}" />
+
     @vite('resources/css/app.css')
     @vite(['resources/js/app.js', 'resources/js/cart.js'])
 

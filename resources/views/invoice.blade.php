@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="{{ Vite::asset('resources/img/logo.png') }}">
   <title>Invoice {{ $order['order_code'] ?? '' }}</title>
   <style>
     :root { --text:#1b1b18; --muted:#6b7280; --border:#e5e7eb; --bg:#ffffff; }
