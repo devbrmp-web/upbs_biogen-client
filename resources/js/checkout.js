@@ -279,7 +279,6 @@ function renderCheckoutCart() {
                                         ${item.seed_class_name || 'Benih'}
                                     </span>
                                 </div>
-                                <span class="text-xs text-gray-500">Lot: ${item.seed_lot_id || 'Auto'}</span>
                             </div>
                             <span class="font-medium text-gray-900">
                                 ${item.quantity} ${unit} x ${formatIDR(unitPrice)}

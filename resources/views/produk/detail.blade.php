@@ -367,7 +367,6 @@
                                             <label class="flex items-center justify-between border rounded-lg p-3 cursor-pointer hover:border-blue-300">
                                                 <div class="flex items-center gap-3">
                                                     <input type="radio" name="lot-{{ $class['code'] }}" value="{{ $lot['id'] }}" data-price="{{ (float) ($lot['price_per_unit'] ?? 0) }}">
-                                                    <span class="text-sm text-gray-900">Lot {{ $lot['id'] }}</span>
                                                     <span class="text-xs text-gray-500">Stok {{ number_format($lot['quantity'], 0, ',', '.') }} {{ $lot['unit'] ?? 'kg' }}</span>
                                                 </div>
                                                 <div class="text-sm font-semibold text-blue-600">Rp {{ number_format((float) ($lot['price_per_unit'] ?? 0), 0, ',', '.') }}</div>

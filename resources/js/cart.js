@@ -289,9 +289,6 @@ window.cart = {
                                     <span class="text-sm text-slate-600 bg-white/40 px-2 py-0.5 rounded-md border border-white/30 backdrop-blur-sm">
                                         ${item.seed_class_name || 'Benih'}
                                     </span>
-                                    <span class="text-xs text-slate-500 font-mono bg-slate-100/50 px-2 py-0.5 rounded-md border border-slate-200/50">
-                                        Lot: ${item.seed_lot_id || '-'}
-                                    </span>
                                 </div>
                             </div>
                             <button class="btn-remove self-end sm:self-start text-red-400 hover:text-red-600 bg-red-50/50 hover:bg-red-100 p-2 rounded-lg transition-all shadow-sm hover:shadow-md active:scale-95" title="Hapus item">
@@ -381,7 +378,6 @@ window.cart = {
                   
                   <div class="flex items-center gap-2 mb-2">
                     <span class="${badgeClass} text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm border border-white/50">${item.seed_class_code}</span>
-                    <span class="text-[10px] text-slate-500 font-mono bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">Lot: ${item.seed_lot_id || '-'}</span>
                   </div>
 
                   <div class="flex items-center justify-between bg-slate-50/50 p-2 rounded-lg border border-slate-100">
